@@ -10,8 +10,10 @@ EXACTLY the same salt + strength + form as the medicine they photographed, the J
 - `worker/src/agent.js` — fixed tool plan + trace; `worker/src/index.js` — API + impact log
 - `public/strings.js` — ALL user-facing text (en/kn/hi) and the templated answer. Never let a model write prices or safety text.
 - `public/app.js`, `public/impact.html`, `public/volunteer.html` — the web app
+- Developer mode: `/?dev=1` (off: `/?dev=0`) shows the impact/volunteer/GitHub/data-import links and flags lookups as test traffic. Hidden for patients.
+- `public/dev.html` + `dev.js` — developer data import: PMBI product MRP list CSV → preview diff → apply. `public/pmbi.js` (shared browser + Worker, a port of `data/build_ja.py`'s product parser; must give the same keys) parses in the browser; the Worker's `/api/admin/*` only validates and writes, guarded by the `ADMIN_TOKEN` secret.
 - `data/` — build D1 seed SQL from SameSalt's DB and the official PMBJP lists
-- `test/` — `node --test test/normalize.test.mjs test/tools.test.mjs`; `python test/test_build_ja.py`
+- `test/` — `node --test test/normalize.test.mjs test/tools.test.mjs test/pmbi.test.mjs`; `python test/test_build_ja.py`
 - `evals/` — `node evals/run_evals.mjs` (writes AF run JSONL to `.codenow/runs/`)
 
 Rules: same salt + same strength + same form + same release only. Never give dosage advice. Narrow-

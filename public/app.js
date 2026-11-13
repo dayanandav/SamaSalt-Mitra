@@ -6,9 +6,16 @@ const store = {
   set(k, v) { try { v == null ? localStorage.removeItem(k) : localStorage.setItem(k, v); } catch {} },
 };
 
-// ── State: language, test flag, volunteer mode, anonymous device token ─────────
+// ── State: language, test flag, volunteer mode, developer mode, anonymous device token ─
 const params = new URLSearchParams(location.search);
 if (params.has('test')) store.set('ss_test', params.get('test') === '0' ? null : '1');
+// Developer mode (?dev=1 / ?dev=0): shows the impact, volunteer and GitHub links, and flags
+// this browser's lookups as test traffic so developer checks never count on /impact.
+if (params.has('dev')) store.set('ss_devmode', params.get('dev') === '0' ? null : '1');
+const devMode = store.get('ss_devmode') === '1';
+if (devMode) store.set('ss_test', '1');
+else if (params.get('dev') === '0') store.set('ss_test', null);
+$('#devLinks').hidden = !devMode;
 if (params.has('volunteer')) store.set('ss_vol', params.get('volunteer') === '0' ? null : '1');
 if (params.has('lang') && STRINGS[params.get('lang')]) store.set('ss_lang', params.get('lang'));
 

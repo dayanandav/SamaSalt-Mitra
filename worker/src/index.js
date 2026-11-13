@@ -1,5 +1,6 @@
 // SamaSalt-Mitra agent — Cloudflare Worker: JSON API + static web app (public/).
-import { runAgent } from './agent.js';
+import { runAgent, resetMetaCache } from './agent.js';
+import { validateProducts, insertStatements } from '../../public/pmbi.js';
 
 const MAX_IMAGE_CHARS = 2_500_000; // ~1.8 MB JPEG as a data URL; the app resizes to ~1 MP first
 
@@ -133,10 +134,95 @@ async function handleImpact(env) {
   }, 200, { 'cache-control': 'public, max-age=30' });
 }
 
+// ── Developer data import (/dev page) ─────────────────────────────────────────
+// Every /api/admin/* call needs `Authorization: Bearer <ADMIN_TOKEN>`, a Worker secret
+// (npx wrangler secret put ADMIN_TOKEN). Developer mode in the browser only shows the page;
+// the token is what protects the database. With no secret set, the admin API is off.
+// The browser parses and previews the PMBI file (public/pmbi.js); the Worker only checks
+// and writes, which keeps each request inside the free plan's CPU limit.
+
+const MAX_IMPORT_CHARS = 8_000_000;
+
+async function adminDenied(request, env) {
+  if (!env.ADMIN_TOKEN) return json({ error: 'admin_disabled', detail: 'Set the ADMIN_TOKEN secret to enable data import.' }, 503);
+  const got = (request.headers.get('authorization') || '').replace(/^Bearer\s+/i, '');
+  const enc = new TextEncoder();
+  const [a, b] = await Promise.all([got, env.ADMIN_TOKEN].map((s) => crypto.subtle.digest('SHA-256', enc.encode(s))));
+  const x = new Uint8Array(a);
+  const y = new Uint8Array(b);
+  const same = crypto.subtle.timingSafeEqual ? crypto.subtle.timingSafeEqual(a, b) : x.every((v, i) => v === y[i]);
+  return same ? null : json({ error: 'unauthorized' }, 401);
+}
+
+async function handleAdminStatus(env) {
+  const one = (sql) => env.DB.prepare(sql).first();
+  const [meta, ja, med, kendras] = await Promise.all([
+    env.DB.prepare('SELECT key, value FROM meta').all(),
+    one('SELECT COUNT(*) AS n FROM ja_products'),
+    one('SELECT COUNT(*) AS n FROM medicines'),
+    one('SELECT COUNT(*) AS n FROM kendras'),
+  ]);
+  return json({
+    meta: Object.fromEntries((meta.results || []).map((x) => [x.key, x.value])),
+    counts: { ja_products: ja?.n ?? 0, medicines: med?.n ?? 0, kendras: kendras?.n ?? 0 },
+  });
+}
+
+/** What the developer page needs to parse and diff a PMBI file: brand keys and the current list. */
+async function handlePmbiContext(env) {
+  const [keys, current] = await Promise.all([
+    env.DB.prepare('SELECT DISTINCT ckey FROM medicines WHERE ckey IS NOT NULL').raw(),
+    env.DB.prepare('SELECT drug_code, generic_name, unit_size, mrp, ckey FROM ja_products').all(),
+  ]);
+  return json({ brand_keys: keys.map((r) => r[0]), current: current.results || [] });
+}
+
+async function handlePmbiApply(request, env) {
+  if (Number(request.headers.get('content-length') || 0) > MAX_IMPORT_CHARS) return json({ error: 'too_large' }, 413);
+  let body;
+  try {
+    body = await request.json();
+  } catch {
+    return json({ error: 'bad_json' }, 400);
+  }
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(body.list_date || '')) return json({ error: 'bad_import', detail: 'List date must be YYYY-MM-DD.' }, 400);
+  const bad = validateProducts(body.items);
+  if (bad) return json({ error: 'bad_import', detail: bad }, 400);
+  const items = body.items;
+
+  // Guard against a wrong or truncated file wiping most of the list.
+  const current = (await env.DB.prepare('SELECT COUNT(*) AS n FROM ja_products').first())?.n ?? 0;
+  if (current > 0 && items.length < current * 0.5 && body.force !== true) {
+    return json({ error: 'too_few_rows', detail: `The file has ${items.length} usable products, under half of the ${current} loaded now. Check the file, or apply with force.` }, 409);
+  }
+  const s = body.stats && typeof body.stats === 'object' ? body.stats : {};
+  const stats = Object.fromEntries(['rows', 'ok', 'no_equivalent', 'unparsed', 'skipped'].map((k) => [k, Number.isFinite(s[k]) ? s[k] : null]));
+  const stmts = [env.DB.prepare('DELETE FROM ja_products'), ...insertStatements(items, 200).map((sql) => env.DB.prepare(sql))];
+  const meta = {
+    ja_loaded_at: body.list_date,
+    ja_list_date: body.list_date,
+    ja_stats: JSON.stringify(stats),
+    ja_imported_at: new Date().toISOString(),
+    ja_source: 'PMBI product MRP list (developer import)',
+  };
+  for (const [k, v] of Object.entries(meta)) stmts.push(env.DB.prepare('INSERT OR REPLACE INTO meta (key, value) VALUES (?1, ?2)').bind(k, v));
+  await env.DB.batch(stmts); // one transaction: all of it applies, or none of it
+  resetMetaCache();
+  return json({ ok: true, applied: true, previous_count: current, new_count: items.length, list_date: body.list_date });
+}
+
 export default {
   async fetch(request, env, ctx) {
     const url = new URL(request.url);
     try {
+      if (url.pathname.startsWith('/api/admin/')) {
+        const denied = await adminDenied(request, env);
+        if (denied) return denied;
+        if (url.pathname === '/api/admin/status') return await handleAdminStatus(env);
+        if (url.pathname === '/api/admin/pmbi/context') return await handlePmbiContext(env);
+        if (url.pathname === '/api/admin/pmbi/apply' && request.method === 'POST') return await handlePmbiApply(request, env);
+        return json({ error: 'not_found' }, 404);
+      }
       if (url.pathname === '/api/ask' && request.method === 'POST') return await handleAsk(request, env, ctx);
       if (url.pathname === '/api/feedback' && request.method === 'POST') return await handleFeedback(request, env);
       if (url.pathname === '/api/impact') return await handleImpact(env);

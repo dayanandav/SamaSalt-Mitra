@@ -64,12 +64,17 @@
 
   <footer class="foot">
     <p data-t="privacy"></p>
-    <p class="foot-links">
+    <!-- Developer mode only (?dev=1 to turn on, ?dev=0 to turn off); hidden for patients and volunteers. -->
+    <p class="foot-links" id="devLinks" hidden>
       <a href="/impact" data-t="impactLink">See the impact</a>
       <span aria-hidden="true">·</span>
       <a href="/volunteer" data-t="volunteer">Volunteer mode</a>
       <span aria-hidden="true">·</span>
       <a href="https://github.com/dayanandav/SamaSalt-Mitra">GitHub</a>
+      <span aria-hidden="true">·</span>
+      <a href="/dev">Data import</a>
+      <span aria-hidden="true">·</span>
+      <a href="/?dev=0">Exit developer mode</a>
     </p>
     <p class="data-note" id="dataNote"></p>
   </footer>

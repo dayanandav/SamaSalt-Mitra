@@ -151,6 +151,11 @@ export async function runAgent(env, input) {
 
 let metaCache = null;
 let metaAt = 0;
+/** Called after a data import so the next lookup sees the new list date at once. */
+export function resetMetaCache() {
+  metaCache = null;
+  metaAt = 0;
+}
 export async function loadMeta(db) {
   if (metaCache && Date.now() - metaAt < 60_000) return metaCache;
   const res = await db.prepare('SELECT key, value FROM meta').all();

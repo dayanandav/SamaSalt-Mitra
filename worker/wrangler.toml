@@ -14,7 +14,7 @@ run_worker_first = ["/api/*"]
 [[d1_databases]]
 binding = "DB"
 database_name = "samasalt-mitra"
-database_id = "6fb78eb9-9f2d-427d-b111-7d8a74f769da"
+database_id = "ad0b146e-7c60-448d-ab68-ee460ca1909f"
 migrations_dir = "migrations"
 
 # Vision + text models (Workers AI free allocation).

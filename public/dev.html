@@ -1,0 +1,116 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="robots" content="noindex, nofollow">
+  <title>SamaSalt-Mitra data import</title>
+  <link rel="icon" href="/icon-128.png" type="image/png">
+  <link rel="stylesheet" href="/styles.css">
+  <style>
+    .card h2 { font-size: 19px; margin: 0 0 4px; }
+    .card + .card { margin-top: 12px; }
+    .step { color: var(--muted); font-size: 13px; font-weight: 600; letter-spacing: 0; text-transform: uppercase; margin: 0 0 6px; }
+    .form { display: grid; gap: 12px; margin-top: 14px; }
+    .form label { display: grid; gap: 6px; font-size: 14px; color: var(--muted); letter-spacing: 0; }
+    .form input[type='password'], .form input[type='date'], .form input[type='file'] {
+      font: inherit; font-size: 16px; color: var(--text); background: var(--fill); border: 0.5px solid var(--line);
+      border-radius: 12px; padding: 10px 12px; width: 100%; box-sizing: border-box;
+    }
+    .row-btns { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 4px; }
+    .row-btns .primary, .row-btns .secondary { width: auto; min-height: 44px; padding: 10px 18px; font-size: 15px; }
+    .primary[disabled] { opacity: 0.45; cursor: not-allowed; }
+    .tiles { display: grid; grid-template-columns: repeat(auto-fill, minmax(118px, 1fr)); gap: 8px; margin-top: 12px; }
+    .tile { background: var(--fill); border-radius: 12px; padding: 10px 12px; }
+    .tile b { display: block; font-size: 22px; letter-spacing: -0.02em; font-variant-numeric: tabular-nums; }
+    .tile span { font-size: 12px; color: var(--muted); letter-spacing: 0; }
+    .tile.up b { color: var(--danger); }
+    .tile.down b { color: var(--accent); }
+    .tile.warn b { color: var(--warn); }
+    .msg { margin: 12px 0 0; padding: 10px 12px; border-radius: 12px; font-size: 14px; letter-spacing: 0; line-height: 1.45; }
+    .msg.ok { background: var(--accent-soft); color: var(--accent); }
+    .msg.err { background: var(--danger-soft); color: var(--danger); }
+    .msg.info { background: var(--warn-soft); color: var(--warn); }
+    details.tbl { margin-top: 10px; border-top: 0.5px solid var(--line); padding-top: 10px; }
+    details.tbl summary { cursor: pointer; font-weight: 600; font-size: 15px; }
+    .scroll { overflow-x: auto; margin-top: 8px; max-height: 420px; overflow-y: auto; }
+    table { border-collapse: collapse; width: 100%; font-size: 13px; letter-spacing: 0; }
+    th, td { text-align: left; padding: 6px 8px; border-bottom: 0.5px solid var(--line); vertical-align: top; }
+    th { color: var(--muted); font-weight: 600; position: sticky; top: 0; background: var(--card); }
+    td.num { text-align: right; font-variant-numeric: tabular-nums; white-space: nowrap; }
+    .up { color: var(--danger); }
+    .down { color: var(--accent); }
+    .kv { display: grid; grid-template-columns: auto 1fr; gap: 4px 14px; font-size: 14px; letter-spacing: 0; margin-top: 10px; }
+    .kv dt { color: var(--muted); }
+    .kv dd { margin: 0; font-variant-numeric: tabular-nums; }
+    .form label.force { display: flex; gap: 8px; align-items: center; color: var(--warn); }
+    .form label.force[hidden] { display: none; }
+    ol.how { padding-left: 20px; margin: 8px 0 0; font-size: 15px; line-height: 1.55; }
+  </style>
+</head>
+<body>
+  <header class="top">
+    <a class="brand" href="/"><img class="logo" src="/icon-128.png" width="34" height="34" alt=""><span>SamaSalt-Mitra</span></a>
+    <a href="/?dev=0">Exit developer mode</a>
+  </header>
+  <main>
+    <h1>Data import</h1>
+    <p class="lede">Developer tool. Load the latest official Jan Aushadhi (PMBJP) product list and MRPs from PMBI, check what changes, then apply it to the live database.</p>
+
+    <section class="card">
+      <p class="step">Access</p>
+      <h2>Admin token</h2>
+      <div class="form">
+        <label>Token (kept only in this browser tab)
+          <input type="password" id="token" autocomplete="off" spellcheck="false">
+        </label>
+        <div class="row-btns"><button class="secondary" id="statusBtn" type="button">Check current data</button></div>
+      </div>
+      <dl class="kv" id="status" hidden></dl>
+      <p class="msg" id="statusMsg" hidden></p>
+    </section>
+
+    <section class="card">
+      <p class="step">Step 1</p>
+      <h2>Download the latest list from PMBI</h2>
+      <ol class="how">
+        <li>Open the official <a href="https://janaushadhi.gov.in/product-portfolio/product-mrp-list" target="_blank" rel="noopener">PMBI product MRP list</a>.</li>
+        <li>Use the page's <b>Export / CSV</b> download, which saves every product with its MRP (columns: Sr No, Drug Code, Generic Name, Unit Size, MRP, Group Name).</li>
+        <li>Note today's date: it becomes the "list date" shown under every Jan Aushadhi price in the app.</li>
+      </ol>
+    </section>
+
+    <section class="card">
+      <p class="step">Step 2</p>
+      <h2>Preview the changes</h2>
+      <div class="form">
+        <label>Product list file (.csv, or .json saved from the portal)
+          <input type="file" id="file" accept=".csv,.json,text/csv,application/json">
+        </label>
+        <label>List date (the day you downloaded it)
+          <input type="date" id="listDate">
+        </label>
+        <div class="row-btns"><button class="primary" id="previewBtn" type="button">Preview</button></div>
+      </div>
+      <p class="msg" id="previewMsg" hidden></p>
+      <div id="preview" hidden>
+        <div class="tiles" id="tiles"></div>
+        <div id="tables"></div>
+      </div>
+    </section>
+
+    <section class="card">
+      <p class="step">Step 3</p>
+      <h2>Apply to the live database</h2>
+      <p class="muted" style="margin:6px 0 0;font-size:15px">Replaces the whole Jan Aushadhi product table in one step (all or nothing) and sets the list date. Brand data and Kendras are not touched.</p>
+      <div class="form">
+        <label id="forceWrap" class="force" hidden><input type="checkbox" id="force"> Apply anyway, although the new list is much shorter</label>
+        <div class="row-btns"><button class="primary" id="applyBtn" type="button" disabled>Apply import</button></div>
+      </div>
+      <p class="msg" id="applyMsg" hidden></p>
+    </section>
+  </main>
+  <footer class="foot"><p>SamaSalt-Mitra · developer mode · <a href="/">Check a medicine</a></p></footer>
+  <script type="module" src="/dev.js"></script>
+</body>
+</html>

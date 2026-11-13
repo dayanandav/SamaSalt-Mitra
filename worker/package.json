@@ -5,9 +5,13 @@
   "scripts": {
     "dev": "wrangler dev",
     "deploy": "wrangler deploy",
-    "test": "node --import ../test/register-md.mjs --test ../test/normalize.test.mjs ../test/tools.test.mjs"
+    "test": "node --import ../test/register-md.mjs --test ../test/normalize.test.mjs ../test/tools.test.mjs ../test/pmbi.test.mjs"
   },
   "devDependencies": {
     "wrangler": "^4.135.0"
+  },
+  "allowScripts": {
+    "esbuild@0.28.2": true,
+    "workerd@1.20261006.1": true
   }
 }

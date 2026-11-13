@@ -11,9 +11,23 @@ export function d1(db) {
         bind(...a) { args = a; return api; },
         async all() { return { results: stmt.all(...args) }; },
         async first() { return stmt.get(...args) ?? null; },
+        async raw() { return stmt.all(...args).map((r) => Object.values(r)); },
         async run() { const r = stmt.run(...args); return { meta: { changes: r.changes } }; },
+        runSync() { return stmt.run(...args); },
       };
       return api;
+    },
+    // D1 batch(): every statement in one transaction, rolled back as a whole on error.
+    async batch(stmts) {
+      db.exec('BEGIN');
+      try {
+        const out = stmts.map((s) => ({ meta: { changes: s.runSync().changes } }));
+        db.exec('COMMIT');
+        return out;
+      } catch (e) {
+        db.exec('ROLLBACK');
+        throw e;
+      }
     },
   };
 }
