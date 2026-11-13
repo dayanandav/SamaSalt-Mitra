@@ -1,4 +1,4 @@
-// SameSalt agent — Cloudflare Worker: JSON API + static web app (public/).
+// SamaSalt-Mitra agent — Cloudflare Worker: JSON API + static web app (public/).
 import { runAgent } from './agent.js';
 
 const MAX_IMAGE_CHARS = 2_500_000; // ~1.8 MB JPEG as a data URL; the app resizes to ~1 MP first
@@ -11,7 +11,7 @@ const json = (data, status = 200, extra = {}) =>
 
 function isTestRequest(request, body) {
   const url = new URL(request.url);
-  if (request.headers.get('x-samesalt-test') === '1') return true;
+  if (request.headers.get('x-samasalt-mitra-test') === '1') return true;
   if (body && (body.test === true || body.test === 1 || body.test === '1')) return true;
   if (['localhost', '127.0.0.1'].includes(url.hostname)) return true;
   return false;

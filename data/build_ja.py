@@ -12,8 +12,8 @@ Download either export by hand into data/raw/ and run:
     python data/build_ja.py --products data/raw/<products.json|csv|xlsx|pdf> \
                             --kendras  data/raw/<kendras.json|csv|xlsx|pdf> \
                             --list-date 2026-10-11 --medicines-db ../samesalt/assets/samesalt.db
-    cd worker && npx wrangler d1 execute samesalt-agent --remote --file ../data/build/ja.sql
-                 npx wrangler d1 execute samesalt-agent --remote --file ../data/build/kendras.sql
+    cd worker && npx wrangler d1 execute samasalt-mitra --remote --file ../data/build/ja.sql
+                 npx wrangler d1 execute samasalt-mitra --remote --file ../data/build/kendras.sql
 
 Each PMBJP generic name ("Amoxycillin and Potassium Clavulanate Tablets IP 500 mg + 125 mg")
 is parsed into the SAME canonical key the brand database uses

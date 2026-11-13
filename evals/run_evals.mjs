@@ -1,10 +1,10 @@
 #!/usr/bin/env node
-// Runs evals/cases.json against the deployed agent (or SAMESALT_URL), scores each case,
+// Runs evals/cases.json against the deployed agent (or SAMASALT_MITRA_URL), scores each case,
 // writes evals/results.json + evals/RESULTS.md, and records every run as AgentFoundry
-// run JSONL (.codenow/runs/samesalt-agent/*.jsonl) so it can be replayed in AF's Runs tab.
+// run JSONL (.codenow/runs/samasalt-mitra/*.jsonl) so it can be replayed in AF's Runs tab.
 //
 //   node evals/run_evals.mjs                # against production, flagged as test traffic
-//   SAMESALT_URL=http://localhost:8787 node evals/run_evals.mjs
+//   SAMASALT_MITRA_URL=http://localhost:8787 node evals/run_evals.mjs
 import { readFileSync, writeFileSync, mkdirSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -12,16 +12,16 @@ import { randomUUID } from 'node:crypto';
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 const ROOT = join(HERE, '..');
-const BASE = process.env.SAMESALT_URL || 'https://samesalt-agent.samesalt-worker.workers.dev';
+const BASE = process.env.SAMASALT_MITRA_URL || 'https://samesalt-agent.samesalt-worker.workers.dev';
 const suite = JSON.parse(readFileSync(join(HERE, 'cases.json'), 'utf8'));
-const runsDir = join(ROOT, '.codenow', 'runs', 'samesalt-agent');
+const runsDir = join(ROOT, '.codenow', 'runs', 'samasalt-mitra');
 mkdirSync(runsDir, { recursive: true });
 
 function recordRun(c, body, res, ms) {
   const runId = randomUUID();
   const ts0 = Date.now() - ms;
   const input = c.text ? c.text : `[photo] ${c.image}`;
-  const ev = [{ kind: 'run.start', runId, slug: 'samesalt-agent', ts: ts0, input, kit: 'cloudflare-worker', model: 'workers-ai/llama-4-scout + deterministic tools', source: 'eval' }];
+  const ev = [{ kind: 'run.start', runId, slug: 'samasalt-mitra', ts: ts0, input, kit: 'cloudflare-worker', model: 'workers-ai/llama-4-scout + deterministic tools', source: 'eval' }];
   let t = ts0;
   for (const st of res.trace || []) {
     const id = `toolu_${st.tool}_${Math.random().toString(36).slice(2, 8)}`;
@@ -45,7 +45,7 @@ for (const c of suite.cases) {
   let retried = false;
   for (let attempt = 0; attempt < 2; attempt++) {
     try {
-      const r = await fetch(`${BASE}/api/ask`, { method: 'POST', headers: { 'content-type': 'application/json', 'x-samesalt-test': '1' }, body: JSON.stringify(body) });
+      const r = await fetch(`${BASE}/api/ask`, { method: 'POST', headers: { 'content-type': 'application/json', 'x-samasalt-mitra-test': '1' }, body: JSON.stringify(body) });
       const txt = await r.text();
       try { res = JSON.parse(txt); } catch { res = { status: 'error', error: `HTTP ${r.status}: ${txt.slice(0, 120)}` }; }
     } catch (e) {

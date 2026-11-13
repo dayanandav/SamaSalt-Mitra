@@ -1,4 +1,4 @@
-# How SameSalt was built in AgentFoundry
+# How SamaSalt-Mitra was built in AgentFoundry
 
 AgentFoundry (AF) desktop IDE **v0.1.80 for Windows**, free plan, signed in as the project owner. The repository folder was added as an AF project (`+` → Open Project Folder), and the work below was done inside it. Everything listed here is in the repo and can be checked.
 
@@ -23,7 +23,7 @@ Of 17 distinct suggestions, **12 were applied** (3 reworded) and **5 rejected**:
 
 ## 2. Agent Studio: the agent definition
 
-`Agents → Build an agent` (*Describe → Build*, AF-served inference, no API key) drafted the **SameSalt** agent from a plain-language goal. AF's first draft planned to scrape 1mg/PharmEasy/CDSCO with a browser tool; that plan was replaced with the production tool plan (`read_strip → understand_text → identify_medicine → find_same_salt → jan_aushadhi_match → nearest_kendra → compose_answer → log_lookup`), the guardrails (same salt+strength+form only, no dosage advice, no switch for NTI drugs, privacy), the models, and `runsAt`. AF's original draft steps are kept in the manifest as `afDraftSteps` for transparency.
+`Agents → Build an agent` (*Describe → Build*, AF-served inference, no API key) drafted the **SamaSalt-Mitra** agent from a plain-language goal. AF's first draft planned to scrape 1mg/PharmEasy/CDSCO with a browser tool; that plan was replaced with the production tool plan (`read_strip → understand_text → identify_medicine → find_same_salt → jan_aushadhi_match → nearest_kendra → compose_answer → log_lookup`), the guardrails (same salt+strength+form only, no dosage advice, no switch for NTI drugs, privacy), the models, and `runsAt`. AF's original draft steps are kept in the manifest as `afDraftSteps` for transparency.
 
 - Manifest: [`.codenow/agent-studio/agents/samesalt.json`](../.codenow/agent-studio/agents/samesalt.json)
 - Screenshot: [`04-agent-card.png`](agentfoundry/04-agent-card.png)
@@ -41,7 +41,7 @@ AF bug found on the way: on Windows the Evals tab's **Run** button passes the su
 
 ## 5. Runs and Replay
 
-`evals/run_evals.mjs` sends every eval case to the **live** deployment and writes each run in AF's run format (`run.start`, `tool_use`/`tool_result` messages, `run.end`) to `.codenow/runs/samesalt-agent/`. AF's **Runs** tab lists them and the **Replay** viewer steps through each tool call with its inputs and outputs ([`06-runs-production-traces.png`](agentfoundry/06-runs-production-traces.png)).
+`evals/run_evals.mjs` sends every eval case to the **live** deployment and writes each run in AF's run format (`run.start`, `tool_use`/`tool_result` messages, `run.end`) to `.codenow/runs/samasalt-mitra/`. AF's **Runs** tab lists them and the **Replay** viewer steps through each tool call with its inputs and outputs ([`06-runs-production-traces.png`](agentfoundry/06-runs-production-traces.png)).
 
 Replaying the photo run for a Rosuvas 10 strip showed `composition_agrees: false`: the vision model had correctly read "Rosuvastatin Calcium I.P. eq. to Rosuvastatin ..... 10 mg", but the parser turned that into a salt nobody sells ([`07-replay-found-composition-bug.png`](agentfoundry/07-replay-found-composition-bug.png)). Fix: `cleanComposition()` + `resolveCompositionKey()` in `worker/src/tools.js` (handles "eq. to", I.P./B.P., dotted leaders and salt-form words, and prefers a key that brands actually use), with a regression test. After the fix, the composition read off the strip independently agreed with the brand on 17/17 photos (including the blurred and cropped ones) ([`../evals/RESULTS.md`](../evals/RESULTS.md)). Both the before and after runs are in `.codenow/runs/`.
 

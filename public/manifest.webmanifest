@@ -1,10 +1,13 @@
 {
-  "name": "SameSalt",
-  "short_name": "SameSalt",
+  "name": "SamaSalt-Mitra",
+  "short_name": "SamaSalt-Mitra",
   "description": "Same medicine, lower price: same-salt brands, Jan Aushadhi price and the nearest Kendra.",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#ffffff",
   "theme_color": "#0a7a4b",
-  "icons": [{ "src": "/icon.svg", "sizes": "any", "type": "image/svg+xml" }]
+  "icons": [
+    { "src": "/icon-256.png", "sizes": "256x256", "type": "image/png" },
+    { "src": "/icon-512.png", "sizes": "512x512", "type": "image/png" }
+  ]
 }

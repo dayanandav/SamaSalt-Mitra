@@ -1,4 +1,4 @@
-// The SameSalt agent: a fixed, auditable tool plan. Models are used only where they are
+// The SamaSalt-Mitra agent: a fixed, auditable tool plan. Models are used only where they are
 // needed (reading a photo, understanding free text in any script); every price, match and
 // safety decision comes from deterministic tools over official / published data.
 //

@@ -1,5 +1,5 @@
 {
- "name": "samesalt-identify-and-match",
+ "name": "samasalt-mitra-identify-and-match",
  "description": "15 synthetic strip photos, 3 deliberately hard photos (heavy blur, cropped, a brand that is not in the database) and 5 typed queries (incl. Kannada and Hindi script). A case passes only if the agent picks the right medicine (exact canonical key: salts + strengths + form + release) and the safety behaviour is right.",
  "cases": [
   {

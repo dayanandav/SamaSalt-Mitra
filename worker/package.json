@@ -1,5 +1,5 @@
 {
-  "name": "samesalt-agent-worker",
+  "name": "samasalt-mitra-worker",
   "private": true,
   "type": "module",
   "scripts": {

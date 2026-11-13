@@ -4,7 +4,7 @@ Title cards and captions are laid out in HTML and rendered by Chromium (so Kanna
 Devanagari are shaped correctly), then assembled with ffmpeg: calm cross-fades, the phone
 recording in a device frame, and one caption per step, faded in and out.
 
-    python tools/demo-video/compose.py          -> out/samesalt-demo.mp4
+    python tools/demo-video/compose.py          -> out/samasalt-mitra-demo.mp4
 
 Every number on screen is real: figures from the live app, the official Jan Aushadhi lists
 (loaded 11/12 Oct 2026) and the cited sources. No usage or impact numbers are claimed.
@@ -42,9 +42,10 @@ body{font-family:Inter,-apple-system,'Segoe UI',sans-serif;color:#1d1d1f;-webkit
 .kn{font-family:'Noto Sans Kannada',Inter,sans-serif}
 .hi{font-family:'Noto Sans Devanagari',Inter,sans-serif}
 .mark{display:inline-flex;align-items:center;gap:14px;font-weight:600;font-size:34px;letter-spacing:-0.02em}
-.mark svg{color:#0a7a4b}
+.mark img{flex:none}
 """
-LOGO = '<svg width="40" height="40" viewBox="0 0 32 32"><rect x="3" y="9" width="26" height="14" rx="7" fill="currentColor" opacity=".16"/><rect x="3" y="9" width="13" height="14" rx="7" fill="currentColor"/></svg>'
+LOGO_PNG = HERE.parent.parent / "logo" / "SamaSalt_Mitra_Web_Icon_256x256.png"
+LOGO = f'<img src="data:image/png;base64,{base64.b64encode(LOGO_PNG.read_bytes()).decode()}" width="64" height="64" style="border-radius:14px" alt="">'
 
 
 def page(body, css='', transparent=False):
@@ -54,7 +55,7 @@ def page(body, css='', transparent=False):
 # ── Cards ──────────────────────────────────────────────────────────────────
 CARD_TITLE = page(f"""
 <div class="c">
-  <div class="mark">{LOGO}<span>SameSalt</span></div>
+  <div class="mark">{LOGO}<span>SamaSalt-Mitra</span></div>
   <h1>Same medicine.<br>Lower price.</h1>
   <p class="muted">Snap a medicine strip. See every brand with exactly the same salt and strength, the government Jan Aushadhi price, and the nearest Kendra — in Kannada, Hindi or English.</p>
   <p class="faint small">Code for a Billion 2026 · Health</p>
@@ -110,11 +111,11 @@ figcaption{font-size:24px;margin-top:14px;letter-spacing:-0.01em}
 
 CARD_OUTRO = page(f"""
 <div class="c">
-  <div class="mark">{LOGO}<span>SameSalt</span></div>
+  <div class="mark">{LOGO}<span>SamaSalt-Mitra</span></div>
   <h2>Open source. ₹0 to run.</h2>
   <ul>
     <li><span class="muted">Try it</span><b>samesalt-agent.samesalt-worker.workers.dev</b></li>
-    <li><span class="muted">Code</span><b>github.com/darshanrajagoli/samesalt-agent</b></li>
+    <li><span class="muted">Code</span><b>github.com/dayanandav/SamaSalt-Mitra</b></li>
     <li><span class="muted">Tested</span><b>29 unit tests · 23 of 23 end-to-end evals</b><i>on synthetic strip photos; real-world accuracy is measured in the pilot</i></li>
     <li><span class="muted">Pilot</span><b>Uttara Karnataka Sneha Loka (UKSL), North Karnataka</b><i>starting late October 2026 · disclosure: the builder's father is a UKSL trustee</i></li>
   </ul>
@@ -275,8 +276,8 @@ def main():
     # Silent stereo track so every player treats it as a normal video.
     run(['ffmpeg', '-y', '-v', 'error', *inputs, '-f', 'lavfi', '-t', f'{total:.2f}', '-i', 'anullsrc=r=48000:cl=stereo',
          '-filter_complex', ';'.join(f), '-map', '[out]', '-map', f'{len(clips)}:a', '-c:v', 'libx264', '-preset', 'slow', '-crf', '17',
-         '-pix_fmt', 'yuv420p', '-c:a', 'aac', '-shortest', '-movflags', '+faststart', OUT / 'samesalt-demo.mp4'])
-    print(f'done {OUT / "samesalt-demo.mp4"} ({total:.1f} s)')
+         '-pix_fmt', 'yuv420p', '-c:a', 'aac', '-shortest', '-movflags', '+faststart', OUT / 'samasalt-mitra-demo.mp4'])
+    print(f'done {OUT / "samasalt-mitra-demo.mp4"} ({total:.1f} s)')
 
 
 if __name__ == '__main__':

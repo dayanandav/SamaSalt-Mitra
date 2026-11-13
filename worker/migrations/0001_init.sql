@@ -1,4 +1,4 @@
--- SameSalt agent: D1 schema.
+-- SamaSalt-Mitra agent: D1 schema.
 -- Reference data (read-only at runtime): medicines, ja_products, kendras, meta.
 -- Impact log (write-only from the app, aggregate-only on /impact): lookups.
 

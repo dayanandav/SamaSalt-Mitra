@@ -12,3 +12,8 @@ submission/
 .codenow/sessions/
 .codenow/agent-drafts/
 tools/demo-video/out/
+
+# Large logo masters stay out of git (web sizes in public/, README uses the 512px icon)
+logo/SamaSalt_Mitra_Master_Logo_4096x4096.png
+logo/SamaSalt_Mitra_High_Resolution_Logo_2048x2048.png
+logo/SamaSalt_Mitra_Standard_Logo_1024x1024.png

@@ -3,7 +3,7 @@
   "slug": "samesalt",
   "createdAt": 1791694507655,
   "updatedAt": 1791694507655,
-  "name": "SameSalt",
+  "name": "SamaSalt-Mitra",
   "description": "Help patients in India pay less for the same medicine. Given a photo of a medicine strip or a typed name (English, Kannada or Hindi): read the brand, salt(s) and strength; find every brand with exactly the same salt, strength and dosage form and rank them by price per tablet; show the matching Jan Aushadhi (PMBJP) generic and its official MRP; find the nearest Jan Aushadhi Kendra from a PIN code; answer in the user's language. Never give dosage advice, never suggest switching narrow-therapeutic-index drugs (warfarin, thyroxine, epilepsy, transplant drugs), and always tell the user to check with their doctor or pharmacist before switching. Log each lookup anonymously for an impact dashboard.",
   "function": "other",
   "preferredModel": "workers-ai/llama-4-scout (vision) + llama-3.3-70b (text)",
@@ -191,7 +191,7 @@
             "timestamp_iso": "<timestamp>",
             "pin_hash_prefix": "<hashed_or_truncated_pin>",
             "language": "<lang>",
-            "source": "samesalt-agent"
+            "source": "samasalt-mitra"
           },
           "note": "Use POST with TLS; ensure payload contains no names, contact info, or raw PIN. Confirm user consent before sending."
         }

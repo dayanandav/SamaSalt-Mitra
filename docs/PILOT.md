@@ -1,4 +1,4 @@
-# SameSalt pilot with Uttara Karnataka Sneha Loka (UKSL)
+# SamaSalt-Mitra pilot with Uttara Karnataka Sneha Loka (UKSL)
 
 **Who:** UKSL volunteers in North Karnataka, with patients they already visit. **When:** from late October 2026. **Disclosure:** the builder's father is a trustee of UKSL. **App:** https://samesalt-agent.samesalt-worker.workers.dev/volunteer (scan the QR on that page to open the app in volunteer mode).
 

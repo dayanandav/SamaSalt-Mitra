@@ -1,4 +1,4 @@
-# SameSalt agent — project notes for AI assistants (AgentFoundry SMART-Code, Claude Code)
+# SamaSalt-Mitra agent — project notes for AI assistants (AgentFoundry SMART-Code, Claude Code)
 
 Mobile-first web app + Cloudflare Worker agent that tells Indian patients which brands have
 EXACTLY the same salt + strength + form as the medicine they photographed, the Jan Aushadhi

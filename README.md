@@ -1,12 +1,14 @@
-# SameSalt — same medicine, lower price
+<p align="center"><img src="logo/SamaSalt_Mitra_App_GitHub_Icon_512x512.png" width="160" alt="SamaSalt-Mitra logo"></p>
 
-**Photograph a medicine strip (or type its name) in English, ಕನ್ನಡ or हिन्दी. SameSalt shows every brand with exactly the same salt, strength and form, ranked by price, the Jan Aushadhi generic and its government MRP, and the nearest Jan Aushadhi Kendra. Every lookup is counted anonymously on a public impact page.**
+# SamaSalt-Mitra — same medicine, lower price
+
+**Photograph a medicine strip (or type its name) in English, ಕನ್ನಡ or हिन्दी. SamaSalt-Mitra shows every brand with exactly the same salt, strength and form, ranked by price, the Jan Aushadhi generic and its government MRP, and the nearest Jan Aushadhi Kendra. Every lookup is counted anonymously on a public impact page.**
 
 **Demo video (2:37):** https://youtu.be/FBDnSkhKEH0 · **Live app:** https://samesalt-agent.samesalt-worker.workers.dev · **Impact dashboard:** https://samesalt-agent.samesalt-worker.workers.dev/impact · **Volunteer mode + QR:** https://samesalt-agent.samesalt-worker.workers.dev/volunteer
 
 Entry for **Code for a Billion — Bharat Agentic-AI Hackathon 2026**, Health track ([submission #24](https://github.com/karlmehta/code-for-a-billion/issues/24)). Built in **AgentFoundry** ([how](#how-agentfoundry-was-used)). Field pilot planned with **Uttara Karnataka Sneha Loka (UKSL)**, North Karnataka, from late October 2026 ([pilot guide](docs/PILOT.md)).
 
-![SameSalt on a phone: home, the result for Dolo 650 with the saving, and the answer in Kannada](docs/img/screens.png)
+![SamaSalt-Mitra on a phone: home, the result for Dolo 650 with the saving, and the answer in Kannada](docs/img/screens.png)
 
 [![Watch the 2:37 demo on YouTube](https://img.youtube.com/vi/FBDnSkhKEH0/hqdefault.jpg)](https://youtu.be/FBDnSkhKEH0)
 
@@ -16,10 +18,10 @@ Entry for **Code for a Billion — Bharat Agentic-AI Hackathon 2026**, Health tr
 
 - **Indians pay for health care out of their own pockets.** Out-of-pocket spending was **39.4% of India's total health expenditure in 2021-22** (total health expenditure ₹9,04,461 crore), per the Government's National Health Accounts estimates ([PIB, Oct 2024](https://static.pib.gov.in/WriteReadData/specificdocs/documents/2024/oct/doc2024104408201.pdf)).
 - **Medicines are the biggest part of that bill, and they push people into poverty.** Purchase of medicines is the single largest component of household out-of-pocket payments; in 2011-12 out-of-pocket spending on medicines alone pushed **3.09% of India's population, about 38 million people, into poverty** (Selvaraj, Farooqui & Karan, *BMJ Open* 2018;8:e018020, [PMC5988077](https://pmc.ncbi.nlm.nih.gov/articles/PMC5988077)).
-- **The same molecule is sold under hundreds of brands at very different prices.** In the 246,068-product dataset SameSalt uses, paracetamol 650 mg tablets alone come in **522 distinct brands**, from **₹0.33 to ₹23.80 per tablet**; Dolo 650 is ₹2.28 per tablet. Nothing at the counter tells the patient that.
+- **The same molecule is sold under hundreds of brands at very different prices.** In the 246,068-product dataset SamaSalt-Mitra uses, paracetamol 650 mg tablets alone come in **522 distinct brands**, from **₹0.33 to ₹23.80 per tablet**; Dolo 650 is ₹2.28 per tablet. Nothing at the counter tells the patient that.
 - **The government generic exists but people don't find it.** Jan Aushadhi (PMBJP) medicines are priced **50-80% below comparable brands**; over **18,000 Kendras** sell **2,110 medicines**, and by June 2025 Jan Aushadhi sales had saved citizens an estimated **₹38,000 crore** ([PIB backgrounder, 7 Mar 2026](https://static.pib.gov.in/WriteReadData/specificdocs/documents/2026/mar/doc202637814101.pdf)). The patient still has to know the generic name, that it is *exactly* the same composition, and where the nearest Kendra is.
 
-The government's own Jan Aushadhi Sugam app searches generics by name. SameSalt starts from what the patient actually holds (a strip, often in a language and script they don't read), compares against **every** branded equivalent too, answers in Kannada or Hindi, and is built to be used **by NGO volunteers with patients**, with impact measured from day one.
+The government's own Jan Aushadhi Sugam app searches generics by name. SamaSalt-Mitra starts from what the patient actually holds (a strip, often in a language and script they don't read), compares against **every** branded equivalent too, answers in Kannada or Hindi, and is built to be used **by NGO volunteers with patients**, with impact measured from day one.
 
 ## What it does
 
@@ -54,7 +56,7 @@ flowchart LR
   D1 --> IMP["/impact dashboard"]
 ```
 
-The agent is a **fixed, auditable tool plan** — `read_strip → identify_medicine → find_same_salt → jan_aushadhi_match → nearest_kendra → compose_answer` — not a free-running LLM. Models are used only where they are needed (reading a photo; understanding free text in any script). Every price, match and safety line comes from deterministic tools over published data, and the answer is composed from templates (`public/strings.js`), so a model can never invent a price or drop the safety line. Every step is returned to the UI ("How SameSalt worked this out") and recorded as an AgentFoundry run.
+The agent is a **fixed, auditable tool plan** — `read_strip → identify_medicine → find_same_salt → jan_aushadhi_match → nearest_kendra → compose_answer` — not a free-running LLM. Models are used only where they are needed (reading a photo; understanding free text in any script). Every price, match and safety line comes from deterministic tools over published data, and the answer is composed from templates (`public/strings.js`), so a model can never invent a price or drop the safety line. Every step is returned to the UI ("How SamaSalt-Mitra worked this out") and recorded as an AgentFoundry run.
 
 | Path | What |
 |---|---|
@@ -93,7 +95,7 @@ The agent is a **fixed, auditable tool plan** — `read_strip → identify_medic
 - Photos are sent to the Worker, read in memory, and **never stored**.
 - The impact log stores, per lookup: time, matched medicine, per-unit prices (scanned, cheapest same-salt, Jan Aushadhi), the saving for one pack, language, the **first 3 digits** of the PIN code if typed, self/volunteer mode, a random per-browser token (not derived from the device) for counting unique users, and the optional "did you switch?" answer.
 - **No names, phone numbers, IP addresses, user agents or precise locations.**
-- Test traffic (evals, demo recordings, developer checks: `x-samesalt-test: 1`, `?test=1`, or localhost) is flagged `is_test = 1` and **excluded from every number on [/impact](https://samesalt-agent.samesalt-worker.workers.dev/impact)**; the page shows how many test lookups were excluded.
+- Test traffic (evals, demo recordings, developer checks: `x-samasalt-mitra-test: 1`, `?test=1`, or localhost) is flagged `is_test = 1` and **excluded from every number on [/impact](https://samesalt-agent.samesalt-worker.workers.dev/impact)**; the page shows how many test lookups were excluded.
 
 ## How AgentFoundry was used
 
@@ -103,14 +105,14 @@ The project was opened and developed in the **AgentFoundry desktop IDE (v0.1.80,
 - **Agent Studio:** the agent was created with *Describe → Build*; AF's drafted plan (scrape retail sites) was replaced with the production tool plan, guardrails, tools and model choices in `.codenow/agent-studio/agents/samesalt.json`.
 - **Prompts live in AF:** `read_strip` and `understand_text` are authored and versioned in AF's Prompts store, and the production Worker **bundles those exact files** (`.codenow/agent-studio/prompts/*.md`).
 - **Evals in AF:** the `understand-text` suite (12 cases) runs in AF's Evals tab — 12/12 on SMART-Code.
-- **Runs / Replay:** every production eval run is written as AF run JSONL (`.codenow/runs/samesalt-agent/`) and replayed step by step in AF's Runs tab. Replaying a photo run showed the composition read from a "Rosuvastatin Calcium I.P. eq. to Rosuvastatin 10 mg" strip **disagreeing** with the brand; that bug was fixed (`cleanComposition`, with a regression test) and agreement went to 17/17 photos.
+- **Runs / Replay:** every production eval run is written as AF run JSONL (`.codenow/runs/samasalt-mitra/`) and replayed step by step in AF's Runs tab. Replaying a photo run showed the composition read from a "Rosuvastatin Calcium I.P. eq. to Rosuvastatin 10 mg" strip **disagreeing** with the brand; that bug was fixed (`cleanComposition`, with a regression test) and agreement went to 17/17 photos.
 
 ## Run it yourself
 
 Prerequisites: Node 20+, Python 3.11+, a free Cloudflare account, and SameSalt's database (`assets/samesalt.db` in [darshanrajagoli/samesalt](https://github.com/darshanrajagoli/samesalt), Git LFS).
 
 ```bash
-git clone https://github.com/darshanrajagoli/samesalt-agent && cd samesalt-agent
+git clone https://github.com/dayanandav/SamaSalt-Mitra && cd SamaSalt-Mitra
 git clone https://github.com/darshanrajagoli/samesalt ../samesalt          # brand database (Git LFS)
 
 # tests
@@ -120,20 +122,20 @@ python test/test_build_ja.py
 # Cloudflare: database + seed
 cd worker && npm install
 npx wrangler login
-npx wrangler d1 create samesalt-agent            # put the id in wrangler.toml
-npx wrangler d1 migrations apply samesalt-agent --remote
+npx wrangler d1 create samasalt-mitra            # put the id in wrangler.toml
+npx wrangler d1 migrations apply samasalt-mitra --remote
 cd .. && python data/build_d1.py --db ../samesalt/assets/samesalt.db --out data/build
-cd worker && for f in ../data/build/*.sql; do npx wrangler d1 execute samesalt-agent --remote --file "$f" -y; done
+cd worker && for f in ../data/build/*.sql; do npx wrangler d1 execute samasalt-mitra --remote --file "$f" -y; done
 
 # Jan Aushadhi data: the official files are in data/raw/ (see data/raw/README.md)
 cd .. && python data/build_ja.py --products data/raw/ja_products_2026-10-11.csv --list-date 2026-10-11 \
   --medicines-db ../samesalt/assets/samesalt.db
-cd worker && npx wrangler d1 execute samesalt-agent --remote --file ../data/build/ja.sql -y
+cd worker && npx wrangler d1 execute samasalt-mitra --remote --file ../data/build/ja.sql -y
 cd .. && python data/build_ja.py --kendras data/raw/kendras_2026-10-12 --list-date 2026-10-12
-cd worker && for f in kendras meta-ja; do npx wrangler d1 execute samesalt-agent --remote --file ../data/build/$f.sql -y; done
+cd worker && for f in kendras meta-ja; do npx wrangler d1 execute samasalt-mitra --remote --file ../data/build/$f.sql -y; done
 
 npx wrangler dev        # local (all local traffic is flagged as test)
-npx wrangler deploy     # https://samesalt-agent.<your-subdomain>.workers.dev
+npx wrangler deploy     # https://samasalt-mitra.<your-subdomain>.workers.dev
 cd .. && node evals/run_evals.mjs
 ```
 
@@ -143,4 +145,4 @@ A field pilot with **Uttara Karnataka Sneha Loka (UKSL)**, an NGO in North Karna
 
 ## License
 
-Code: [MIT](LICENSE). Data: see [DATA_LICENSE.md](DATA_LICENSE.md) (the brand dataset is CC BY-SA 4.0). SameSalt is an information tool, not medical advice.
+Code: [MIT](LICENSE). Data: see [DATA_LICENSE.md](DATA_LICENSE.md) (the brand dataset is CC BY-SA 4.0). SamaSalt-Mitra is an information tool, not medical advice.

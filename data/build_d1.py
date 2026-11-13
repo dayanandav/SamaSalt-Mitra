@@ -6,7 +6,7 @@ from the Kaggle "A-Z Medicine Dataset of India" (Shudhanshu Singh, CC BY-SA 4.0,
 
 Usage:
     python data/build_d1.py --db ../samesalt/assets/samesalt.db --out data/build
-    cd worker && npx wrangler d1 execute samesalt --remote --file ../data/build/medicines-000.sql  (etc.)
+    cd worker && npx wrangler d1 execute samasalt-mitra --remote --file ../data/build/medicines-000.sql  (etc.)
 
 The only transformation is cleaning float noise in canonical keys
 ("formoterol:0.0045000000000000005mg" -> "formoterol:0.0045mg") so keys are
