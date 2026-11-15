@@ -89,7 +89,8 @@ async function handleFeedback(request, env) {
   } catch {
     return json({ error: 'bad_json' }, 400);
   }
-  const allowed = ['yes', 'no', 'ask'];
+  // 'wrong': the person said the medicine read from their photo/scan was not theirs.
+  const allowed = ['yes', 'no', 'ask', 'wrong'];
   if (typeof body.id !== 'string' || !/^[0-9a-f-]{36}$/.test(body.id) || !allowed.includes(body.switched)) {
     return json({ error: 'bad_request' }, 400);
   }
@@ -100,13 +101,16 @@ async function handleFeedback(request, env) {
 async function handleImpact(env) {
   const q = (sql) => env.DB.prepare(sql).all().then((r) => r.results || []);
   const real = 'is_test = 0';
+  // Lookups whose photo/scan the person said was the wrong medicine never count as a saving.
+  const right = "(switched IS NULL OR switched != 'wrong')";
   const [totals] = await q(`SELECT
       COUNT(*) AS lookups,
       SUM(status = 'ok') AS matched,
       SUM(status = 'not_found') AS not_found,
-      SUM(status = 'ok' AND saving_pack > 0) AS with_cheaper_option,
+      SUM(status = 'ok' AND saving_pack > 0 AND ${right}) AS with_cheaper_option,
       COUNT(DISTINCT device) AS devices,
-      ROUND(SUM(CASE WHEN status = 'ok' AND saving_pack > 0 THEN saving_pack ELSE 0 END), 2) AS potential_saving,
+      ROUND(SUM(CASE WHEN status = 'ok' AND saving_pack > 0 AND ${right} THEN saving_pack ELSE 0 END), 2) AS potential_saving,
+      SUM(switched = 'wrong') AS wrong_reads,
       SUM(switched = 'yes') AS switched_yes,
       SUM(switched = 'ask') AS will_ask_doctor,
       SUM(switched = 'no') AS switched_no,
@@ -120,7 +124,7 @@ async function handleImpact(env) {
     q(`SELECT lang, COUNT(*) AS n FROM lookups WHERE ${real} GROUP BY lang ORDER BY n DESC`),
     q(`SELECT day, COUNT(*) AS n, ROUND(SUM(CASE WHEN saving_pack > 0 THEN saving_pack ELSE 0 END), 2) AS saving FROM lookups WHERE ${real} AND day >= date('now', '-60 day') GROUP BY day ORDER BY day`),
     q(`SELECT pin3, COUNT(*) AS n FROM lookups WHERE ${real} AND pin3 IS NOT NULL GROUP BY pin3 ORDER BY n DESC LIMIT 12`),
-    q(`SELECT medicine, COUNT(*) AS n, ROUND(AVG(saving_pack), 2) AS avg_saving FROM lookups WHERE ${real} AND status = 'ok' GROUP BY medicine ORDER BY n DESC LIMIT 10`),
+    q(`SELECT medicine, COUNT(*) AS n, ROUND(AVG(saving_pack), 2) AS avg_saving FROM lookups WHERE ${real} AND status = 'ok' AND ${right} GROUP BY medicine ORDER BY n DESC LIMIT 10`),
     q(`SELECT COUNT(*) AS n FROM lookups WHERE is_test = 1`),
   ]);
   return json({

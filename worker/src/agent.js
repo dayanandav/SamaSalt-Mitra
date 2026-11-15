@@ -8,7 +8,7 @@
 // and the eval runner writes the same trace as AgentFoundry run JSONL (.codenow/runs/).
 import { readStrip, understandText } from './vision.js';
 import { identifyMedicine, findSameSalt, janAushadhiMatch, nearestKendra, computeSaving, compositionFromText, brandCandidatesFromText } from './tools.js';
-import { describeKey, extractDosageForm, ntiFromKey } from './normalize.js';
+import { describeKey, extractDosageForm, ntiFromKey, parseSaltComposition } from './normalize.js';
 import { assetMeds, d1Meds } from './medstore.js';
 import { composeAnswer } from '../../public/strings.js';
 
@@ -54,9 +54,9 @@ export async function runAgent(env, input) {
   if (input.image) {
     source = 'photo';
     read = await step('read_strip', { image: '(photo — processed in memory, not stored)' }, () => readStrip(env, input.image), (r) =>
-      r.ok ? { model: r.model, brand: r.brand, composition: r.composition, form: r.form, release: r.release, usage: r.usage } : { failed: r.errors }
+      r.ok ? { model: r.model, brand: r.brand, composition: r.composition, form: r.form, release: r.release, confidence: r.confidence, usage: r.usage } : { failed: r.errors }
     );
-    if (!read.ok) return { status: 'vision_unavailable', lang, trace };
+    if (!read.ok) return { status: read.unreadable ? 'unreadable' : 'vision_unavailable', source, lang, trace };
     query = { brand: [read.brand, read.release].filter(Boolean).join(' '), composition: read.composition, form: read.form };
   } else if (input.ocr) {
     source = 'photo-ocr';
@@ -75,9 +75,20 @@ export async function runAgent(env, input) {
     r.found ? { name: r.medicine.name, composition: r.label, via: r.via, composition_agrees: r.composition_agrees } : { found: false }
   );
 
+  // Read-confidence gate for anything read from a photo or a scan: below the pass mark nothing is
+  // searched and the person is told the strip details could not be extracted. A misread must
+  // never become a switch suggestion.
+  let readCheck = null;
+  if (source !== 'text') {
+    readCheck = scoreRead(id, query, read);
+    trace.push({ tool: 'check_read', input: { pass_mark: READ_PASS_MARK }, output: readCheck, ms: 0 });
+    if (readCheck.score < READ_PASS_MARK) return { status: 'unreadable', reason: readCheck.reason, read_score: readCheck.score, lang, read, trace, source };
+  }
+
   // Typed text in Kannada/Devanagari script, or phrased as a question: let the language model
-  // pull out the medicine name, then try again.
-  if (!id.found && text && (NON_LATIN.test(text) || text.split(/\s+/).length > 3) && env.AI) {
+  // pull out the medicine name, then try again. Not for scanned text: a model guessing a brand
+  // from a strip's stray words could pick the wrong medicine.
+  if (!id.found && source === 'text' && text && (NON_LATIN.test(text) || text.split(/\s+/).length > 3) && env.AI) {
     const u = await step('understand_text', { text }, () => understandText(env, text), (r) => (r.ok ? { brand: r.brand, composition: r.composition, usage: r.usage } : { failed: r.error }));
     if (u.ok) {
       // Keep the dosage form the person typed ("... 500/125 tablet"); the model may drop it.
@@ -100,15 +111,16 @@ export async function runAgent(env, input) {
   // Jan Aushadhi generic is not looked up either (the Kendra list is still shown).
   // The database's flag comes from the original pipeline; the key check covers salts added since.
   const ntiMed = !!med.nti || ntiFromKey(med.ckey);
-  const ja = ntiMed
-    ? { available: false, nti: true }
-    : meta.ja_loaded_at
-    ? await step('jan_aushadhi_match', { ckey: med.ckey }, () => janAushadhiMatch(ctx, med.ckey), (r) =>
+  // Narrow-therapeutic-index medicines: the Jan Aushadhi product (same salt, same strength) is
+  // shown as INFORMATION only, marked `nti`: no brand list, no saving, no price in the answer,
+  // and "change only if your doctor agrees".
+  const ja = meta.ja_loaded_at
+    ? await step('jan_aushadhi_match', { ckey: med.ckey, ...(ntiMed ? { info_only: 'narrow-therapeutic-index medicine' } : {}) }, () => janAushadhiMatch(ctx, med.ckey), (r) =>
         r.available ? { drug_code: r.product.drug_code, name: r.product.generic_name, mrp: r.product.mrp, unit_size: r.product.unit_size } : { available: false }
       )
     : { available: false, pending: true };
-  if (ntiMed) trace.push({ tool: 'jan_aushadhi_match', input: { ckey: med.ckey }, output: { skipped: 'narrow-therapeutic-index medicine: no switch suggested' }, ms: 0 });
-  else if (!meta.ja_loaded_at) trace.push({ tool: 'jan_aushadhi_match', input: { ckey: med.ckey }, output: { skipped: 'PMBJP product list not loaded' }, ms: 0 });
+  if (ntiMed) ja.nti = true;
+  if (!meta.ja_loaded_at) trace.push({ tool: 'jan_aushadhi_match', input: { ckey: med.ckey }, output: { skipped: 'PMBJP product list not loaded' }, ms: 0 });
 
   const wantsKendra = pin.length === 6 || (input.lat != null && input.lng != null);
   let kendras = { by: null, items: [], pending: !meta.kendras_loaded_at };
@@ -132,8 +144,9 @@ export async function runAgent(env, input) {
     cheapBrand: cheapest && cheapest.name.toLowerCase() !== med.name.toLowerCase() ? cheapest.name : null,
     cheapUnit: cheapest?.unit_price,
     yourUnit: med.unit_price,
-    jaName: ja.available ? ja.product.generic_name : null,
-    jaUnit: ja.available ? ja.product.unit_price : null,
+    // Never in the answer for an NTI medicine (the answer stops at the doctor warning anyway).
+    jaName: ja.available && !nti ? ja.product.generic_name : null,
+    jaUnit: ja.available && !nti ? ja.product.unit_price : null,
     saving: saving.saving_pack,
     pack: saving.pack,
     form: med.form,
@@ -147,6 +160,10 @@ export async function runAgent(env, input) {
     lang,
     source,
     read,
+    // Anything read from a photo or a scan is shown for the person to confirm before any
+    // alternative or price is shown: a misread must never become a switch suggestion.
+    needs_confirmation: source !== 'text',
+    read_score: readCheck?.score ?? null,
     medicine: { name: med.name, manufacturer: med.manufacturer, composition: describeKey(med.ckey), ckey: med.ckey, price: med.price, pack: med.pack, unit_price: med.unit_price, form: med.form, nti, via: id.via, alternatives: id.alternatives },
     same_salt: nti ? { count: same.count, items: [], cheapest_unit: null } : same,
     jan_aushadhi: ja,
@@ -157,6 +174,34 @@ export async function runAgent(env, input) {
     data: { brand_prices: (await ctx.meds.meta())?.dataset_date || meta.medicines_dataset_date || 'November 2022', brands_loaded: brandsLoaded, ja_list_date: meta.ja_list_date || null, kendra_list_date: meta.kendra_list_date || null },
     trace,
   };
+}
+
+// ── Read confidence ─────────────────────────────────────────────────────────
+// The vision model gives no reliable score of its own, so the score comes from checks a guess
+// cannot pass: salts with strengths were read (50); the brand read matches those salts (+50), or
+// no known brand was read so the salts alone decide (+30); a brand that contradicts the salts adds
+// nothing. If the model itself says the print is not clearly legible, the score is capped at 40.
+export const READ_PASS_MARK = 70;
+
+export function scoreRead(id, query, read) {
+  const salts = parseSaltComposition(query.composition || '');
+  const hasComposition = salts.length > 0 && salts.every(([, strength]) => !!strength);
+  let score = 0;
+  let reason = null;
+  if (!hasComposition) reason = 'no_composition';
+  else {
+    score = 50;
+    if (id.found && id.via === 'brand+composition' && id.composition_agrees === true) score += 50;
+    else if (id.found && id.via === 'composition') score += 30;
+    else reason = 'brand_mismatch'; // a known brand whose salts differ from what was read
+  }
+  const confidence = typeof read?.confidence === 'number' ? read.confidence : null;
+  if (confidence != null && confidence < 0.6) {
+    score = Math.min(score, 40);
+    reason = reason || 'low_confidence';
+  }
+  if (score < READ_PASS_MARK && !reason) reason = 'low_confidence';
+  return { score, reason: score >= READ_PASS_MARK ? null : reason, model_confidence: confidence };
 }
 
 /** Typed text that is really a strip read by the keyboard's camera scan, not a name someone typed. */
@@ -171,9 +216,13 @@ async function readOcrText(ctx, ocr, trace) {
   const query = { brand: '', composition: compositionFromText(ocr), form: /capsule/i.test(ocr) ? 'capsule' : 'tablet' };
   const candidates = brandCandidatesFromText(ocr);
   trace.push({ tool: 'parse_ocr_text', input: { chars: ocr.length }, output: { brand_candidates: candidates.slice(0, 6), composition: query.composition }, ms: 0 });
+  // A word that merely looks like a brand ("APD", "Din A") is never enough: a brand is accepted
+  // only when the salts and strengths read from the SAME text match that brand. Without a
+  // readable composition there is no brand match at all (the person is asked to retake / type).
+  if (!query.composition) return query;
   for (const c of candidates) {
     const r = await identifyMedicine(ctx, { brand: c, composition: query.composition, form: query.form });
-    if (r.found && r.via !== 'composition' && r.composition_agrees !== false) {
+    if (r.found && r.via === 'brand+composition' && r.composition_agrees === true) {
       query.brand = c;
       break;
     }

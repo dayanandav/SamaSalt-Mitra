@@ -35,6 +35,7 @@ export function parseJsonLoose(x) {
 
 export async function readStrip(env, imageDataUrl) {
   const errors = [];
+  let answered = false;
   for (const model of VISION_MODELS) {
     const t0 = Date.now();
     try {
@@ -57,11 +58,15 @@ export async function readStrip(env, imageDataUrl) {
         return { ok: true, model, ms: Date.now() - t0, usage: tokenUsage(out), ...normalizeRead(parsed) };
       }
       errors.push(`${model}: unreadable`);
+      answered = true;
     } catch (e) {
       errors.push(`${model}: ${String(e?.message || e).slice(0, 120)}`);
     }
   }
-  return { ok: false, errors };
+  // `unreadable`: a model looked at the photo and found no medicine text (blurry, cropped, wrong
+  // side). That is a photo problem, not an outage: the app asks for a better photo instead of
+  // falling back to the much weaker on-phone OCR, which is kept for real outages (quota, errors).
+  return { ok: false, unreadable: answered, errors };
 }
 
 /** Token counts Workers AI reports for a call (billing is per token, converted to Neurons). */
@@ -79,6 +84,8 @@ function normalizeRead(p) {
     form: clean(p.form).toLowerCase(),
     release: clean(p.release).toUpperCase(),
     readable: p.readable !== false,
+    // The model's own legibility check (0..1), used by the read-confidence gate in agent.js.
+    confidence: Number.isFinite(+p.confidence) && p.confidence !== '' && p.confidence != null ? Math.max(0, Math.min(1, +p.confidence)) : null,
   };
 }
 

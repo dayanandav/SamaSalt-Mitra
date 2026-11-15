@@ -238,10 +238,14 @@ test('agent: reports whether brand prices are loaded', async () => {
 
 test('safety: anti-epileptic medicines never get a cheaper suggestion, even if the brand data predates the list', async () => {
   const { ntiFromKey, isNti } = await import('../worker/src/normalize.js');
-  for (const k of ['brivaracetam:50mg|tablet', 'levetiracetam:500mg|tablet', 'lamotrigine:100mg|tablet', 'clonazepam:0.5mg+escitalopram:10mg|tablet', 'phenobarbital:30mg|tablet', 'phenobarbitone:30mg|tablet', 'pregabalin:75mg|capsule']) {
+  for (const k of ['brivaracetam:50mg|tablet', 'levetiracetam:500mg|tablet', 'lamotrigine:100mg|tablet', 'clonazepam:0.5mg+escitalopram:10mg|tablet', 'phenobarbital:30mg|tablet', 'phenobarbitone:30mg|tablet']) {
     assert.equal(ntiFromKey(k), true, k);
   }
   assert.equal(ntiFromKey('paracetamol:650mg|tablet'), false);
+  // Mostly nerve-pain medicines: normal results.
+  assert.equal(ntiFromKey('pregabalin:75mg|capsule'), false);
+  assert.equal(ntiFromKey('nortriptyline:10mg+pregabalin:75mg|tablet'), false);
+  assert.equal(ntiFromKey('gabapentin:300mg|capsule'), false);
   assert.equal(isNti([['brivaracetam', '50mg']]), true);
   // A scanned strip with only its composition (brand unknown to the database).
   const r = await runAgent({ DB: db, AI: null }, { text: 'Brivapride 50\nBrivaracetam Tablets 50 mg\nEach film coated tablet contains Brivaracetam 50 mg', lang: 'en' });
@@ -258,4 +262,83 @@ test('identify: a typed generic without its form still finds the Jan Aushadhi ke
   assert.equal(r.found, true);
   assert.equal(r.medicine.ckey, 'zzzolamide:5mg|tablet');
   assert.equal((await janAushadhiMatch(jaOnly, r.medicine.ckey)).available, true);
+});
+
+test('agent: a photo the model could not read is "unreadable" (ask for a better photo), not an outage', async () => {
+  // Both models answer, but find no medicine text: a photo problem.
+  const blurryEnv = { DB: db, AI: { run: async () => ({ response: '{"brand":"","composition":"","form":"","release":"","readable":false}' }) } };
+  const u = await runAgent(blurryEnv, { image: 'data:image/jpeg;base64,AAAA', lang: 'en' });
+  assert.equal(u.status, 'unreadable');
+  assert.match(u.trace[0].output.failed.join(' '), /unreadable/);
+  // One model down, the other answers "unreadable": still a photo problem.
+  let n = 0;
+  const mixedEnv = { DB: db, AI: { run: async () => { if (n++ === 0) throw new Error('capacity'); return { response: '{"readable":false}' }; } } };
+  assert.equal((await runAgent(mixedEnv, { image: 'data:image/jpeg;base64,AAAA', lang: 'en' })).status, 'unreadable');
+});
+
+test('safety: scanned text never matches a brand from a stray word without the printed salts', async () => {
+  // A blurry strip read as junk that contains a brand-like word but no readable composition.
+  const junk = 'DOLO 650 xx ii Batch No 12AB Exp 05 2027 Mfg Lic 4455 store below';
+  const r = await runAgent({ DB: db, AI: { run: async () => { throw new Error('no model for scans'); } } }, { text: junk, lang: 'en' });
+  assert.equal(r.source, 'text-scan');
+  assert.equal(r.status, 'unreadable');
+  assert.equal(r.reason, 'no_composition');
+  assert.ok(!r.trace.some((s) => s.tool === 'understand_text'), 'no model guessing for scanned text');
+  // With the salts printed and agreeing, the brand is accepted.
+  const ok = await runAgent({ DB: db, AI: null }, { text: SCANNED_DOLO, lang: 'en' });
+  assert.equal(ok.medicine.name, 'Dolo 650 Tablet');
+  assert.equal(ok.needs_confirmation, true);
+});
+
+test('safety: when the printed salts disagree with the brand read, nothing is suggested (read check fails)', async () => {
+  // The model reads "Dolo 650" but the strip says Paracetamol 500 mg (e.g. a misread number).
+  const env = { DB: db, AI: { run: async () => ({ response: '{"brand":"Dolo 650","composition":"Paracetamol (500mg)","form":"tablet","release":"","readable":true}' }) } };
+  const r = await runAgent(env, { image: 'data:image/jpeg;base64,AAAA', lang: 'en' });
+  assert.equal(r.status, 'unreadable');
+  assert.equal(r.reason, 'brand_mismatch');
+  assert.equal(r.read_score, 50);
+  assert.equal(r.same_salt, undefined);
+});
+
+test('safety: typed names need no confirmation step; photos and scans do', async () => {
+  assert.equal((await runAgent({ DB: db, AI: null }, { text: 'Dolo 650', lang: 'en' })).needs_confirmation, false);
+});
+
+test('read check: scores and pass mark', async () => {
+  const { scoreRead, READ_PASS_MARK } = await import('../worker/src/agent.js');
+  const comp = { composition: 'Paracetamol (650mg)' };
+  assert.equal(READ_PASS_MARK, 70);
+  assert.deepEqual(scoreRead({ found: true, via: 'brand+composition', composition_agrees: true }, comp, {}), { score: 100, reason: null, model_confidence: null });
+  assert.equal(scoreRead({ found: true, via: 'composition' }, comp, {}).score, 80);
+  assert.equal(scoreRead({ found: true, via: 'brand', composition_agrees: false }, comp, {}).reason, 'brand_mismatch');
+  assert.equal(scoreRead({ found: true, via: 'brand', composition_agrees: null }, { composition: '' }, {}).reason, 'no_composition');
+  assert.equal(scoreRead({ found: true, via: 'composition' }, { composition: 'Paracetamol' }, {}).reason, 'no_composition'); // no strength
+  const blurry = scoreRead({ found: true, via: 'brand+composition', composition_agrees: true }, comp, { confidence: 0.4 });
+  assert.equal(blurry.score, 40);
+  assert.equal(blurry.reason, 'low_confidence');
+});
+
+test('read check: a photo the model calls barely legible is not searched', async () => {
+  const env = { DB: db, AI: { run: async () => ({ response: '{"brand":"Dolo 650","composition":"Paracetamol (650mg)","form":"tablet","readable":true,"confidence":0.35}' }) } };
+  const r = await runAgent(env, { image: 'data:image/jpeg;base64,AAAA', lang: 'en' });
+  assert.equal(r.status, 'unreadable');
+  assert.equal(r.reason, 'low_confidence');
+  const good = { DB: db, AI: { run: async () => ({ response: '{"brand":"Dolo 650","composition":"Paracetamol (650mg)","form":"tablet","readable":true,"confidence":0.95}' }) } };
+  const g = await runAgent(good, { image: 'data:image/jpeg;base64,AAAA', lang: 'en' });
+  assert.equal(g.status, 'ok');
+  assert.equal(g.read_score, 100);
+  assert.equal(g.needs_confirmation, true);
+});
+
+test('safety: for a never-switch medicine the Jan Aushadhi product is information only', async () => {
+  const withJa = fixtureDb({ ja: [{ drug_code: '2295', generic_name: 'Brivaracetam Tablets IP 50mg', unit_size: "10's", mrp: 79.69, ckey: 'brivaracetam:50mg|tablet', units: 10, unit_price: 7.969 }], meta: { ja_loaded_at: 'test', ja_list_date: 'test' } });
+  const r = await runAgent({ DB: withJa, AI: null }, { text: 'Brivapride 50\nBrivaracetam Tablets 50 mg\nEach film coated tablet contains Brivaracetam 50 mg', lang: 'en' });
+  assert.equal(r.medicine.nti, true);
+  assert.equal(r.jan_aushadhi.available, true);
+  assert.equal(r.jan_aushadhi.nti, true);
+  assert.equal(r.jan_aushadhi.product.drug_code, '2295');
+  assert.equal(r.same_salt.items.length, 0); // no brand list
+  assert.equal(r.saving.saving_pack, null); // no saving
+  assert.match(r.answer, /Do not switch/);
+  assert.doesNotMatch(r.answer, /Jan Aushadhi|₹/); // no price in the spoken answer
 });

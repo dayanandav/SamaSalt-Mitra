@@ -46,7 +46,8 @@ export const NTI_STEMS = [
   // The brand database's own NTI flag predates these, so the agent also checks keys at runtime.
   'brivaracetam', 'levetiracetam', 'lamotrigine', 'lacosamide', 'clobazam', 'clonazepam',
   'topiramate', 'oxcarbazepine', 'eslicarbazepine', 'zonisamide', 'perampanel', 'phenobarbit',
-  'primidone', 'ethosuximide', 'vigabatrin', 'rufinamide', 'gabapentin', 'pregabalin',
+  'primidone', 'ethosuximide', 'vigabatrin', 'rufinamide',
+  // Not gabapentin / pregabalin: mostly prescribed for nerve pain; they get normal results (decided 15 Nov 2026).
 ];
 
 /** Is any salt in a canonical key ("brivaracetam:50mg|tablet") on the NTI list? */
