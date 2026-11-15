@@ -32,11 +32,16 @@
       <h1 data-t="tagline">Same medicine. Lower price.</h1>
       <p class="lede" data-t="intro"></p>
 
-      <label class="primary" id="scanBtn">
-        <input id="photo" type="file" accept="image/*" capture="environment" hidden>
+      <button class="primary" id="scanBtn" type="button">
         <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 8.5A2.5 2.5 0 0 1 5.5 6h1.8l1.4-2h6.6l1.4 2h1.8A2.5 2.5 0 0 1 21 8.5v9a2.5 2.5 0 0 1-2.5 2.5h-13A2.5 2.5 0 0 1 3 17.5z"/><circle cx="12" cy="13" r="3.6"/></svg>
         <span data-t="scan">Scan a medicine strip</span>
-      </label>
+      </button>
+      <!-- Fallbacks when the in-app camera is not available: the phone camera app, or the gallery. -->
+      <input id="photo" type="file" accept="image/*" capture="environment" hidden>
+      <input id="gallery" type="file" accept="image/*" hidden>
+      <p class="scan-alt"><button class="link" id="galleryBtn" type="button" data-t="camGallery">Choose from gallery</button><span aria-hidden="true"> · </span><button class="link" id="inAppBtn" type="button" data-t="camUseApp">Use the in-app camera instead</button></p>
+      <p class="cam-note" id="camLost" hidden data-t="camLost"></p>
+      <p class="scan-alt" id="camLostActions" hidden><button class="link" id="camUseApp" type="button" data-t="camUseApp">Use the in-app camera instead</button></p>
       <p class="hint" data-t="scanHint"></p>
 
       <div class="divider"><span data-t="orType">or type the name</span></div>
@@ -57,6 +62,23 @@
       <div class="volunteer-banner" id="volBanner" hidden data-t="volunteerOn"></div>
     </section>
 
+    <!-- In-app camera: the page stays open (Android may close a tab while its separate camera app runs). -->
+    <section id="camera" class="camera" hidden>
+      <p class="crop-title" data-t="camTitle">Point the camera at the medicine name and composition</p>
+      <p class="cam-note" id="camError" hidden data-t="camDenied"></p>
+      <div class="crop-wrap" id="camWrap">
+        <div class="cam-stage" id="camStage">
+          <video id="camVideo" autoplay playsinline muted></video>
+          <div class="cam-guide" aria-hidden="true"></div>
+        </div>
+      </div>
+      <div class="crop-actions">
+        <button class="primary" id="camShoot" type="button" data-t="camShoot">Take photo</button>
+        <button class="secondary" id="camGallery" type="button" data-t="camGallery">Choose from gallery</button>
+        <p class="crop-links"><button class="link" id="camPhone" type="button" data-t="camUsePhone">Use phone camera</button><button class="link" id="camCancel" type="button" data-t="cropCancel">Cancel</button></p>
+      </div>
+    </section>
+
     <!-- After a photo: choose the area with the name and composition; only that area is sent. -->
     <section id="crop" class="crop" hidden>
       <p class="crop-title" data-t="cropTitle">Drag the box over the medicine name and composition</p>
@@ -68,6 +90,8 @@
           </div>
         </div>
       </div>
+      <p class="crop-preview-label" data-t="cropPreview">This is what will be read:</p>
+      <div class="crop-wrap"><canvas id="cropPreview" class="crop-preview"></canvas></div>
       <div class="crop-actions">
         <button class="primary" id="cropUse" type="button" data-t="cropUse">Check this area</button>
         <button class="secondary" id="cropFull" type="button" data-t="cropFull">Use the whole photo</button>

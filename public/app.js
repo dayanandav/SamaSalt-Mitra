@@ -60,7 +60,9 @@ function setLang(code) {
   applyStrings();
   if (last) {
     // Re-ask so the agent's answer is composed in the new language (cheap: no photo is re-sent).
-    if (last.medicine) ask({ text: last.medicine.name, relog: false });
+    // Not yet confirmed: only redraw in the new language (re-asking by name would skip the check).
+    if (last.needs_confirmation && !last.confirmed) render(last);
+    else if (last.medicine) ask({ text: last.medicine.name, relog: false });
   }
 }
 
@@ -91,7 +93,182 @@ const DEFAULT_CROP = { x: 0.08, y: 0.25, w: 0.84, h: 0.5 }; // fractions of the 
 let photo = null; // canvas with the current photo
 const crop = { ...DEFAULT_CROP };
 
-$('#photo').addEventListener('change', async (e) => {
+// ── Camera inside the page ──────────────────────────────────────────────────
+// The phone's separate camera app (<input capture>) makes Android close this tab on many
+// phones to free memory: the page reloads and the photo is lost. The in-app camera keeps the
+// page open; the phone camera and the gallery remain as fallbacks.
+const session = {
+  get(k) { try { return sessionStorage.getItem(k); } catch { return null; } },
+  set(k, v) { try { v == null ? sessionStorage.removeItem(k) : sessionStorage.setItem(k, v); } catch {} },
+};
+const camVideo = $('#camVideo');
+let camStream = null;
+
+function stopCamera() {
+  camStream?.getTracks().forEach((t) => t.stop());
+  camStream = null;
+  camVideo.srcObject = null;
+}
+
+async function openCamera() {
+  $('#camError').hidden = true;
+  $('#camShoot').textContent = t(lang, 'camShoot');
+  show('camera');
+  if (!navigator.mediaDevices?.getUserMedia) return cameraUnavailable();
+  try {
+    camStream = await navigator.mediaDevices.getUserMedia({
+      audio: false,
+      // Continuous autofocus where the phone supports it (unknown options are ignored).
+      video: { facingMode: { ideal: 'environment' }, width: { ideal: 1920 }, height: { ideal: 1080 }, advanced: [{ focusMode: 'continuous' }] },
+    });
+  } catch {
+    return cameraUnavailable();
+  }
+  if ($('#camera').hidden) return stopCamera(); // cancelled while the permission prompt was open
+  camVideo.srcObject = camStream;
+  await camVideo.play().catch(() => {});
+  sizeCamStage();
+}
+
+// No in-app camera (not supported, or permission refused): offer the phone camera and the gallery.
+function cameraUnavailable() {
+  stopCamera();
+  $('#camError').hidden = false;
+  $('#camShoot').textContent = t(lang, 'camUsePhone');
+}
+
+// The phone camera app: Android may close this page (or the whole home-screen app) meanwhile, so
+// remember that we asked, in localStorage: it survives a full restart, sessionStorage does not.
+function phoneCamera() {
+  store.set('ss_cam_at', String(Date.now()));
+  $('#photo').click();
+}
+
+// A still photo is often 4:3 while the preview is 16:9: trim it to exactly what the person saw
+// (so the guide box and the crop box cover the same area). If it is turned differently from the
+// preview, it is not used (null), and the video frame is taken instead.
+function matchPreview(c, vw, vh) {
+  if (!c || !vw || !vh) return c;
+  if ((c.width >= c.height) !== (vw >= vh)) return null;
+  const target = vw / vh;
+  let w = c.width;
+  let h = c.height;
+  if (w / h > target) w = Math.round(h * target);
+  else h = Math.round(w / target);
+  if (w === c.width && h === c.height) return c;
+  const out = document.createElement('canvas');
+  out.width = w;
+  out.height = h;
+  out.getContext('2d').drawImage(c, (c.width - w) / 2, (c.height - h) / 2, w, h, 0, 0, w, h);
+  return out;
+}
+
+function sizeCamStage() {
+  const w0 = camVideo.videoWidth;
+  const h0 = camVideo.videoHeight;
+  if (!w0 || $('#camera').hidden) return;
+  const s = Math.min($('#camWrap').clientWidth / w0, Math.max(240, window.innerHeight * 0.6) / h0);
+  const w = Math.round(w0 * s);
+  const h = Math.round(h0 * s);
+  Object.assign(camVideo.style, { width: `${w}px`, height: `${h}px` });
+  Object.assign($('#camStage').style, { width: `${w}px`, height: `${h}px` });
+}
+camVideo.addEventListener('loadedmetadata', sizeCamStage);
+window.addEventListener('resize', sizeCamStage);
+// The guide box shows the area the crop step starts with.
+Object.assign($('#camStage .cam-guide').style, { left: '8%', top: '25%', width: '84%', height: '50%' });
+
+// The phone's own camera app takes the sharpest photos, so it is the default. Phones that close
+// this page while that camera is open are detected (below) and switched to the in-app camera.
+// Only the person's own choice switches to the in-app camera (a different key from the earlier
+// automatic switch, so phones switched automatically are back on the phone camera).
+store.set('ss_cam_mode', null);
+const camMode = () => store.get('ss_cam_choice') || 'phone';
+$('#scanBtn').onclick = () => (camMode() === 'app' ? openCamera() : phoneCamera());
+$('#galleryBtn').onclick = () => $('#gallery').click();
+// Always available: the in-app camera never leaves the page, so Android cannot lose the photo.
+$('#inAppBtn').onclick = () => $('#camUseApp').click();
+$('#camUseApp').onclick = () => {
+  store.set('ss_cam_choice', 'app'); // the person chose the in-app camera on this phone
+  $('#camLost').hidden = true;
+  $('#camLostActions').hidden = true;
+  openCamera();
+};
+$('#camPhone').onclick = () => {
+  store.set('ss_cam_choice', null); // back to the phone camera on this phone
+  stopCamera();
+  show('home');
+  phoneCamera();
+};
+$('#camShoot').onclick = async () => {
+  if (!camStream) return phoneCamera();
+  const btn = $('#camShoot');
+  if (btn.disabled) return;
+  btn.disabled = true;
+  try {
+    // A real still photo (full resolution, focused) where the browser supports it: small print on
+    // foil is much sharper than in a video frame. Otherwise, the current video frame.
+    let shot = null;
+    const track = camStream.getVideoTracks()[0];
+    if ('ImageCapture' in window && track) {
+      try {
+        const blob = await new ImageCapture(track).takePhoto();
+        shot = matchPreview(await photoCanvas(blob, KEEP_MAX_SIDE), camVideo.videoWidth, camVideo.videoHeight);
+      } catch {
+        shot = null;
+      }
+    }
+    if (!shot) {
+      const w = camVideo.videoWidth;
+      const h = camVideo.videoHeight;
+      if (!w || !h) return;
+      const scale = Math.min(1, KEEP_MAX_SIDE / Math.max(w, h));
+      shot = document.createElement('canvas');
+      shot.width = Math.round(w * scale);
+      shot.height = Math.round(h * scale);
+      shot.getContext('2d').drawImage(camVideo, 0, 0, shot.width, shot.height);
+    }
+    stopCamera();
+    photo = shot;
+    openCrop();
+  } finally {
+    btn.disabled = false;
+  }
+};
+$('#camGallery').onclick = () => {
+  stopCamera();
+  show('home');
+  $('#gallery').click();
+};
+$('#camCancel').onclick = () => {
+  stopCamera();
+  show('home');
+};
+// Leaving the page (switching apps) releases the camera; coming back reopens it.
+document.addEventListener('visibilitychange', () => {
+  if (document.hidden) stopCamera();
+  else if (!$('#camera').hidden && $('#camError').hidden) openCamera();
+});
+
+// The page was reloaded right after opening the phone camera: say so instead of a silent home screen.
+{
+  const at = Number(store.get('ss_cam_at') || 0);
+  store.set('ss_cam_at', null);
+  if (at && Date.now() - at < 10 * 60_000) {
+    // Android closed the browser for lack of memory while its camera app was open (Chrome shows
+    // "Unable to complete previous operation due to low memory"); the photo cannot be recovered.
+    // On THIS phone, Scan now uses the in-app camera (full-resolution still photos, never leaves
+    // the page). "Use phone camera" on the camera screen switches back. Other phones are unaffected.
+    $('#camLost').hidden = false;
+    store.set('ss_cam_choice', 'app');
+  }
+}
+
+for (const id of ['#photo', '#gallery']) $(id).addEventListener('change', (e) => handlePhotoFile(e));
+
+async function handlePhotoFile(e) {
+  store.set('ss_cam_at', null);
+  $('#camLost').hidden = true;
   const file = e.target.files?.[0];
   e.target.value = '';
   if (!file) return;
@@ -104,7 +281,7 @@ $('#photo').addEventListener('change', async (e) => {
     return render(last);
   }
   openCrop();
-});
+}
 
 // createImageBitmap first, then an <img> decode (wider format support on some phones).
 async function decodePhoto(file) {
@@ -165,7 +342,7 @@ function openCrop() {
 function sizeCropStage() {
   if (!photo || $('#crop').hidden) return;
   const availW = $('#cropWrap').clientWidth;
-  const availH = Math.max(240, window.innerHeight * 0.6);
+  const availH = Math.max(220, window.innerHeight * 0.5); // leaves room for the large preview below
   const s = Math.min(availW / photo.width, availH / photo.height);
   const w = Math.round(photo.width * s);
   const h = Math.round(photo.height * s);
@@ -174,7 +351,33 @@ function sizeCropStage() {
 }
 window.addEventListener('resize', sizeCropStage);
 
+// Large, sharp preview of exactly the selected area: on a phone screen the whole photo is too
+// small to read, so the person checks here that the name and strength are complete and clear.
+const cropPreview = $('#cropPreview');
+let previewQueued = false;
+function drawCropPreview() {
+  if (previewQueued) return;
+  previewQueued = true;
+  requestAnimationFrame(() => {
+    previewQueued = false;
+    if (!photo || $('#crop').hidden) return;
+    const sx = crop.x * photo.width;
+    const sy = crop.y * photo.height;
+    const sw = Math.max(1, crop.w * photo.width);
+    const sh = Math.max(1, crop.h * photo.height);
+    const s = Math.min($('#cropWrap').clientWidth / sw, Math.max(140, window.innerHeight * 0.28) / sh);
+    const w = Math.round(sw * s);
+    const h = Math.round(sh * s);
+    const dpr = window.devicePixelRatio || 1;
+    cropPreview.width = Math.round(w * dpr);
+    cropPreview.height = Math.round(h * dpr);
+    Object.assign(cropPreview.style, { width: `${w}px`, height: `${h}px` });
+    cropPreview.getContext('2d').drawImage(photo, sx, sy, sw, sh, 0, 0, cropPreview.width, cropPreview.height);
+  });
+}
+
 function layoutCropBox() {
+  drawCropPreview();
   Object.assign(cropBox.style, { left: `${crop.x * 100}%`, top: `${crop.y * 100}%`, width: `${crop.w * 100}%`, height: `${crop.h * 100}%` });
 }
 
@@ -209,12 +412,13 @@ for (const ev of ['pointerup', 'pointercancel']) cropBox.addEventListener(ev, ()
 
 $('#cropUse').onclick = () => ask({ image: jpegOf(photo, crop, SEND_MAX_SIDE, 0.85) });
 $('#cropFull').onclick = () => ask({ image: jpegOf(photo, { x: 0, y: 0, w: 1, h: 1 }, SEND_MAX_SIDE, 0.85) });
-$('#cropRetake').onclick = () => $('#photo').click();
+$('#cropRetake').onclick = () => $('#scanBtn').click();
 $('#cropCancel').onclick = () => { photo = null; show('home'); };
 
 // ── Agent call ─────────────────────────────────────────────────────────────
 function show(section) {
-  for (const id of ['home', 'crop', 'busy', 'result']) $('#' + id).hidden = id !== section;
+  if (section !== 'camera') stopCamera();
+  for (const id of ['home', 'camera', 'crop', 'busy', 'result']) $('#' + id).hidden = id !== section;
   window.scrollTo({ top: 0, behavior: 'instant' in window ? 'instant' : 'auto' });
 }
 
@@ -244,32 +448,14 @@ async function ask({ text, image, ocr, relog = true }) {
     if (r.status !== 'error' && !r.error) break;
     await new Promise((ok) => setTimeout(ok, 2000)); // one quiet retry on a network/server hiccup
   }
-  if (r.status === 'vision_unavailable' && image) {
-    // Free vision quota used up or model down: read the photo on the phone instead.
-    $('#busyText').textContent = t(lang, 'visionFallback');
-    const text = await localOcr(image).catch(() => '');
-    if (text.trim()) return ask({ ocr: text });
-    r = { status: 'unreadable' };
-  }
+  // Photo reading is down (quota used up or model error). The on-phone OCR fallback was removed:
+  // on real strips it read junk and matched wrong medicines. Ask for typing / keyboard scan.
+  if (r.status === 'vision_unavailable') r = { status: 'vision_down' };
   if (!relog && last?.lookup_id) r.lookup_id = last.lookup_id; // keep feedback tied to the original lookup
   last = r;
   render(r);
 }
 
-let tesseract = null;
-async function localOcr(dataUrl) {
-  if (!tesseract) {
-    await new Promise((res, rej) => {
-      const s = document.createElement('script');
-      s.src = 'https://cdn.jsdelivr.net/npm/tesseract.js@5.1.1/dist/tesseract.min.js';
-      s.onload = res; s.onerror = rej;
-      document.head.appendChild(s);
-    });
-    tesseract = window.Tesseract;
-  }
-  const out = await tesseract.recognize(dataUrl, 'eng');
-  return out?.data?.text || '';
-}
 
 // ── Rendering ──────────────────────────────────────────────────────────────
 function fmtDate(iso) {
@@ -281,21 +467,59 @@ const speakerIcon = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none"
 const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 const warnIcon = '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 9v4M12 17h.01"/><path d="M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z"/></svg>';
 
+// "Is this the medicine on your strip?" A misread photo must never turn into a switch suggestion,
+// so nothing about prices or other brands is shown until the person says yes.
+function renderConfirm(r) {
+  const m = r.medicine;
+  const readText = [r.read?.brand, r.read?.composition].filter(Boolean).join(' · ');
+  $('#result').innerHTML = `
+    <div class="card">
+      <p class="eyebrow">${esc(t(lang, 'confirmTitle'))}</p>
+      <p class="med-name">${esc(m.name)}</p>
+      <p class="med-comp">${esc(m.composition)}</p>
+      ${readText ? `<p class="med-meta">${esc(t(lang, 'readOnStrip', { text: readText }))}</p>` : ''}
+      <p class="muted" style="margin:12px 0 0;font-size:15px">${esc(t(lang, 'confirmHint'))}</p>
+      ${devMode && r.read_score != null ? `<p class="source">developer: read score=${r.read_score}/100 (pass 70)</p>` : ''}
+    </div>
+    <div class="crop-actions">
+      <button class="primary" id="confYes" type="button">${esc(t(lang, 'confirmYes'))}</button>
+      <button class="secondary" id="confRetake" type="button">${esc(t(lang, 'confirmNo'))}</button>
+      <p class="crop-links"><button class="link" id="confType" type="button">${esc(t(lang, 'confirmType'))}</button></p>
+    </div>`;
+  const wrong = () => {
+    // Counted (anonymously) so misreads can be measured; the lookup is not used as a saving.
+    if (r.lookup_id) fetch('/api/feedback', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ id: r.lookup_id, switched: 'wrong' }) }).catch(() => {});
+  };
+  $('#confYes').onclick = () => { r.confirmed = true; render(r); };
+  $('#confRetake').onclick = () => { wrong(); $('#scanBtn').click(); };
+  $('#confType').onclick = () => { wrong(); show('home'); $('#nameInput').focus(); };
+  show('result');
+}
+
 function render(r) {
   const out = $('#result');
   applyStrings();
   if (r.status !== 'ok') {
     // Say what actually went wrong: not in the database, photo unreadable, or the check failed.
-    const why = r.status === 'not_found' ? 'notFound' : r.status === 'unreadable' ? 'photoUnreadable' : 'checkFailed';
+    const why = r.status === 'not_found' ? 'notFound' : r.status === 'unreadable' ? 'photoUnreadable' : r.status === 'vision_down' ? 'visionDown' : 'checkFailed';
+    // Read check failed: say why, show what was read, and offer a retake or typing.
+    const whyRead = { no_composition: 'readNoComposition', brand_mismatch: 'readMismatch', low_confidence: 'readBlurry' }[r.reason];
+    const readText = [r.read?.brand, r.read?.composition].filter(Boolean).join(' · ');
     out.innerHTML = `
       <div class="card"><p class="med-name" style="font-size:22px;line-height:1.35">${esc(t(lang, why))}</p>
-      ${r.read?.brand || r.read?.composition ? `<p class="med-meta">${esc([r.read.brand, r.read.composition].filter(Boolean).join(' · '))}</p>` : ''}
-      ${devMode ? `<p class="source">developer: status=${esc(r.status || '-')}${r.error ? ` · error=${esc(r.error)}` : ''}${r.detail ? ` · ${esc(r.detail)}` : ''}${r.trace?.length ? ` · steps=${esc(r.trace.map((s) => s.tool + (s.error ? '!' : '') + (s.output?.failed ? `(${[].concat(s.output.failed).join('; ')})` : '')).join(' > '))}` : ''}</p>` : ''}</div>
+      ${r.status === 'unreadable' && whyRead ? `<p class="read-why">${esc(t(lang, whyRead))}</p>` : ''}
+      ${readText ? `<p class="med-meta">${esc(t(lang, 'readOnStrip', { text: readText }))}</p>` : ''}
+      ${r.status === 'unreadable' ? `<div class="crop-actions" style="margin-top:14px"><button class="primary" id="retakeBtn" type="button">${esc(t(lang, 'retakePhoto'))}</button><button class="secondary" id="typeBtn" type="button">${esc(t(lang, 'confirmType'))}</button></div>` : ''}
+      ${devMode ? `<p class="source">developer: status=${esc(r.status || '-')}${r.read_score != null ? ` · read score=${r.read_score}/100 (pass 70)${r.reason ? ` · ${esc(r.reason)}` : ''}` : ''}${r.error ? ` · error=${esc(r.error)}` : ''}${r.detail ? ` · ${esc(r.detail)}` : ''}${r.trace?.length ? ` · steps=${esc(r.trace.map((s) => s.tool + (s.error ? '!' : '') + (s.output?.failed ? `(${[].concat(s.output.failed).join('; ')})` : '')).join(' > '))}` : ''}</p>` : ''}</div>
       <button class="secondary" id="againBtn">${esc(t(lang, 'another'))}</button>`;
     $('#againBtn').onclick = () => { show('home'); $('#nameInput').focus(); };
+    if ($('#retakeBtn')) $('#retakeBtn').onclick = () => $('#scanBtn').click();
+    if ($('#typeBtn')) $('#typeBtn').onclick = () => { show('home'); $('#nameInput').focus(); };
     show('result');
     return;
   }
+  // Read from a photo or scan: the person confirms the medicine before any price or alternative.
+  if (r.needs_confirmation && !r.confirmed) return renderConfirm(r);
   const m = r.medicine;
   const unit = unitKind(m.form);
   const per = t(lang, 'perUnit')[unit];
@@ -318,6 +542,7 @@ function render(r) {
       <p class="ja-name">${esc(ja.product.generic_name)}</p>
       <p class="ja-price">${rupees(ja.product.mrp)}<small>${esc(ja.product.unit_size || '')}</small></p>
       <p class="med-meta">${esc(t(lang, 'jaMrp'))}${ja.product.unit_price ? ` · ${rupees(ja.product.unit_price)} ${esc(per)}` : ''} · PMBJP ${esc(ja.product.drug_code)}</p>
+      ${ja.nti ? `<div class="safety nti" style="margin-top:10px">${warnIcon}<div>${esc(t(lang, 'jaNtiInfo'))}</div></div>` : ''}
       ${jaDate ? `<p class="source">${esc(t(lang, 'jaSource', { date: fmtDate(jaDate) }))}</p>` : ''}`
     : `<p class="muted" style="margin:0">${esc(t(lang, ja.nti ? 'jaNti' : ja.pending ? 'jaPending' : 'jaNone'))}</p>`;
 

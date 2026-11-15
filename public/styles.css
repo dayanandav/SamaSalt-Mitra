@@ -165,7 +165,17 @@ input[type='text']::placeholder { color: var(--faint); }
    then fade in once: a refresh never shows empty or wrong-language text that then jumps. */
 html[data-boot] #app, html[data-boot] .foot, html[data-boot] #langs { visibility: hidden; }
 html[data-boot] .home { animation: none; }
-.home, .busy, .crop { animation: fade .35s var(--ease) both; }
+.home, .busy, .crop, .camera { animation: fade .35s var(--ease) both; }
+
+/* In-app camera: live view with a guide box for the name and composition. */
+.cam-stage { position: relative; overflow: hidden; border-radius: 16px; background: #000; min-height: 200px; min-width: 200px; }
+.cam-stage video { display: block; width: 100%; height: auto; object-fit: cover; }
+.cam-guide { position: absolute; border: 2px dashed rgba(255, 255, 255, 0.9); border-radius: 10px; box-shadow: 0 0 0 9999px rgba(0, 0, 0, 0.35); pointer-events: none; }
+.cam-note { background: var(--warn-soft); color: var(--warn); border-radius: 12px; padding: 10px 14px; font-size: 14px; line-height: 1.45; letter-spacing: 0; margin: 0 0 12px; }
+.cam-note[hidden] { display: none; }
+#camLost { margin-top: 12px; }
+.scan-alt { text-align: center; margin: 4px 0 0; }
+.read-why { margin: 10px 0 0; font-size: 15px; line-height: 1.45; letter-spacing: 0; color: var(--muted); }
 
 /* Crop step after a photo: a box over the name and composition; only that area is sent. */
 .crop-title { font-size: 19px; font-weight: 600; letter-spacing: -0.02em; margin: 8px 0 14px; line-height: 1.35; }
@@ -184,6 +194,8 @@ html[data-boot] .home { animation: none; }
 .crop-box .h[data-h='bl']::after { left: 16px; bottom: 16px; border-left-width: 4px; border-bottom-width: 4px; border-bottom-left-radius: 6px; }
 .crop-box .h[data-h='br']::after { right: 16px; bottom: 16px; border-right-width: 4px; border-bottom-width: 4px; border-bottom-right-radius: 6px; }
 .crop-actions { display: grid; gap: 10px; margin-top: 16px; }
+.crop-preview-label { margin: 14px 0 6px; font-size: 14px; font-weight: 600; color: var(--muted); letter-spacing: 0; }
+.crop-preview { display: block; border-radius: 12px; border: 2px solid var(--accent); background: #fff; max-width: 100%; }
 .crop-links { display: flex; justify-content: center; gap: 24px; margin: 0; }
 @keyframes fade { from { opacity: 0; } to { opacity: 1; } }
 
