@@ -12,8 +12,11 @@
   <link rel="manifest" href="/manifest.webmanifest">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Noto+Sans+Kannada:wght@400;500;600;700&family=Noto+Sans+Devanagari:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Noto+Sans+Kannada:wght@400;500;600;700&family=Noto+Sans+Devanagari:wght@400;500;600;700&display=optional" rel="stylesheet">
   <link rel="stylesheet" href="/styles.css">
+  <!-- Hold the page until app.js has put in the text for the chosen language, so a refresh
+       doesn't paint empty or English text first and then jump. Shown anyway after 1.5 s. -->
+  <script>document.documentElement.setAttribute('data-boot', '');setTimeout(function(){document.documentElement.removeAttribute('data-boot')},1500);</script>
 </head>
 <body>
   <header class="top">
@@ -37,10 +40,11 @@
       <p class="hint" data-t="scanHint"></p>
 
       <div class="divider"><span data-t="orType">or type the name</span></div>
+      <p class="field-note scan-text-tip" data-t="scanTextTip"></p>
 
       <form id="typeForm" class="group" autocomplete="off">
         <div class="field">
-          <input id="nameInput" name="q" type="text" inputmode="text" enterkeyhint="search" data-tp="placeholder" aria-label="Medicine name" maxlength="120">
+          <input id="nameInput" name="q" type="text" inputmode="text" enterkeyhint="search" data-tp="placeholder" aria-label="Medicine name" maxlength="2000">
           <button type="submit" class="secondary" data-t="check">Check</button>
         </div>
         <div class="field">
@@ -51,6 +55,27 @@
       <p class="field-note" data-t="pinHint"></p>
 
       <div class="volunteer-banner" id="volBanner" hidden data-t="volunteerOn"></div>
+    </section>
+
+    <!-- After a photo: choose the area with the name and composition; only that area is sent. -->
+    <section id="crop" class="crop" hidden>
+      <p class="crop-title" data-t="cropTitle">Drag the box over the medicine name and composition</p>
+      <div class="crop-wrap" id="cropWrap">
+        <div class="crop-stage" id="cropStage">
+          <div class="crop-box" id="cropBox">
+            <span class="h" data-h="tl"></span><span class="h" data-h="tr"></span>
+            <span class="h" data-h="bl"></span><span class="h" data-h="br"></span>
+          </div>
+        </div>
+      </div>
+      <div class="crop-actions">
+        <button class="primary" id="cropUse" type="button" data-t="cropUse">Check this area</button>
+        <button class="secondary" id="cropFull" type="button" data-t="cropFull">Use the whole photo</button>
+        <p class="crop-links">
+          <button class="link" id="cropRetake" type="button" data-t="cropRetake">Retake</button>
+          <button class="link" id="cropCancel" type="button" data-t="cropCancel">Cancel</button>
+        </p>
+      </div>
     </section>
 
     <section id="busy" class="busy" hidden aria-live="polite">

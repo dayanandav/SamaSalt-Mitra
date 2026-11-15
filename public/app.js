@@ -81,30 +81,140 @@ $('#typeForm').addEventListener('submit', (e) => {
   if (q) ask({ text: q });
 });
 
+// ── Photo: take it, choose the area with the name and composition, send only that ──
+// Phone photos are 3-12 MB; the server takes up to ~1.8 MB, so nothing is sent full size.
+// The photo is kept at up to 2000 px for cropping (small print stays sharp), and the chosen
+// area is sent at up to 1280 px.
+const SEND_MAX_SIDE = 1280;
+const KEEP_MAX_SIDE = 2000;
+const DEFAULT_CROP = { x: 0.08, y: 0.25, w: 0.84, h: 0.5 }; // fractions of the photo
+let photo = null; // canvas with the current photo
+const crop = { ...DEFAULT_CROP };
+
 $('#photo').addEventListener('change', async (e) => {
   const file = e.target.files?.[0];
   e.target.value = '';
   if (!file) return;
-  const dataUrl = await downscale(file, 1280, 0.85);
-  ask({ image: dataUrl });
+  photo = await photoCanvas(file, KEEP_MAX_SIDE).catch(() => null);
+  if (!photo) {
+    // This phone could not decode the photo: send it as-is only if it is small enough.
+    const raw = file.size <= 1_800_000 ? await readAsDataUrl(file) : null;
+    if (raw) return ask({ image: raw });
+    last = { status: 'unreadable' };
+    return render(last);
+  }
+  openCrop();
 });
 
-async function downscale(file, maxSide, quality) {
+// createImageBitmap first, then an <img> decode (wider format support on some phones).
+async function decodePhoto(file) {
   const bmp = await createImageBitmap(file).catch(() => null);
-  if (!bmp) {
-    return await new Promise((res) => { const r = new FileReader(); r.onload = () => res(r.result); r.readAsDataURL(file); });
-  }
-  const scale = Math.min(1, maxSide / Math.max(bmp.width, bmp.height));
-  const c = document.createElement('canvas');
-  c.width = Math.round(bmp.width * scale);
-  c.height = Math.round(bmp.height * scale);
-  c.getContext('2d').drawImage(bmp, 0, 0, c.width, c.height);
-  return c.toDataURL('image/jpeg', quality);
+  if (bmp) return bmp;
+  return await new Promise((res) => {
+    const url = URL.createObjectURL(file);
+    const img = new Image();
+    img.onload = () => { URL.revokeObjectURL(url); res(img); };
+    img.onerror = () => { URL.revokeObjectURL(url); res(null); };
+    img.src = url;
+  });
 }
+
+async function photoCanvas(file, maxSide) {
+  const src = await decodePhoto(file);
+  if (!src || !src.width) return null;
+  const scale = Math.min(1, maxSide / Math.max(src.width, src.height));
+  const c = document.createElement('canvas');
+  c.width = Math.round(src.width * scale);
+  c.height = Math.round(src.height * scale);
+  c.getContext('2d').drawImage(src, 0, 0, c.width, c.height);
+  return c;
+}
+
+function readAsDataUrl(file) {
+  return new Promise((res) => { const r = new FileReader(); r.onload = () => res(r.result); r.onerror = () => res(null); r.readAsDataURL(file); });
+}
+
+/** JPEG of an area of the photo (rect in fractions), at most maxSide pixels on its long side. */
+function jpegOf(canvas, rect, maxSide, quality) {
+  const sx = Math.round(rect.x * canvas.width);
+  const sy = Math.round(rect.y * canvas.height);
+  const sw = Math.max(1, Math.round(rect.w * canvas.width));
+  const sh = Math.max(1, Math.round(rect.h * canvas.height));
+  const scale = Math.min(1, maxSide / Math.max(sw, sh));
+  const out = document.createElement('canvas');
+  out.width = Math.max(1, Math.round(sw * scale));
+  out.height = Math.max(1, Math.round(sh * scale));
+  out.getContext('2d').drawImage(canvas, sx, sy, sw, sh, 0, 0, out.width, out.height);
+  return out.toDataURL('image/jpeg', quality);
+}
+
+const cropStage = $('#cropStage');
+const cropBox = $('#cropBox');
+const clamp = (v, lo, hi) => Math.min(hi, Math.max(lo, v));
+
+function openCrop() {
+  cropStage.querySelector('canvas')?.remove();
+  cropStage.prepend(photo);
+  Object.assign(crop, DEFAULT_CROP);
+  show('crop');
+  sizeCropStage();
+  layoutCropBox();
+}
+
+// Fit the photo on screen: full width, and no taller than ~60% of the screen.
+function sizeCropStage() {
+  if (!photo || $('#crop').hidden) return;
+  const availW = $('#cropWrap').clientWidth;
+  const availH = Math.max(240, window.innerHeight * 0.6);
+  const s = Math.min(availW / photo.width, availH / photo.height);
+  const w = Math.round(photo.width * s);
+  const h = Math.round(photo.height * s);
+  Object.assign(photo.style, { width: `${w}px`, height: `${h}px` });
+  Object.assign(cropStage.style, { width: `${w}px`, height: `${h}px` });
+}
+window.addEventListener('resize', sizeCropStage);
+
+function layoutCropBox() {
+  Object.assign(cropBox.style, { left: `${crop.x * 100}%`, top: `${crop.y * 100}%`, width: `${crop.w * 100}%`, height: `${crop.h * 100}%` });
+}
+
+// Drag inside the box to move it; drag a corner to resize it.
+let cropDrag = null;
+cropBox.addEventListener('pointerdown', (e) => {
+  const r = cropStage.getBoundingClientRect();
+  cropDrag = { mode: e.target.dataset.h || 'move', x0: e.clientX, y0: e.clientY, start: { ...crop }, W: r.width, H: r.height };
+  cropBox.setPointerCapture(e.pointerId);
+  e.preventDefault();
+});
+cropBox.addEventListener('pointermove', (e) => {
+  if (!cropDrag) return;
+  const { mode, start: s, W, H } = cropDrag;
+  const dx = (e.clientX - cropDrag.x0) / W;
+  const dy = (e.clientY - cropDrag.y0) / H;
+  const MIN = 0.08;
+  let { x, y, w, h } = s;
+  if (mode === 'move') {
+    x = clamp(s.x + dx, 0, 1 - s.w);
+    y = clamp(s.y + dy, 0, 1 - s.h);
+  } else {
+    if (mode.includes('l')) { x = clamp(s.x + dx, 0, s.x + s.w - MIN); w = s.x + s.w - x; }
+    if (mode.includes('r')) w = clamp(s.w + dx, MIN, 1 - s.x);
+    if (mode.includes('t')) { y = clamp(s.y + dy, 0, s.y + s.h - MIN); h = s.y + s.h - y; }
+    if (mode.includes('b')) h = clamp(s.h + dy, MIN, 1 - s.y);
+  }
+  Object.assign(crop, { x, y, w, h });
+  layoutCropBox();
+});
+for (const ev of ['pointerup', 'pointercancel']) cropBox.addEventListener(ev, () => { cropDrag = null; });
+
+$('#cropUse').onclick = () => ask({ image: jpegOf(photo, crop, SEND_MAX_SIDE, 0.85) });
+$('#cropFull').onclick = () => ask({ image: jpegOf(photo, { x: 0, y: 0, w: 1, h: 1 }, SEND_MAX_SIDE, 0.85) });
+$('#cropRetake').onclick = () => $('#photo').click();
+$('#cropCancel').onclick = () => { photo = null; show('home'); };
 
 // ── Agent call ─────────────────────────────────────────────────────────────
 function show(section) {
-  for (const id of ['home', 'busy', 'result']) $('#' + id).hidden = id !== section;
+  for (const id of ['home', 'crop', 'busy', 'result']) $('#' + id).hidden = id !== section;
   window.scrollTo({ top: 0, behavior: 'instant' in window ? 'instant' : 'auto' });
 }
 
@@ -138,8 +248,8 @@ async function ask({ text, image, ocr, relog = true }) {
     // Free vision quota used up or model down: read the photo on the phone instead.
     $('#busyText').textContent = t(lang, 'visionFallback');
     const text = await localOcr(image).catch(() => '');
-    if (text) return ask({ ocr: text });
-    r = { status: 'not_found' };
+    if (text.trim()) return ask({ ocr: text });
+    r = { status: 'unreadable' };
   }
   if (!relog && last?.lookup_id) r.lookup_id = last.lookup_id; // keep feedback tied to the original lookup
   last = r;
@@ -175,9 +285,12 @@ function render(r) {
   const out = $('#result');
   applyStrings();
   if (r.status !== 'ok') {
+    // Say what actually went wrong: not in the database, photo unreadable, or the check failed.
+    const why = r.status === 'not_found' ? 'notFound' : r.status === 'unreadable' ? 'photoUnreadable' : 'checkFailed';
     out.innerHTML = `
-      <div class="card"><p class="med-name" style="font-size:22px;line-height:1.35">${esc(t(lang, 'notFound'))}</p>
-      ${r.read?.brand || r.read?.composition ? `<p class="med-meta">${esc([r.read.brand, r.read.composition].filter(Boolean).join(' · '))}</p>` : ''}</div>
+      <div class="card"><p class="med-name" style="font-size:22px;line-height:1.35">${esc(t(lang, why))}</p>
+      ${r.read?.brand || r.read?.composition ? `<p class="med-meta">${esc([r.read.brand, r.read.composition].filter(Boolean).join(' · '))}</p>` : ''}
+      ${devMode ? `<p class="source">developer: status=${esc(r.status || '-')}${r.error ? ` · error=${esc(r.error)}` : ''}${r.detail ? ` · ${esc(r.detail)}` : ''}${r.trace?.length ? ` · steps=${esc(r.trace.map((s) => s.tool + (s.error ? '!' : '') + (s.output?.failed ? `(${[].concat(s.output.failed).join('; ')})` : '')).join(' > '))}` : ''}</p>` : ''}</div>
       <button class="secondary" id="againBtn">${esc(t(lang, 'another'))}</button>`;
     $('#againBtn').onclick = () => { show('home'); $('#nameInput').focus(); };
     show('result');
@@ -223,6 +336,11 @@ function render(r) {
       ${kDate ? `<p class="source">${esc(t(lang, 'kendraSource', { date: fmtDate(kDate) }))}</p>` : ''}`
     : `<p class="muted" style="margin:0">${esc(t(lang, k.pending ? 'kendraPending' : pinInput.value.length === 6 ? 'kendraNone' : 'kendraNeedPin'))}</p>`;
 
+  // The brand name as read from the strip, when the match was made by composition alone.
+  const readName = (r.read?.brand || '').trim();
+  // "Did you buy a cheaper option?" only makes sense when a cheaper option was shown.
+  const hasOption = !m.nti && ((s.saving_pack > 0) || ja.available || items.some((x) => x.name.toLowerCase() !== m.name.toLowerCase() && (m.unit_price == null || x.unit_price < m.unit_price)));
+
   const steps = (r.trace || []).map((st) => `<li><code>${esc(st.tool)}</code> ${esc(summarizeStep(st))} <span class="muted">· ${st.ms} ms</span></li>`).join('');
 
   out.innerHTML = `
@@ -230,6 +348,7 @@ function render(r) {
       <p class="eyebrow">${esc(t(lang, 'youHave'))}</p>
       <p class="med-name">${esc(m.name)}</p>
       <p class="med-comp">${esc(m.name === m.composition.split(' · ')[0] ? m.composition.split(' · ').slice(1).join(' · ') : m.composition)}</p>
+      ${readName && readName.toLowerCase().replace(/[^a-z0-9]/g, '') !== m.name.toLowerCase().replace(/[^a-z0-9]/g, '') ? `<p class="med-meta">${esc(t(lang, 'readOnStrip', { text: readName }))}</p>` : ''}
       ${m.price ? `<p class="med-meta">${esc(t(lang, 'packOf', { n: Math.round(m.pack), price: rupees(m.price) }))} · ${rupees(m.unit_price)} ${esc(per)}${m.manufacturer ? ` · ${esc(m.manufacturer)}` : ''}</p>` : ''}
     </div>
 
@@ -240,10 +359,10 @@ function render(r) {
     <div class="answer" lang="${lang}"><div id="answerText">${esc(r.answer)}</div>
       <div class="row"><button class="pill" id="listenBtn" hidden>${speakerIcon}${esc(t(lang, 'listen'))}</button></div></div>
 
-    ${!m.nti && r.same_salt.count ? `<div class="card">
+    ${!m.nti ? `<div class="card">
       <p class="eyebrow">${esc(t(lang, 'sameSaltTitle'))}</p>
-      <p class="count">${esc(t(lang, 'brandsCount', { n: r.same_salt.count.toLocaleString('en-IN') }))}</p>
-      <ul class="list">${listHtml}${yoursRow}</ul>
+      ${r.same_salt.count ? `<p class="count">${esc(t(lang, 'brandsCount', { n: r.same_salt.count.toLocaleString('en-IN') }))}</p>
+      <ul class="list">${listHtml}${yoursRow}</ul>` : `<p class="muted" style="margin:0">${esc(t(lang, r.data?.brands_loaded === false ? 'brandsPending' : 'sameSaltNone'))}</p>`}
     </div>` : ''}
 
     <div class="card">
@@ -262,14 +381,14 @@ function render(r) {
       <button class="primary" id="phBtn">${esc(t(lang, 'pharmacistBtn'))}</button>
     </div>
 
-    <div class="card feedback" id="fb">
+    ${hasOption ? `<div class="card feedback" id="fb">
       <p>${esc(t(lang, 'switchQ'))}</p>
       <div class="chips">
         <button class="chip" data-v="yes">${esc(t(lang, 'switchYes'))}</button>
         <button class="chip" data-v="ask">${esc(t(lang, 'switchAsk'))}</button>
         <button class="chip" data-v="no">${esc(t(lang, 'switchNo'))}</button>
       </div>
-    </div>
+    </div>` : ''}
 
     <details class="steps"><summary>${esc(t(lang, 'stepsTitle'))}</summary><ol>${steps}</ol></details>
 
@@ -304,7 +423,7 @@ function summarizeStep(st) {
     case 'find_same_salt': return `${o.count} brands with key ${st.input?.ckey}`;
     case 'jan_aushadhi_match': return o.skipped ? o.skipped : o.available === false ? 'no PMBJP product with this key' : `${o.name} · ₹${o.mrp}`;
     case 'nearest_kendra': return o.skipped ? o.skipped : `${o.found} found (${o.by})`;
-    case 'parse_ocr_text': return `on-device OCR → ${(o.brand_candidates || []).slice(0, 3).join(', ')}`;
+    case 'parse_ocr_text': return `text read on the phone → ${(o.brand_candidates || []).slice(0, 3).join(', ')}${o.composition ? ` · ${o.composition}` : ''}`;
     case 'compose_answer': return `${lang}`;
     default: return '';
   }
@@ -330,3 +449,5 @@ function setupListen(text) {
 
 renderLangs();
 applyStrings();
+// Everything is in place: show the page (index.html holds it hidden until now).
+document.documentElement.removeAttribute('data-boot');
