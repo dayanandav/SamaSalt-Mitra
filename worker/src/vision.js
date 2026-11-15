@@ -54,7 +54,7 @@ export async function readStrip(env, imageDataUrl) {
       });
       const parsed = parseJsonLoose(out?.response ?? out?.result?.response ?? out);
       if (parsed && (parsed.brand || parsed.composition)) {
-        return { ok: true, model, ms: Date.now() - t0, ...normalizeRead(parsed) };
+        return { ok: true, model, ms: Date.now() - t0, usage: tokenUsage(out), ...normalizeRead(parsed) };
       }
       errors.push(`${model}: unreadable`);
     } catch (e) {
@@ -62,6 +62,13 @@ export async function readStrip(env, imageDataUrl) {
     }
   }
   return { ok: false, errors };
+}
+
+/** Token counts Workers AI reports for a call (billing is per token, converted to Neurons). */
+export function tokenUsage(out) {
+  const u = out?.usage;
+  if (!u) return null;
+  return { input_tokens: u.prompt_tokens ?? null, output_tokens: u.completion_tokens ?? null };
 }
 
 function normalizeRead(p) {
@@ -91,7 +98,7 @@ export async function understandText(env, text) {
       temperature: 0,
     });
     const p = parseJsonLoose(out?.response ?? out);
-    if (p && (p.brand || p.composition)) return { ok: true, model: TEXT_MODEL, ms: Date.now() - t0, brand: String(p.brand || ''), composition: String(p.composition || '') };
+    if (p && (p.brand || p.composition)) return { ok: true, model: TEXT_MODEL, ms: Date.now() - t0, usage: tokenUsage(out), brand: String(p.brand || ''), composition: String(p.composition || '') };
   } catch (e) {
     return { ok: false, error: String(e?.message || e).slice(0, 120) };
   }

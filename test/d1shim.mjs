@@ -5,7 +5,8 @@ import { readFileSync } from 'node:fs';
 export function d1(db) {
   return {
     prepare(sql) {
-      const stmt = db.prepare(sql.replace(/\?(\d+)/g, '?'));
+      // SQLite understands D1's numbered parameters (?1, ?2, and ?1 used twice) natively.
+      const stmt = db.prepare(sql);
       let args = [];
       const api = {
         bind(...a) { args = a; return api; },

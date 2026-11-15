@@ -1,6 +1,16 @@
 // The agent's tools. Each takes a D1-compatible `db` (prepare().bind().all()/first())
 // and returns plain JSON, so they are unit-testable with node:sqlite (see test/).
 import { keyFor, buildCanonicalKey, parseSaltComposition, extractDosageForm, extractReleaseType, describeKey, isNti } from './normalize.js';
+import { d1Meds } from './medstore.js';
+
+// Tools take a plain D1 `db` (tests) or { db, meds } (the Worker, where brand medicines are
+// read from static files: see medstore.js). Jan Aushadhi and Kendras are always in D1.
+const ctxCache = new WeakMap();
+export function ctxOf(x) {
+  if (x && x.meds && x.db) return x;
+  if (!ctxCache.has(x)) ctxCache.set(x, { db: x, meds: d1Meds(x) });
+  return ctxCache.get(x);
+}
 
 const STOP = new Set(['tablet', 'tablets', 'tab', 'tabs', 'capsule', 'capsules', 'cap', 'caps', 'strip', 'ip', 'bp', 'usp', 'mg', 'the', 'of', 'and', 'each', 'film', 'coated', 'uncoated', 'contains']);
 
@@ -61,7 +71,8 @@ export function cleanComposition(text) {
 }
 
 /** The canonical key for a printed composition, preferring a variant that brands actually use. */
-export async function resolveCompositionKey(db, composition, hints) {
+export async function resolveCompositionKey(ctx, composition, hints) {
+  const { db, meds } = ctxOf(ctx);
   const cleaned = cleanComposition(composition);
   const base = [keyFor(cleaned, hints), keyFor(cleaned.replace(SALT_FORMS, ''), hints), keyFor(composition, hints)];
   const keys = base.map((k) => k.key);
@@ -70,30 +81,27 @@ export async function resolveCompositionKey(db, composition, hints) {
   if (!base[0].form) for (const f of ['tablet', 'capsule']) keys.push(keyFor(cleaned, { ...hints, form: f }).key, keyFor(cleaned.replace(SALT_FORMS, ''), { ...hints, form: f }).key);
   const variants = [...new Set(keys.filter(Boolean))];
   for (const k of variants) {
-    const hit = await db.prepare('SELECT 1 AS ok FROM medicines WHERE ckey = ?1 LIMIT 1').bind(k).first();
-    if (hit) return k;
+    // A key is real if a brand uses it, or the official Jan Aushadhi list does.
+    if (await meds.hasKey(k)) return k;
+    if (await db.prepare('SELECT 1 AS ok FROM ja_products WHERE ckey = ?1 LIMIT 1').bind(k).first()) return k;
   }
   return variants[0] || '';
 }
 
 /** Tool: identify_medicine. Resolve a brand name (and optional composition read off the strip) to one DB row. */
-export async function identifyMedicine(db, { brand = '', composition = '', form = '' } = {}) {
+export async function identifyMedicine(ctx, { brand = '', composition = '', form = '' } = {}) {
+  const { meds } = ctxOf(ctx);
   const q = tokens(brand);
   let candidates = [];
   if (q.length) {
-    const like = `${q[0]}%`;
-    const res = await db
-      .prepare('SELECT id, name, manufacturer, salt, ckey, price, pack, unit_price, form, rel, nti, incomplete FROM medicines WHERE name LIKE ?1 LIMIT 400')
-      .bind(like)
-      .all();
-    candidates = (res.results || [])
+    candidates = (await meds.byNamePrefix(q[0]))
       .map((r) => ({ ...r, score: nameScore(brand, r.name) }))
       .filter((r) => r.score > 0.45);
   }
 
   // Composition read from the strip, if any, gives a key to cross-check the brand guess.
   let compKey = '';
-  if (composition) compKey = await resolveCompositionKey(db, composition, { name: `${brand} ${form}`, form });
+  if (composition) compKey = await resolveCompositionKey(ctx, composition, { name: `${brand} ${form}`, form });
 
   if (candidates.length) {
     candidates.sort((a, b) => {
@@ -140,35 +148,15 @@ export async function identifyMedicine(db, { brand = '', composition = '', form 
 }
 
 /** Tool: find_same_salt. Every brand with an identical canonical key, cheapest first (per unit). */
-export async function findSameSalt(db, ckey, { limit = 8 } = {}) {
+// The source lists some brands several times (pack variants): both stores keep the cheapest per name.
+export async function findSameSalt(ctx, ckey, { limit = 8 } = {}) {
   if (!ckey) return { count: 0, items: [] };
-  const res = await db
-    .prepare('SELECT name, manufacturer, price, pack, unit_price FROM medicines WHERE ckey = ?1 AND unit_price > 0 AND incomplete = 0 ORDER BY unit_price ASC LIMIT 2000')
-    .bind(ckey)
-    .all();
-  const all = res.results || [];
-  // The source lists some brands several times (pack variants); keep the cheapest per name.
-  const seen = new Set();
-  const uniq = [];
-  for (const r of all) {
-    const k = r.name.toLowerCase();
-    if (seen.has(k)) continue;
-    seen.add(k);
-    uniq.push(r);
-  }
-  const prices = uniq.map((r) => r.unit_price);
-  const median = prices.length ? prices[Math.floor(prices.length / 2)] : null;
-  return {
-    count: uniq.length,
-    cheapest_unit: prices[0] ?? null,
-    median_unit: median,
-    max_unit: prices.length ? prices[prices.length - 1] : null,
-    items: uniq.slice(0, limit),
-  };
+  return ctxOf(ctx).meds.sameSalt(ckey, limit);
 }
 
 /** Tool: jan_aushadhi_match. The PMBJP generic with the same canonical key, if the basket has one. */
-export async function janAushadhiMatch(db, ckey) {
+export async function janAushadhiMatch(ctx, ckey) {
+  const { db } = ctxOf(ctx);
   if (!ckey) return { available: false };
   const res = await db
     .prepare('SELECT drug_code, generic_name, unit_size, mrp, group_name, units, unit_price FROM ja_products WHERE ckey = ?1 ORDER BY unit_price ASC LIMIT 3')
@@ -189,7 +177,8 @@ function haversine(a, b) {
 }
 
 /** Tool: nearest_kendra. By coordinates if given, else by PIN code (same PIN, then nearby PINs). */
-export async function nearestKendra(db, { pin = '', lat = null, lng = null, limit = 3 } = {}) {
+export async function nearestKendra(ctx, { pin = '', lat = null, lng = null, limit = 3 } = {}) {
+  const { db } = ctxOf(ctx);
   const cols = 'code, name, address, district, state, pin, lat, lng, phone';
   if (lat != null && lng != null && Number.isFinite(+lat) && Number.isFinite(+lng)) {
     const d = 0.25; // ~25 km box, widened once if empty
@@ -242,13 +231,20 @@ export function computeSaving(med, same, ja) {
 
 /** Pull salts + strengths out of free OCR text ("Each tablet contains: Paracetamol IP 650 mg"). */
 export function compositionFromText(text) {
+  // Strips print "Paracetamol I.P. 650 mg": the dots would break the salt-name match.
+  const src = String(text || '').replace(/\b(?:I\.\s?P|B\.\s?P|U\.\s?S\.\s?P)\.?(?=\s|$|\d)/gi, ' IP ');
   const found = [];
+  const seen = new Set();
   const re = /([A-Za-z][A-Za-z\- ]{2,40}?)\s*(?:\b(?:IP|BP|USP)\b)?\s*[:\-]?\s*(\d+(?:\.\d+)?)\s*(mg|mcg|g|gm|iu)\b/gi;
   let m;
-  while ((m = re.exec(text))) {
+  while ((m = re.exec(src))) {
     let name = m[1].replace(/\b(each|film|coated|uncoated|tablet|tablets|capsule|capsules|contains|composition|hard|gelatin|equivalent|to|as)\b/gi, ' ').replace(/\s+/g, ' ').trim();
     if (name.length < 4) continue;
-    found.push(`${name} (${m[2]}${m[3].toLowerCase()})`);
+    const part = `${name} (${m[2]}${m[3].toLowerCase()})`;
+    // The salt is usually printed twice (title line and "Each tablet contains"): count it once.
+    if (seen.has(part.toLowerCase())) continue;
+    seen.add(part.toLowerCase());
+    found.push(part);
   }
   return found.join(' + ');
 }

@@ -13,6 +13,7 @@ EXACTLY the same salt + strength + form as the medicine they photographed, the J
 - Developer mode: `/?dev=1` (off: `/?dev=0`) shows the impact/volunteer/GitHub/data-import links and flags lookups as test traffic. Hidden for patients.
 - `public/dev.html` + `dev.js` — developer data import: PMBI product MRP list CSV → preview diff → apply. `public/pmbi.js` (shared browser + Worker, a port of `data/build_ja.py`'s product parser; must give the same keys) parses in the browser; the Worker's `/api/admin/*` only validates and writes, guarded by the `ADMIN_TOKEN` secret.
 - `data/` — build D1 seed SQL from SameSalt's DB and the official PMBJP lists
+- Brand medicines are static files, not D1 rows: `node data/build_meds.mjs --db ../samesalt/assets/samesalt.db` writes `public/meds/` (gitignored, ~10.5k files, uploaded by `wrangler deploy`). `worker/src/medstore.js` reads them (D1 `medicines` table is the fallback, used by tests); `test/medstore.test.mjs` proves both give identical results. Reason: free D1 allows 100k rows written/day; this list needs ~740k.
 - `test/` — `node --test test/normalize.test.mjs test/tools.test.mjs test/pmbi.test.mjs`; `python test/test_build_ja.py`
 - `evals/` — `node evals/run_evals.mjs` (writes AF run JSONL to `.codenow/runs/`)
 

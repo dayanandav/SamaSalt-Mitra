@@ -16,6 +16,7 @@ export const STRINGS = {
     scan: 'Scan a medicine strip',
     scanHint: 'Take a clear photo of the side with the name and composition.',
     orType: 'or type the name',
+    scanTextTip: 'Tip: tap the box below, then use your keyboard’s “Scan text” and point the camera at the strip. It is free and the photo stays on your phone.',
     placeholder: 'e.g. Dolo 650',
     pinLabel: 'PIN code (optional)',
     pinHint: 'Optional. Add a PIN code to see the nearest Jan Aushadhi Kendras.',
@@ -52,6 +53,16 @@ export const STRINGS = {
     nti: 'Do not switch this medicine on your own. It needs an exact dose, and changing brands can be unsafe. Talk to your doctor.',
     notFound: 'We could not find this medicine. Type the name exactly as printed on the strip.',
     visionFallback: 'Reading the photo on this phone instead…',
+    photoUnreadable: 'We could not read this photo. Take it again in good light, close to the name and composition, or type the name.',
+    checkFailed: 'We could not check this right now. Please check your internet and try again.',
+    cropTitle: 'Drag the box over the medicine name and composition',
+    cropUse: 'Check this area',
+    cropFull: 'Use the whole photo',
+    cropRetake: 'Retake',
+    cropCancel: 'Cancel',
+    readOnStrip: 'Read on the strip: {text}',
+    sameSaltNone: 'No other brand has exactly the same salt, strength and form in our list.',
+    brandsPending: 'Brand prices are not loaded yet, so other brands cannot be compared.',
     switchQ: 'Did you buy a cheaper option?',
     switchYes: 'Yes, I switched',
     switchAsk: 'I will ask my doctor',
@@ -77,6 +88,7 @@ export const STRINGS = {
     scan: 'ಔಷಧಿ ಸ್ಟ್ರಿಪ್ ಸ್ಕ್ಯಾನ್ ಮಾಡಿ',
     scanHint: 'ಹೆಸರು ಮತ್ತು ಸಂಯೋಜನೆ ಇರುವ ಭಾಗದ ಸ್ಪಷ್ಟ ಫೋಟೋ ತೆಗೆಯಿರಿ.',
     orType: 'ಅಥವಾ ಹೆಸರನ್ನು ಟೈಪ್ ಮಾಡಿ',
+    scanTextTip: 'ಸಲಹೆ: ಕೆಳಗಿನ ಬಾಕ್ಸ್ ಮೇಲೆ ಟ್ಯಾಪ್ ಮಾಡಿ, ನಿಮ್ಮ ಕೀಬೋರ್ಡ್‌ನ “Scan text” ಆಯ್ಕೆ ಮಾಡಿ, ಕ್ಯಾಮೆರಾವನ್ನು ಸ್ಟ್ರಿಪ್ ಕಡೆಗೆ ಹಿಡಿಯಿರಿ. ಇದು ಉಚಿತ, ಫೋಟೋ ನಿಮ್ಮ ಫೋನ್‌ನಲ್ಲೇ ಇರುತ್ತದೆ.',
     placeholder: 'ಉದಾ: Dolo 650',
     pinLabel: 'ಪಿನ್ ಕೋಡ್ (ಐಚ್ಛಿಕ)',
     pinHint: 'ಐಚ್ಛಿಕ. ಹತ್ತಿರದ ಜನ ಔಷಧಿ ಕೇಂದ್ರಗಳನ್ನು ನೋಡಲು ಪಿನ್ ಕೋಡ್ ನಮೂದಿಸಿ.',
@@ -113,6 +125,16 @@ export const STRINGS = {
     nti: 'ಈ ಔಷಧಿಯನ್ನು ನೀವೇ ಬದಲಾಯಿಸಬೇಡಿ. ಇದಕ್ಕೆ ನಿಖರವಾದ ಡೋಸ್ ಬೇಕು, ಬ್ರ್ಯಾಂಡ್ ಬದಲಾಯಿಸುವುದು ಅಪಾಯಕಾರಿಯಾಗಬಹುದು. ನಿಮ್ಮ ವೈದ್ಯರೊಂದಿಗೆ ಮಾತನಾಡಿ.',
     notFound: 'ಈ ಔಷಧಿ ಸಿಗಲಿಲ್ಲ. ಸ್ಟ್ರಿಪ್ ಮೇಲೆ ಮುದ್ರಿಸಿರುವಂತೆಯೇ ಹೆಸರನ್ನು ಟೈಪ್ ಮಾಡಿ.',
     visionFallback: 'ಫೋಟೋವನ್ನು ಈ ಫೋನ್‌ನಲ್ಲೇ ಓದಲಾಗುತ್ತಿದೆ…',
+    photoUnreadable: 'ಈ ಫೋಟೋವನ್ನು ಓದಲು ಆಗಲಿಲ್ಲ. ಒಳ್ಳೆಯ ಬೆಳಕಿನಲ್ಲಿ, ಹೆಸರು ಮತ್ತು ಸಂಯೋಜನೆಯ ಹತ್ತಿರದಿಂದ ಮತ್ತೆ ಫೋಟೋ ತೆಗೆಯಿರಿ, ಅಥವಾ ಹೆಸರನ್ನು ಟೈಪ್ ಮಾಡಿ.',
+    checkFailed: 'ಈಗ ಪರಿಶೀಲಿಸಲು ಆಗಲಿಲ್ಲ. ನಿಮ್ಮ ಇಂಟರ್ನೆಟ್ ಪರಿಶೀಲಿಸಿ ಮತ್ತೆ ಪ್ರಯತ್ನಿಸಿ.',
+    cropTitle: 'ಔಷಧಿಯ ಹೆಸರು ಮತ್ತು ಸಂಯೋಜನೆಯ ಮೇಲೆ ಚೌಕವನ್ನು ಎಳೆದು ಇರಿಸಿ',
+    cropUse: 'ಈ ಭಾಗವನ್ನು ಪರಿಶೀಲಿಸಿ',
+    cropFull: 'ಪೂರ್ತಿ ಫೋಟೋ ಬಳಸಿ',
+    cropRetake: 'ಮತ್ತೆ ತೆಗೆಯಿರಿ',
+    cropCancel: 'ರದ್ದು ಮಾಡಿ',
+    readOnStrip: 'ಸ್ಟ್ರಿಪ್ ಮೇಲೆ ಓದಿದ್ದು: {text}',
+    sameSaltNone: 'ನಮ್ಮ ಪಟ್ಟಿಯಲ್ಲಿ ಅದೇ ಸಾಲ್ಟ್, ಅದೇ ಪ್ರಮಾಣ ಮತ್ತು ಅದೇ ರೂಪದ ಬೇರೆ ಬ್ರ್ಯಾಂಡ್ ಇಲ್ಲ.',
+    brandsPending: 'ಬ್ರ್ಯಾಂಡ್ ಬೆಲೆಗಳನ್ನು ಇನ್ನೂ ಲೋಡ್ ಮಾಡಿಲ್ಲ, ಆದ್ದರಿಂದ ಬೇರೆ ಬ್ರ್ಯಾಂಡ್‌ಗಳೊಂದಿಗೆ ಹೋಲಿಸಲು ಆಗುವುದಿಲ್ಲ.',
     switchQ: 'ನೀವು ಕಡಿಮೆ ಬೆಲೆಯ ಔಷಧಿ ಖರೀದಿಸಿದಿರಾ?',
     switchYes: 'ಹೌದು, ಬದಲಾಯಿಸಿದ್ದೇನೆ',
     switchAsk: 'ವೈದ್ಯರನ್ನು ಕೇಳುತ್ತೇನೆ',
@@ -138,6 +160,7 @@ export const STRINGS = {
     scan: 'दवा की पट्टी स्कैन करें',
     scanHint: 'नाम और कंपोज़िशन वाले हिस्से की साफ़ फ़ोटो लें।',
     orType: 'या नाम लिखें',
+    scanTextTip: 'सुझाव: नीचे के बॉक्स पर टैप करें, फिर अपने कीबोर्ड का “Scan text” चुनें और कैमरा पट्टी की ओर करें। यह मुफ़्त है और फ़ोटो आपके फ़ोन में ही रहती है।',
     placeholder: 'जैसे Dolo 650',
     pinLabel: 'पिन कोड (वैकल्पिक)',
     pinHint: 'वैकल्पिक। सबसे नज़दीकी जन औषधि केंद्र देखने के लिए पिन कोड डालें।',
@@ -174,6 +197,16 @@ export const STRINGS = {
     nti: 'यह दवा खुद से न बदलें। इसकी खुराक बिल्कुल सटीक होनी चाहिए और ब्रांड बदलना असुरक्षित हो सकता है। अपने डॉक्टर से बात करें।',
     notFound: 'यह दवा नहीं मिली। पट्टी पर जैसा छपा है, वैसा ही नाम लिखें।',
     visionFallback: 'फ़ोटो इसी फ़ोन पर पढ़ी जा रही है…',
+    photoUnreadable: 'यह फ़ोटो पढ़ी नहीं जा सकी। अच्छी रोशनी में, नाम और कंपोज़िशन के पास से फिर फ़ोटो लें, या नाम लिखें।',
+    checkFailed: 'अभी जाँच नहीं हो सकी। अपना इंटरनेट देखें और फिर कोशिश करें।',
+    cropTitle: 'बॉक्स को दवा के नाम और कंपोज़िशन पर खींचकर रखें',
+    cropUse: 'यह हिस्सा जाँचें',
+    cropFull: 'पूरी फ़ोटो इस्तेमाल करें',
+    cropRetake: 'फिर से फ़ोटो लें',
+    cropCancel: 'रद्द करें',
+    readOnStrip: 'पट्टी पर पढ़ा गया: {text}',
+    sameSaltNone: 'हमारी सूची में बिल्कुल वही सॉल्ट, वही मात्रा और वही रूप वाला कोई दूसरा ब्रांड नहीं है।',
+    brandsPending: 'ब्रांड के दाम अभी लोड नहीं हुए हैं, इसलिए दूसरे ब्रांड से तुलना नहीं हो सकती।',
     switchQ: 'क्या आपने सस्ता विकल्प ख़रीदा?',
     switchYes: 'हाँ, बदल लिया',
     switchAsk: 'डॉक्टर से पूछूँगा/पूछूँगी',
@@ -221,6 +254,14 @@ export function unitKind(form) {
  * so every number and every safety line is the same in all three languages.
  * facts: { brand, composition, count, cheapBrand, cheapUnit, yourUnit, jaName, jaUnit, saving, pack, form, nti }
  */
+/** Why the answer has no cheaper option, or null when it has one: the person should never be left guessing. */
+export function noOption(f) {
+  if (f.nti || f.cheapBrand || f.jaUnit != null) return null;
+  if (f.brandsLoaded === false) return 'notLoaded';
+  if (f.count > 1) return 'cheapest';
+  return 'none';
+}
+
 export function composeAnswer(lang, f) {
   const unit = unitKind(f.form);
   const per = t(lang, 'perUnit')[unit];
@@ -232,6 +273,9 @@ export function composeAnswer(lang, f) {
     if (f.cheapBrand && f.yourUnit != null) L.push(`ಅತಿ ಕಡಿಮೆ ಬೆಲೆ ${f.cheapBrand}: ${per} ${rupees(f.cheapUnit)}. ${f.brand}: ${per} ${rupees(f.yourUnit)}.`);
     else if (f.cheapBrand) L.push(`ಅತಿ ಕಡಿಮೆ ಬೆಲೆ ${f.cheapBrand}: ${per} ${rupees(f.cheapUnit)}.`);
     if (f.jaUnit != null) L.push(`ಜನ ಔಷಧಿ ಕೇಂದ್ರದಲ್ಲಿ ${f.jaName}: ${per} ${rupees(f.jaUnit)}.`);
+    if (noOption(f) === 'notLoaded') L.push('ಬ್ರ್ಯಾಂಡ್ ಬೆಲೆಗಳನ್ನು ಇನ್ನೂ ಲೋಡ್ ಮಾಡಿಲ್ಲ, ಆದ್ದರಿಂದ ಬೇರೆ ಬ್ರ್ಯಾಂಡ್‌ಗಳೊಂದಿಗೆ ಹೋಲಿಸಲು ಆಗುವುದಿಲ್ಲ.');
+    if (noOption(f) === 'cheapest') L.push('ಇದು ಈಗಾಗಲೇ ಈ ಬ್ರ್ಯಾಂಡ್‌ಗಳಲ್ಲಿ ಅತಿ ಕಡಿಮೆ ಬೆಲೆಯದು.');
+    if (noOption(f) === 'none') L.push('ಅದೇ ಸಾಲ್ಟ್, ಅದೇ ಪ್ರಮಾಣ ಮತ್ತು ಅದೇ ರೂಪದ ಬೇರೆ ಬ್ರ್ಯಾಂಡ್ ಸಿಗಲಿಲ್ಲ.');
     if (f.saving > 0) L.push(`ಒಂದು ಪ್ಯಾಕ್ (${f.pack}) ಮೇಲೆ ಸುಮಾರು ${rupees(f.saving)} ಉಳಿಸಬಹುದು.`);
     L.push('ಬದಲಾಯಿಸುವ ಮೊದಲು ನಿಮ್ಮ ವೈದ್ಯರು ಅಥವಾ ಫಾರ್ಮಸಿಸ್ಟ್ ಅವರನ್ನು ಕೇಳಿ.');
   } else if (lang === 'hi') {
@@ -241,6 +285,9 @@ export function composeAnswer(lang, f) {
     if (f.cheapBrand && f.yourUnit != null) L.push(`सबसे कम दाम ${f.cheapBrand} का है: ${per} ${rupees(f.cheapUnit)}, जबकि ${f.brand} ${per} ${rupees(f.yourUnit)} की है।`);
     else if (f.cheapBrand) L.push(`सबसे कम दाम ${f.cheapBrand} का है: ${per} ${rupees(f.cheapUnit)}।`);
     if (f.jaUnit != null) L.push(`जन औषधि केंद्र पर ${f.jaName}: ${per} ${rupees(f.jaUnit)}।`);
+    if (noOption(f) === 'notLoaded') L.push('ब्रांड के दाम अभी लोड नहीं हुए हैं, इसलिए दूसरे ब्रांड से तुलना नहीं हो सकती।');
+    if (noOption(f) === 'cheapest') L.push('यह पहले से ही इन ब्रांडों में सबसे कम दाम वाली है।');
+    if (noOption(f) === 'none') L.push('बिल्कुल वही सॉल्ट, वही मात्रा और वही रूप वाला कोई दूसरा ब्रांड नहीं मिला।');
     if (f.saving > 0) L.push(`एक पैक (${f.pack}) पर लगभग ${rupees(f.saving)} बच सकते हैं।`);
     L.push('दवा बदलने से पहले अपने डॉक्टर या फ़ार्मासिस्ट से पूछें।');
   } else {
@@ -250,6 +297,9 @@ export function composeAnswer(lang, f) {
     if (f.cheapBrand && f.yourUnit != null) L.push(`The lowest-priced is ${f.cheapBrand} at ${rupees(f.cheapUnit)} ${per}, against ${rupees(f.yourUnit)} for ${f.brand}.`);
     else if (f.cheapBrand) L.push(`The lowest-priced is ${f.cheapBrand} at ${rupees(f.cheapUnit)} ${per}.`);
     if (f.jaUnit != null) L.push(`At a Jan Aushadhi Kendra, ${f.jaName} costs ${rupees(f.jaUnit)} ${per}.`);
+    if (noOption(f) === 'notLoaded') L.push('Brand prices are not loaded yet, so other brands cannot be compared.');
+    if (noOption(f) === 'cheapest') L.push('It is already the lowest-priced of these brands.');
+    if (noOption(f) === 'none') L.push('No other brand with exactly the same salt, strength and form was found.');
     if (f.saving > 0) L.push(`That can save about ${rupees(f.saving)} on one pack of ${f.pack}.`);
     L.push('Please check with your doctor or pharmacist before switching.');
   }

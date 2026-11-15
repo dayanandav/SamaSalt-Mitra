@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import { fixtureDb } from './d1shim.mjs';
 import { cleanComposition, identifyMedicine, findSameSalt, janAushadhiMatch, nearestKendra, computeSaving, compositionFromText, brandCandidatesFromText, nameScore } from '../worker/src/tools.js';
 import { runAgent } from '../worker/src/agent.js';
-import { composeAnswer } from '../public/strings.js';
+import { composeAnswer, noOption } from '../public/strings.js';
 
 // Jan Aushadhi / Kendra rows here are TEST FIXTURES ONLY (made-up codes and prices), used to
 // exercise the matching code paths. Production data comes from data/build_ja.py.
@@ -176,4 +176,86 @@ test('answer: a typed generic name is not repeated as if it were a brand', async
   const a = composeAnswer('en', { brand: r.medicine.name, composition: r.medicine.name, count: 3, form: 'tablet' });
   assert.doesNotMatch(a, /contains/);
   assert.match(a, /check with your doctor/);
+});
+
+// What the phone keyboard's "Scan text" (Gboard / iPhone Live Text) puts into the name box.
+const SCANNED_DOLO = `DOLO-650
+Paracetamol Tablets I.P. 650 mg
+Each uncoated tablet contains:
+Paracetamol I.P. 650 mg
+Mfg. Lic. No. 123456
+Batch No. DOBS3975 Exp. 05/2027
+Micro Labs Limited`;
+
+test('agent: keyboard "Scan text" in the name box is read for free, without any model', async () => {
+  let modelCalls = 0;
+  const env = { DB: db, AI: { run: async () => { modelCalls++; throw new Error('should not be called'); } } };
+  const r = await runAgent(env, { text: SCANNED_DOLO, lang: 'en' });
+  assert.equal(r.status, 'ok');
+  assert.equal(r.source, 'text-scan');
+  assert.equal(r.medicine.name, 'Dolo 650 Tablet');
+  assert.equal(r.medicine.ckey, 'paracetamol:650mg|tablet');
+  assert.equal(modelCalls, 0);
+  assert.equal(r.trace[0].tool, 'parse_ocr_text');
+  assert.ok(!r.trace.some((s) => s.tool === 'understand_text'));
+  assert.equal(r.pin3, null); // the 6-digit licence number is not a PIN code
+});
+
+test('agent: short typed names and phrases are not treated as scanned text', async () => {
+  const { looksScanned } = await import('../worker/src/agent.js');
+  assert.equal(looksScanned('Dolo 650'), false);
+  assert.equal(looksScanned('dolo 650 ka sasta option batao'), false);
+  assert.equal(looksScanned('ಡೋಲೋ 650 ಮಾತ್ರೆ ಬೆಲೆ ಎಷ್ಟು ಇದೆ ಹೇಳಿ ದಯವಿಟ್ಟು'), false);
+  assert.equal(looksScanned(SCANNED_DOLO), true);
+  assert.equal(looksScanned('Paracetamol Tablets IP 650 mg each uncoated tablet contains'), true);
+});
+
+test('OCR text: "I.P." with dots, and a salt printed twice, give one clean composition', () => {
+  assert.equal(compositionFromText(SCANNED_DOLO), 'Paracetamol (650mg)');
+  assert.equal(compositionFromText('Amoxycillin I.P. 500 mg\nPotassium Clavulanate B.P. 125 mg'), 'Amoxycillin (500mg) + Potassium Clavulanate (125mg)');
+});
+
+test('answer: says why there is no cheaper option, in all three languages', () => {
+  const base = { brand: 'Brivaracetam 50 mg', composition: 'Brivaracetam 50 mg', count: 0, cheapBrand: null, cheapUnit: null, yourUnit: null, jaName: null, jaUnit: null, saving: null, pack: 10, form: 'tablet', nti: false };
+  assert.equal(noOption({ ...base, brandsLoaded: false }), 'notLoaded');
+  assert.equal(noOption({ ...base, brandsLoaded: true }), 'none');
+  assert.equal(noOption({ ...base, brandsLoaded: true, count: 12 }), 'cheapest');
+  assert.equal(noOption({ ...base, brandsLoaded: true, cheapBrand: 'X' }), null);
+  assert.equal(noOption({ ...base, brandsLoaded: true, jaUnit: 1 }), null);
+  assert.equal(noOption({ ...base, nti: true }), null);
+  assert.match(composeAnswer('en', { ...base, brandsLoaded: false }), /not loaded yet.*check with your doctor or pharmacist/);
+  assert.match(composeAnswer('en', { ...base, brandsLoaded: true }), /No other brand with exactly the same salt/);
+  for (const lang of ['kn', 'hi']) {
+    const a = composeAnswer(lang, { ...base, brandsLoaded: true });
+    assert.ok(a.length > 40 && !/undefined|null/.test(a), lang);
+  }
+});
+
+test('agent: reports whether brand prices are loaded', async () => {
+  const r = await runAgent({ DB: db, AI: null }, { text: 'Dolo 650', lang: 'en' });
+  assert.equal(r.data.brands_loaded, true);
+});
+
+test('safety: anti-epileptic medicines never get a cheaper suggestion, even if the brand data predates the list', async () => {
+  const { ntiFromKey, isNti } = await import('../worker/src/normalize.js');
+  for (const k of ['brivaracetam:50mg|tablet', 'levetiracetam:500mg|tablet', 'lamotrigine:100mg|tablet', 'clonazepam:0.5mg+escitalopram:10mg|tablet', 'phenobarbital:30mg|tablet', 'phenobarbitone:30mg|tablet', 'pregabalin:75mg|capsule']) {
+    assert.equal(ntiFromKey(k), true, k);
+  }
+  assert.equal(ntiFromKey('paracetamol:650mg|tablet'), false);
+  assert.equal(isNti([['brivaracetam', '50mg']]), true);
+  // A scanned strip with only its composition (brand unknown to the database).
+  const r = await runAgent({ DB: db, AI: null }, { text: 'Brivapride 50\nBrivaracetam Tablets 50 mg\nEach film coated tablet contains Brivaracetam 50 mg', lang: 'en' });
+  assert.equal(r.status, 'ok');
+  assert.equal(r.medicine.nti, true);
+  assert.equal(r.jan_aushadhi.available, false);
+  assert.equal(r.same_salt.items.length, 0);
+  assert.equal(r.saving.saving_pack, null);
+});
+
+test('identify: a typed generic without its form still finds the Jan Aushadhi key when no brand uses it', async () => {
+  const jaOnly = fixtureDb({ ja: [{ drug_code: 'T9', generic_name: 'Zzzolamide Tablets IP 5 mg', unit_size: "10's", mrp: 10, ckey: 'zzzolamide:5mg|tablet', units: 10, unit_price: 1 }], meta: { ja_loaded_at: 'test' } });
+  const r = await identifyMedicine(jaOnly, { brand: 'zzzolamide 5', composition: 'Zzzolamide 5mg', form: '' });
+  assert.equal(r.found, true);
+  assert.equal(r.medicine.ckey, 'zzzolamide:5mg|tablet');
+  assert.equal((await janAushadhiMatch(jaOnly, r.medicine.ckey)).available, true);
 });

@@ -1,6 +1,7 @@
 // SamaSalt-Mitra agent — Cloudflare Worker: JSON API + static web app (public/).
 import { runAgent, resetMetaCache } from './agent.js';
 import { validateProducts, insertStatements } from '../../public/pmbi.js';
+import { assetMeds, d1Meds } from './medstore.js';
 
 const MAX_IMAGE_CHARS = 2_500_000; // ~1.8 MB JPEG as a data URL; the app resizes to ~1 MP first
 
@@ -154,27 +155,38 @@ async function adminDenied(request, env) {
   return same ? null : json({ error: 'unauthorized' }, 401);
 }
 
+// Brand medicines: the static files when deployed (see medstore.js), else the D1 table.
+async function medsFor(env) {
+  return (env.ASSETS && (await assetMeds(env.ASSETS))) || d1Meds(env.DB);
+}
+
 async function handleAdminStatus(env) {
   const one = (sql) => env.DB.prepare(sql).first();
-  const [meta, ja, med, kendras] = await Promise.all([
+  const meds = await medsFor(env);
+  const [meta, ja, medCount, medMeta, kendras] = await Promise.all([
     env.DB.prepare('SELECT key, value FROM meta').all(),
     one('SELECT COUNT(*) AS n FROM ja_products'),
-    one('SELECT COUNT(*) AS n FROM medicines'),
+    meds.count(),
+    meds.meta(),
     one('SELECT COUNT(*) AS n FROM kendras'),
   ]);
   return json({
     meta: Object.fromEntries((meta.results || []).map((x) => [x.key, x.value])),
-    counts: { ja_products: ja?.n ?? 0, medicines: med?.n ?? 0, kendras: kendras?.n ?? 0 },
+    counts: { ja_products: ja?.n ?? 0, medicines: medCount, kendras: kendras?.n ?? 0 },
+    medicines: { store: meds.kind, dataset_date: medMeta?.dataset_date ?? null, built_at: medMeta?.built_at ?? null },
   });
 }
 
 /** What the developer page needs to parse and diff a PMBI file: brand keys and the current list. */
 async function handlePmbiContext(env) {
-  const [keys, current] = await Promise.all([
-    env.DB.prepare('SELECT DISTINCT ckey FROM medicines WHERE ckey IS NOT NULL').raw(),
+  const meds = await medsFor(env);
+  const [keysJson, current] = await Promise.all([
+    meds.keysJson(), // already JSON: passed through without parsing ~15,000 keys
     env.DB.prepare('SELECT drug_code, generic_name, unit_size, mrp, ckey FROM ja_products').all(),
   ]);
-  return json({ brand_keys: keys.map((r) => r[0]), current: current.results || [] });
+  return new Response(`{"brand_keys":${keysJson},"current":${JSON.stringify(current.results || [])}}`, {
+    headers: { 'content-type': 'application/json; charset=utf-8', 'cache-control': 'no-store' },
+  });
 }
 
 async function handlePmbiApply(request, env) {

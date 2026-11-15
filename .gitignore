@@ -17,3 +17,6 @@ tools/demo-video/out/
 logo/SamaSalt_Mitra_Master_Logo_4096x4096.png
 logo/SamaSalt_Mitra_High_Resolution_Logo_2048x2048.png
 logo/SamaSalt_Mitra_Standard_Logo_1024x1024.png
+
+# Brand medicine list as static files, built by data/build_meds.mjs (not committed)
+public/meds/

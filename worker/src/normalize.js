@@ -41,7 +41,20 @@ export const NTI_STEMS = [
   'divalproex', 'theophylline', 'aminophylline', 'tacrolimus', 'sirolimus',
   'everolimus', 'mycophenolate', 'mycophenolic acid', 'clonidine',
   'procainamide', 'disopyramide', 'quinidine',
+  // Anti-epileptic medicines (added in SamaSalt-Mitra, Nov 2026): a switch is never suggested,
+  // as the README promises for antiepileptics. To be reviewed by a doctor or pharmacist.
+  // The brand database's own NTI flag predates these, so the agent also checks keys at runtime.
+  'brivaracetam', 'levetiracetam', 'lamotrigine', 'lacosamide', 'clobazam', 'clonazepam',
+  'topiramate', 'oxcarbazepine', 'eslicarbazepine', 'zonisamide', 'perampanel', 'phenobarbit',
+  'primidone', 'ethosuximide', 'vigabatrin', 'rufinamide', 'gabapentin', 'pregabalin',
 ];
+
+/** Is any salt in a canonical key ("brivaracetam:50mg|tablet") on the NTI list? */
+export function ntiFromKey(key) {
+  if (!key) return false;
+  const names = key.split('|')[0].split('+').map((s) => s.split(':')[0]);
+  return names.some((n) => NTI_STEMS.some((stem) => n.includes(stem)));
+}
 
 const UNIT_TO_MG = {
   g: 1000, gm: 1000, gram: 1000, grams: 1000, kg: 1_000_000,

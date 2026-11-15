@@ -124,8 +124,11 @@ cd worker && npm install
 npx wrangler login
 npx wrangler d1 create samasalt-mitra            # put the id in wrangler.toml
 npx wrangler d1 migrations apply samasalt-mitra --remote
-cd .. && python data/build_d1.py --db ../samesalt/assets/samesalt.db --out data/build
-cd worker && for f in ../data/build/*.sql; do npx wrangler d1 execute samasalt-mitra --remote --file "$f" -y; done
+# Brand medicines (246,068 rows) ship as static files in public/meds/, not in D1: a free D1
+# database allows 100,000 rows written per day and this list needs ~740,000. Static assets are
+# free and unlimited; `wrangler deploy` uploads them. (data/build_d1.py still builds D1 SQL.)
+cd .. && node data/build_meds.mjs --db ../samesalt/assets/samesalt.db
+cd worker
 
 # Jan Aushadhi data: the official files are in data/raw/ (see data/raw/README.md)
 cd .. && python data/build_ja.py --products data/raw/ja_products_2026-10-11.csv --list-date 2026-10-11 \
