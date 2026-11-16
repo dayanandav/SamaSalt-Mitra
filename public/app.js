@@ -515,11 +515,12 @@ function whyHtml(cls, lead) {
 // Every medicine found (and confirmed, for photos) is added, one entry per composition, so the
 // person can check several strips and show them all at once. Kept on this phone only.
 const MAX_LIST = 15;
+store.set('ss_medlist', null); // the old long-lived list (before Nov 2026) is removed
 function medList() {
-  try { const v = JSON.parse(store.get('ss_medlist') || '[]'); return Array.isArray(v) ? v : []; } catch { return []; }
+  try { const v = JSON.parse(session.get('ss_medlist') || '[]'); return Array.isArray(v) ? v : []; } catch { return []; }
 }
 function saveMedList(list) {
-  store.set('ss_medlist', list.length ? JSON.stringify(list.slice(0, MAX_LIST)) : null);
+  session.set('ss_medlist', list.length ? JSON.stringify(list.slice(0, MAX_LIST)) : null);
   renderHomeList();
 }
 function addToMedList(r) {
@@ -579,6 +580,8 @@ function fmtDate(iso) {
   if (isNaN(d)) return iso;
   try { return d.toLocaleDateString({ en: 'en-IN', kn: 'kn-IN', hi: 'hi-IN' }[lang], { day: 'numeric', month: 'short', year: 'numeric', timeZone: 'Asia/Kolkata' }); } catch { return iso; }
 }
+// Map "directions" sign (turn arrow in a diamond), in the blue used by map apps.
+const dirIcon = '<svg class="dir-icon" width="22" height="22" viewBox="0 0 24 24" aria-hidden="true"><path fill="#1a73e8" d="M21.71 11.29l-9-9a1 1 0 0 0-1.42 0l-9 9a1 1 0 0 0 0 1.42l9 9a1 1 0 0 0 1.42 0l9-9a1 1 0 0 0 0-1.42z"/><path fill="#fff" d="M14 14.5V12h-4v3H8v-4a1 1 0 0 1 1-1h5V7.5l3.5 3.5z"/></svg>';
 const speakerIcon = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M11 5 6 9H3v6h3l5 4z"/><path d="M15.5 8.5a5 5 0 0 1 0 7"/><path d="M18.5 5.5a9 9 0 0 1 0 13"/></svg>';
 const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 const warnIcon = '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 9v4M12 17h.01"/><path d="M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z"/></svg>';
@@ -671,8 +674,9 @@ function render(r) {
       <ul class="list">${k.items.map((x) => `
         <li><div><div class="n">${esc(t(lang, 'kendraName'))}<span class="tag grey">${esc(x.code)}</span></div>
         <div class="m">${esc([x.address, x.district].filter(Boolean).join(', '))}</div>
-        <div class="k-actions"><a target="_blank" rel="noopener" href="https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(x.lat && x.lng ? `${x.lat},${x.lng}` : kQuery(x))}">${esc(t(lang, 'directions'))}</a>${x.phone ? `<a href="tel:${esc(x.phone)}">${esc(t(lang, 'call'))}</a>` : ''}</div></div>
-        <div class="p">${x.km != null ? `<b>${x.km} km</b>` : `<b>${esc(x.pin)}</b><span>PIN</span>`}</div></li>`).join('')}</ul>`
+        ${x.phone ? `<div class="k-actions"><a href="tel:${esc(x.phone)}">${esc(t(lang, 'call'))}</a></div>` : ''}</div>
+        <div class="p">${x.km != null ? `<b>${x.km} km</b>` : `<b>${esc(x.pin)}</b><span>PIN</span>`}
+          <a class="dir-btn" target="_blank" rel="noopener" href="https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(x.lat && x.lng ? `${x.lat},${x.lng}` : kQuery(x))}">${dirIcon}<span>${esc(t(lang, 'directions'))}</span></a></div></li>`).join('')}</ul>`
     : `<p class="muted" style="margin:0">${esc(t(lang, k.pending ? 'kendraPending' : pinInput.value.length === 6 ? 'kendraNone' : 'kendraNeedPin'))}</p>`;
 
   // The brand name as read from the strip, when the match was made by composition alone.

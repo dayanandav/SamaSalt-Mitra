@@ -338,3 +338,7 @@ details.ph-nti summary > span:first-child { color: var(--danger); font-weight: 6
 details.why-inline { margin-top: 12px; }
 /* Buttons hidden with the hidden attribute stay hidden (their display:flex would show them). */
 .primary[hidden], .secondary[hidden] { display: none; }
+/* Kendra: Directions right under the PIN / distance, with a map-directions icon. */
+.list .p .dir-btn { display: inline-flex; align-items: center; gap: 4px; margin-top: 6px; padding: 4px 0; font-size: 14px; font-weight: 600; color: var(--accent); }
+.list .p .dir-btn span { display: inline; color: inherit; font-size: inherit; }
+.list .p .dir-btn .dir-icon { flex: none; }
