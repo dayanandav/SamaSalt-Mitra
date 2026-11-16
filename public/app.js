@@ -235,6 +235,9 @@ store.set('ss_cam_choice', null);
 const hasInAppCamera = () => !!navigator.mediaDevices?.getUserMedia;
 // No in-app camera at all (very old browsers): the phone camera app, opened directly.
 $('#scanBtn').onclick = () => (hasInAppCamera() ? openCamera() : phoneCamera());
+// The other two options sit on the home screen too.
+$('#homeGallery').onclick = () => $('#gallery').click();
+$('#homePhoneCam').onclick = () => phoneCamera();
 $('#camUseApp').onclick = () => {
   $('#camLost').hidden = true;
   $('#camLostActions').hidden = true;
