@@ -19,7 +19,8 @@ $('#devLinks').hidden = !devMode;
 if (params.has('volunteer')) store.set('ss_vol', params.get('volunteer') === '0' ? null : '1');
 if (params.has('lang') && STRINGS[params.get('lang')]) store.set('ss_lang', params.get('lang'));
 
-let lang = store.get('ss_lang') || ((navigator.language || '').startsWith('kn') ? 'kn' : (navigator.language || '').startsWith('hi') ? 'hi' : 'en');
+// English unless the person has picked another language from the menu (top right).
+let lang = STRINGS[store.get('ss_lang')] ? store.get('ss_lang') : 'en';
 const isTest = store.get('ss_test') === '1';
 const volunteer = store.get('ss_vol') === '1';
 let device = store.get('ss_dev');
@@ -31,18 +32,19 @@ let last = null; // last result, re-rendered on language change
 
 // ── Language ───────────────────────────────────────────────────────────────
 function renderLangs() {
+  // A compact menu in the top-right corner; more languages are just more entries in LANGS.
   const box = $('#langs');
-  box.innerHTML = '';
-  for (const l of LANGS) {
-    const b = document.createElement('button');
-    b.type = 'button';
-    b.textContent = l.label;
-    b.setAttribute('role', 'radio');
-    b.setAttribute('aria-checked', String(l.code === lang));
-    b.lang = l.code;
-    b.onclick = () => setLang(l.code);
-    box.appendChild(b);
+  if (!box.options.length) {
+    for (const l of LANGS) {
+      const o = document.createElement('option');
+      o.value = l.code;
+      o.textContent = l.label;
+      o.lang = l.code;
+      box.appendChild(o);
+    }
+    box.onchange = () => setLang(box.value);
   }
+  box.value = lang;
 }
 function applyStrings() {
   document.documentElement.lang = lang;
@@ -51,13 +53,18 @@ function applyStrings() {
   $('#volBanner').hidden = !volunteer;
   const jaDate = last?.data?.ja_list_date;
   const note = t(lang, 'dataNote', { date: jaDate ? fmtDate(jaDate) : '' });
-  $('#dataNote').textContent = jaDate ? note : note.split(/(?<=[.।;])\s/)[0];
+  // The data sources and list dates are stated once, here at the bottom (not on each card).
+  const kDate = last?.data?.kendra_list_date;
+  $('#dataNote').textContent = (jaDate ? note : note.split(/(?<=[.।;])\s/)[0]) + (kDate ? ` ${t(lang, 'kendraSource', { date: fmtDate(kDate) })}.` : '');
 }
 function setLang(code) {
   lang = code;
   store.set('ss_lang', code);
+  // Stop an answer being read out in the old language; Listen is set up again with the new one.
+  try { speechSynthesis.cancel(); } catch {}
   renderLangs();
   applyStrings();
+  renderHomeList();
   if (last) {
     // Re-ask so the agent's answer is composed in the new language (cheap: no photo is re-sent).
     // Not yet confirmed: only redraw in the new language (re-asking by name would skip the check).
@@ -184,10 +191,20 @@ Object.assign($('#camStage .cam-guide').style, { left: '8%', top: '25%', width: 
 // automatic switch, so phones switched automatically are back on the phone camera).
 store.set('ss_cam_mode', null);
 const camMode = () => store.get('ss_cam_choice') || 'phone';
-$('#scanBtn').onclick = () => (camMode() === 'app' ? openCamera() : phoneCamera());
-$('#galleryBtn').onclick = () => $('#gallery').click();
+// "Scan a medicine strip" opens a small menu: take a photo, or choose one from the gallery.
+const scanSheet = $('#scanSheet');
+$('#scanBtn').onclick = () => {
+  // Already on the in-app camera: its own "Use phone camera" link switches back.
+  $('#sheetInApp').hidden = camMode() === 'app';
+  if (scanSheet.showModal) scanSheet.showModal();
+  else $('#sheetCamera').click();
+};
+$('#sheetCamera').onclick = () => { scanSheet.close?.(); camMode() === 'app' ? openCamera() : phoneCamera(); };
+$('#sheetGallery').onclick = () => { scanSheet.close?.(); $('#gallery').click(); };
 // Always available: the in-app camera never leaves the page, so Android cannot lose the photo.
-$('#inAppBtn').onclick = () => $('#camUseApp').click();
+$('#sheetInApp').onclick = () => { scanSheet.close?.(); $('#camUseApp').click(); };
+// Tap outside the menu to close it.
+scanSheet.addEventListener('click', (e) => { if (e.target === scanSheet) scanSheet.close(); });
 $('#camUseApp').onclick = () => {
   store.set('ss_cam_choice', 'app'); // the person chose the in-app camera on this phone
   $('#camLost').hidden = true;
@@ -457,6 +474,78 @@ async function ask({ text, image, ocr, relog = true }) {
 }
 
 
+// ── Medicine list for the pharmacist ────────────────────────────────────────
+// Every medicine found (and confirmed, for photos) is added, one entry per composition, so the
+// person can check several strips and show them all at once. Kept on this phone only.
+const MAX_LIST = 15;
+function medList() {
+  try { const v = JSON.parse(store.get('ss_medlist') || '[]'); return Array.isArray(v) ? v : []; } catch { return []; }
+}
+function saveMedList(list) {
+  store.set('ss_medlist', list.length ? JSON.stringify(list.slice(0, MAX_LIST)) : null);
+  renderHomeList();
+}
+function addToMedList(r) {
+  const m = r.medicine;
+  const ja = r.jan_aushadhi || {};
+  const entry = {
+    ckey: m.ckey,
+    name: m.name,
+    composition: m.composition.split(' · ')[0],
+    form: m.form || '',
+    nti: !!m.nti,
+    // A never-switch medicine gets no Jan Aushadhi code: the pharmacist is asked for the same brand.
+    ja: ja.available && !m.nti ? { name: ja.product.generic_name, code: ja.product.drug_code } : null,
+  };
+  saveMedList([entry, ...medList().filter((x) => x.ckey !== entry.ckey)]);
+}
+function renderHomeList() {
+  const n = medList().length;
+  const b = $('#homeListBtn');
+  b.hidden = !n;
+  b.textContent = n === 1 ? t(lang, 'pharmacistBtn') : t(lang, 'pharmacistBtnN', { n });
+}
+const nbspUnits = (s) => s.replace(/(\d) (mg|mcg|ml|IU|%)/g, '$1 $2');
+function showPharmacist() {
+  const list = medList();
+  if (!list.length) return;
+  $('#phLead').textContent = t(lang, list.length > 1 ? 'pharmacistCardMany' : 'pharmacistCard');
+  $('#phList').innerHTML = list.map((x, i) => `
+    <li>
+      <p class="ph-comp">${esc(nbspUnits(x.composition))}</p>
+      <p class="ph-sub">${esc([x.form, x.name].filter(Boolean).join(' · '))}</p>
+      ${x.nti ? `<p class="ph-nti">${esc(t(lang, 'phNti'))}</p>` : ''}
+      ${x.ja ? `<p class="ph-ja">${esc(t(lang, 'phJa', { name: x.ja.name, code: x.ja.code }))}</p>` : ''}
+      ${list.length > 1 ? `<button class="link ph-remove" type="button" data-i="${i}">${esc(t(lang, 'listRemove'))}</button>` : ''}
+    </li>`).join('');
+  for (const b of $('#phList').querySelectorAll('.ph-remove')) {
+    b.onclick = () => {
+      const l = medList();
+      l.splice(Number(b.dataset.i), 1);
+      saveMedList(l);
+      if (l.length) showPharmacist();
+      else $('#pharmacist').close();
+      updatePhBtn();
+    };
+  }
+  $('#phClear').hidden = list.length < 2;
+  if (!$('#pharmacist').open) $('#pharmacist').showModal();
+}
+$('#phClear').onclick = () => {
+  // Keep the medicine on screen (if any); clear the rest.
+  const keep = last?.status === 'ok' && !$('#result').hidden ? medList().filter((x) => x.ckey === last.medicine?.ckey) : [];
+  saveMedList(keep);
+  $('#pharmacist').close();
+  updatePhBtn();
+};
+$('#homeListBtn').onclick = showPharmacist;
+function updatePhBtn() {
+  const b = $('#phBtn');
+  if (!b) return;
+  const n = medList().length;
+  b.textContent = n > 1 ? t(lang, 'pharmacistBtnN', { n }) : t(lang, 'pharmacistBtn');
+}
+
 // ── Rendering ──────────────────────────────────────────────────────────────
 function fmtDate(iso) {
   const d = new Date(iso + 'T00:00:00+05:30');
@@ -542,9 +631,8 @@ function render(r) {
       <p class="ja-name">${esc(ja.product.generic_name)}</p>
       <p class="ja-price">${rupees(ja.product.mrp)}<small>${esc(ja.product.unit_size || '')}</small></p>
       <p class="med-meta">${esc(t(lang, 'jaMrp'))}${ja.product.unit_price ? ` · ${rupees(ja.product.unit_price)} ${esc(per)}` : ''} · PMBJP ${esc(ja.product.drug_code)}</p>
-      ${ja.nti ? `<div class="safety nti" style="margin-top:10px">${warnIcon}<div>${esc(t(lang, 'jaNtiInfo'))}</div></div>` : ''}
-      ${jaDate ? `<p class="source">${esc(t(lang, 'jaSource', { date: fmtDate(jaDate) }))}</p>` : ''}`
-    : `<p class="muted" style="margin:0">${esc(t(lang, ja.nti ? 'jaNti' : ja.pending ? 'jaPending' : 'jaNone'))}</p>`;
+`
+    : `<p class="muted" style="margin:0">${esc(t(lang, ja.pending ? 'jaPending' : 'jaNone'))}</p>`;
 
   // The official list's "name" is often the licensee's personal name, so a Kendra is shown by
   // its PMBJK code and address only.
@@ -557,14 +645,15 @@ function render(r) {
         <li><div><div class="n">${esc(t(lang, 'kendraName'))}<span class="tag grey">${esc(x.code)}</span></div>
         <div class="m">${esc([x.address, x.district].filter(Boolean).join(', '))}</div>
         <div class="k-actions"><a target="_blank" rel="noopener" href="https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(x.lat && x.lng ? `${x.lat},${x.lng}` : kQuery(x))}">${esc(t(lang, 'directions'))}</a>${x.phone ? `<a href="tel:${esc(x.phone)}">${esc(t(lang, 'call'))}</a>` : ''}</div></div>
-        <div class="p">${x.km != null ? `<b>${x.km} km</b>` : `<b>${esc(x.pin)}</b><span>PIN</span>`}</div></li>`).join('')}</ul>
-      ${kDate ? `<p class="source">${esc(t(lang, 'kendraSource', { date: fmtDate(kDate) }))}</p>` : ''}`
+        <div class="p">${x.km != null ? `<b>${x.km} km</b>` : `<b>${esc(x.pin)}</b><span>PIN</span>`}</div></li>`).join('')}</ul>`
     : `<p class="muted" style="margin:0">${esc(t(lang, k.pending ? 'kendraPending' : pinInput.value.length === 6 ? 'kendraNone' : 'kendraNeedPin'))}</p>`;
 
   // The brand name as read from the strip, when the match was made by composition alone.
   const readName = (r.read?.brand || '').trim();
-  // "Did you buy a cheaper option?" only makes sense when a cheaper option was shown.
-  const hasOption = !m.nti && ((s.saving_pack > 0) || ja.available || items.some((x) => x.name.toLowerCase() !== m.name.toLowerCase() && (m.unit_price == null || x.unit_price < m.unit_price)));
+  // "Will you buy a lower-priced option?" whenever an option is listed: the Jan Aushadhi generic
+  // or another brand with the same composition. Never for a never-switch medicine.
+  const hasOption = !m.nti && (ja.available || (s.saving_pack > 0) || items.some((x) => x.name.toLowerCase() !== m.name.toLowerCase()));
+  addToMedList(r);
 
   const steps = (r.trace || []).map((st) => `<li><code>${esc(st.tool)}</code> ${esc(summarizeStep(st))} <span class="muted">· ${st.ms} ms</span></li>`).join('');
 
@@ -577,11 +666,9 @@ function render(r) {
       ${m.price ? `<p class="med-meta">${esc(t(lang, 'packOf', { n: Math.round(m.pack), price: rupees(m.price) }))} · ${rupees(m.unit_price)} ${esc(per)}${m.manufacturer ? ` · ${esc(m.manufacturer)}` : ''}</p>` : ''}
     </div>
 
-    ${m.nti ? `<div class="safety nti">${warnIcon}<div>${esc(t(lang, 'nti'))}</div></div>` : ''}
-
     ${!m.nti && s.saving_pack > 0 ? `<div class="saving"><p class="big">${esc(t(lang, 'saveUpTo', { amount: rupees(s.saving_pack) }))}</p><p class="small">${rupees(s.scanned_unit)} → ${rupees(s.best_unit)} ${esc(per)}<span class="pct">−${s.pct}%</span></p></div>` : ''}
 
-    <div class="answer" lang="${lang}"><div id="answerText">${esc(r.answer)}</div>
+    <div class="answer${m.nti ? ' nti-answer' : ''}" lang="${lang}"><div id="answerText">${esc(r.answer)}</div>
       <div class="row"><button class="pill" id="listenBtn" hidden>${speakerIcon}${esc(t(lang, 'listen'))}</button></div></div>
 
     ${!m.nti ? `<div class="card">
@@ -615,16 +702,13 @@ function render(r) {
       </div>
     </div>` : ''}
 
-    <details class="steps"><summary>${esc(t(lang, 'stepsTitle'))}</summary><ol>${steps}</ol></details>
+    ${devMode ? `<details class="steps"><summary>${esc(t(lang, 'stepsTitle'))}</summary><ol>${steps}</ol></details>` : ''}
 
     <button class="secondary" id="againBtn">${esc(t(lang, 'another'))}</button>
   `;
 
-  $('#phBtn').onclick = () => {
-    $('#phComp').textContent = m.composition.split(' · ')[0].replace(/(\d) (mg|mcg|ml|IU|%)/g, '$1\u00a0$2');
-    $('#phSub').textContent = [m.form, m.name].filter(Boolean).join(' · ');
-    $('#pharmacist').showModal();
-  };
+  $('#phBtn').onclick = showPharmacist;
+  updatePhBtn();
   for (const b of out.querySelectorAll('.chip')) {
     b.onclick = async () => {
       $('#fb').innerHTML = `<p style="margin:0">${esc(t(lang, 'thanks'))}</p>`;
@@ -634,7 +718,7 @@ function render(r) {
     };
   }
   $('#againBtn').onclick = () => { show('home'); };
-  setupListen(r.answer);
+  setupListen(r.answer, r.lang || lang);
   show('result');
 }
 
@@ -654,12 +738,20 @@ function summarizeStep(st) {
   }
 }
 
-function setupListen(text) {
+// Read the answer aloud in the language it is written in (the answer's own language, not the menu's,
+// so a Kannada answer is never read by an English voice). Android lists voices as "kn_IN".
+function setupListen(text, textLang) {
   const btn = $('#listenBtn');
-  if (!('speechSynthesis' in window)) return;
-  const want = { en: 'en-IN', hi: 'hi-IN', kn: 'kn-IN' }[lang];
-  const pick = () => speechSynthesis.getVoices().find((v) => v.lang === want) || speechSynthesis.getVoices().find((v) => v.lang?.startsWith(lang));
-  const enable = () => { if (pick()) btn.hidden = false; };
+  if (!btn || !('speechSynthesis' in window)) return;
+  speechSynthesis.cancel(); // nothing from an earlier result keeps playing
+  const want = { en: 'en-IN', hi: 'hi-IN', kn: 'kn-IN' }[textLang] || 'en-IN';
+  const norm = (v) => String(v.lang || '').replace('_', '-').toLowerCase();
+  const pick = () => {
+    const voices = speechSynthesis.getVoices();
+    return voices.find((v) => norm(v) === want.toLowerCase()) || voices.find((v) => norm(v).startsWith(textLang + '-')) || null;
+  };
+  // Only offered when the phone has a voice for this language (else it would read in the wrong one).
+  const enable = () => { btn.hidden = textLang !== lang || !pick(); };
   enable();
   speechSynthesis.onvoiceschanged = enable;
   btn.onclick = () => {
@@ -674,5 +766,6 @@ function setupListen(text) {
 
 renderLangs();
 applyStrings();
+renderHomeList();
 // Everything is in place: show the page (index.html holds it hidden until now).
 document.documentElement.removeAttribute('data-boot');

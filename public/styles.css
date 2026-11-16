@@ -18,6 +18,8 @@
   --warn-soft: #fbf3e6;
   --danger: #c4161c;
   --danger-soft: #fdeeee;
+  --brand-navy: #1f3c88;
+  --brand-saffron: #e8731a;
   --radius: 20px;
   --radius-sm: 14px;
   --shadow: 0 1px 2px rgba(0, 0, 0, 0.04), 0 4px 16px rgba(0, 0, 0, 0.04);
@@ -45,6 +47,8 @@
     --danger: #ff6961;
     --danger-soft: #2c1212;
     --shadow: none;
+    --brand-navy: #8fb0ff;
+    --brand-saffron: #ff9a4a;
   }
 }
 
@@ -54,7 +58,8 @@ body {
   margin: 0;
   background: var(--bg);
   color: var(--text);
-  font: 17px/1.47 var(--font);
+  /* Scales with the window: 15px on a small phone, 17px from tablets up. */
+  font: clamp(15px, 3.6vw + 3px, 17px)/1.47 var(--font);
   letter-spacing: -0.022em;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
@@ -80,33 +85,41 @@ button { -webkit-tap-highlight-color: transparent; }
   border-bottom: 0.5px solid var(--line);
 }
 .top > a:not(.brand) { font-size: 15px; }
-.brand { display: flex; align-items: center; gap: 8px; font-weight: 600; font-size: 17px; color: var(--text); letter-spacing: -0.02em; }
+/* Logo and name always on one line; the name shrinks with the window rather than wrapping. */
+.brand { display: flex; align-items: center; gap: 8px; min-width: 0; color: var(--text); white-space: nowrap; }
 .brand:hover { text-decoration: none; }
 .brand .logo { width: 34px; height: 34px; border-radius: 8px; flex: none; }
+/* The name in the logo's colours (navy "SamaSalt", saffron "-Mitra"), in the standard app font. */
+/* Indic-style display face as on the logo, for the name only (Latin letters, same in every language). */
+.wordmark { font-family: 'Rozha One', Georgia, 'Times New Roman', serif; font-weight: 400; font-size: clamp(19px, 5.4vw, 24px); line-height: 1; letter-spacing: 0; color: var(--brand-navy); }
+.wm-mitra { color: var(--brand-saffron); }
 
-.langs { display: flex; background: var(--fill-2); border-radius: 9px; padding: 2px; }
-.langs button {
-  border: 0; background: transparent; color: var(--text); font: 500 13px/1 var(--font); letter-spacing: 0;
-  padding: 7px 11px; border-radius: 7px; cursor: pointer; min-height: 30px;
-  transition: background-color .2s var(--ease), box-shadow .2s var(--ease), color .2s var(--ease);
+/* Language menu, top-right corner. English by default; add languages to LANGS in strings.js. */
+.lang-menu {
+  flex: none; appearance: none; -webkit-appearance: none;
+  border: 0; border-radius: 9px; min-height: 34px; padding: 6px 30px 6px 12px;
+  background: var(--fill-2) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%236e6e73' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E") no-repeat right 10px center;
+  color: var(--text); font: 500 14px/1.2 var(--font); letter-spacing: 0; cursor: pointer;
 }
-.langs button[aria-checked='false'] { color: var(--muted); }
-.langs button[aria-checked='true'] { background: var(--card); box-shadow: 0 1px 1px rgba(0,0,0,.06), 0 2px 6px rgba(0,0,0,.08); }
-@media (prefers-color-scheme: dark) { .langs button[aria-checked='true'] { background: #636366; } }
+/* Too narrow for the name and the menu side by side: stack them, centred. */
+@media (max-width: 300px) {
+  .top { flex-direction: column; justify-content: center; text-align: center; }
+  .brand { justify-content: center; }
+}
 
 /* ── Layout ─────────────────────────────────────────────────────────── */
-main { max-width: 640px; margin: 0 auto; padding: 36px 16px 32px; }
-h1 { font-size: 40px; line-height: 1.08; letter-spacing: -0.028em; margin: 0 0 14px; font-weight: 700; text-wrap: balance; }
-html[lang='kn'] h1, html[lang='hi'] h1 { font-size: 32px; line-height: 1.32; letter-spacing: 0; }
+main { max-width: 640px; margin: 0 auto; padding: clamp(12px, 3.5vh, 64px) 16px clamp(16px, 3vh, 32px); }
+h1 { font-size: clamp(26px, min(8vw, 5.2vh), 56px); line-height: 1.08; letter-spacing: -0.028em; margin: 0 0 clamp(6px, 1.4vh, 14px); font-weight: 700; text-wrap: balance; }
+html[lang='kn'] h1, html[lang='hi'] h1 { font-size: clamp(22px, min(6.6vw, 4.2vh), 40px); line-height: 1.32; letter-spacing: 0; }
 h2 { font-size: 21px; line-height: 1.24; letter-spacing: -0.02em; margin: 0 0 6px; font-weight: 600; }
-.lede { color: var(--muted); margin: 0 0 32px; font-size: 19px; line-height: 1.42; text-wrap: pretty; }
-html[lang='kn'] .lede, html[lang='hi'] .lede { font-size: 17px; line-height: 1.62; }
+.lede { color: var(--muted); margin: 0 0 clamp(12px, 3vh, 32px); font-size: clamp(15px, min(4.4vw, 2.4vh), 19px); line-height: 1.42; text-wrap: pretty; }
+html[lang='kn'] .lede, html[lang='hi'] .lede { font-size: clamp(14px, min(4vw, 2.2vh), 17px); line-height: 1.55; }
 .muted { color: var(--muted); }
 
 /* ── Buttons and fields ─────────────────────────────────────────────── */
 .primary {
   display: flex; align-items: center; justify-content: center; gap: 10px;
-  width: 100%; min-height: 56px; padding: 14px 22px; border: 0;
+  width: 100%; min-height: clamp(48px, 7vh, 56px); padding: 10px 22px; border: 0;
   background: var(--accent); color: var(--accent-ink);
   border-radius: var(--radius-sm); font: 600 17px/1.2 var(--font); letter-spacing: -0.01em; cursor: pointer;
   transition: background-color .2s var(--ease), transform .2s var(--ease);
@@ -114,7 +127,7 @@ html[lang='kn'] .lede, html[lang='hi'] .lede { font-size: 17px; line-height: 1.6
 .primary:hover { background: var(--accent-hover); text-decoration: none; }
 .primary:active { transform: scale(.98); }
 .primary:focus-within { outline: 3px solid color-mix(in srgb, var(--accent) 40%, transparent); outline-offset: 2px; }
-.hint { color: var(--muted); font-size: 14px; text-align: center; margin: 12px 0 0; line-height: 1.45; }
+.hint { color: var(--muted); font-size: clamp(12.5px, 1.8vh, 14px); text-align: center; margin: clamp(4px, 1.2vh, 12px) 0 0; line-height: 1.4; }
 
 .secondary {
   display: inline-flex; align-items: center; justify-content: center;
@@ -125,12 +138,12 @@ html[lang='kn'] .lede, html[lang='hi'] .lede { font-size: 17px; line-height: 1.6
 .secondary:hover { background: var(--fill-2); }
 .link { background: none; border: 0; color: var(--accent); font: 500 15px var(--font); cursor: pointer; padding: 8px 4px; }
 
-.divider { display: flex; align-items: center; gap: 14px; color: var(--faint); font-size: 13px; margin: 30px 0 14px; letter-spacing: 0; }
+.divider { display: flex; align-items: center; gap: 14px; color: var(--faint); font-size: 13px; margin: clamp(10px, 2.8vh, 30px) 0 clamp(6px, 1.4vh, 14px); letter-spacing: 0; }
 .divider::before, .divider::after { content: ''; flex: 1; height: 1px; background: var(--fill-2); }
 
 /* Grouped form, like an iOS inset list. */
 .group { background: var(--card); border-radius: var(--radius); box-shadow: var(--shadow); overflow: hidden; }
-.group .field { display: flex; align-items: center; gap: 10px; padding: 6px 6px 6px 18px; min-height: 60px; transition: background-color .2s var(--ease); }
+.group .field { display: flex; align-items: center; gap: 10px; padding: 4px 6px 4px 18px; min-height: clamp(50px, 7.5vh, 60px); transition: background-color .2s var(--ease); }
 .group .field + .field { border-top: 0.5px solid var(--line); }
 .group label.cap { flex: none; width: 82px; font-size: 15px; color: var(--muted); letter-spacing: 0; }
 input[type='text'] {
@@ -141,7 +154,7 @@ input[type='text'] {
 input[type='text']::placeholder { color: var(--faint); }
 .field .secondary { min-height: 44px; padding: 0 18px; background: var(--accent); color: var(--accent-ink); }
 .field .secondary:hover { background: var(--accent-hover); }
-.field-note { color: var(--muted); font-size: 13px; margin: 8px 18px 0; line-height: 1.45; letter-spacing: 0; }
+.field-note { color: var(--muted); font-size: clamp(12px, 1.7vh, 13px); margin: clamp(4px, 1vh, 8px) 18px 0; line-height: 1.45; letter-spacing: 0; }
 #pinInput { letter-spacing: 0.06em; font-variant-numeric: tabular-nums; }
 
 .volunteer-banner { margin-top: 20px; padding: 12px 16px; border-radius: var(--radius-sm); background: var(--accent-soft); color: var(--text); font-size: 14px; }
@@ -174,7 +187,16 @@ html[data-boot] .home { animation: none; }
 .cam-note { background: var(--warn-soft); color: var(--warn); border-radius: 12px; padding: 10px 14px; font-size: 14px; line-height: 1.45; letter-spacing: 0; margin: 0 0 12px; }
 .cam-note[hidden] { display: none; }
 #camLost { margin-top: 12px; }
-.scan-alt { text-align: center; margin: 4px 0 0; }
+/* Gallery / in-app camera links: side by side when they fit, else one per line (no stray dot). */
+.scan-alt { display: flex; flex-wrap: wrap; justify-content: center; column-gap: 16px; margin: 2px 0 0; }
+.scan-alt[hidden] { display: none; }
+.scan-alt > span[aria-hidden] { display: none; }
+.scan-alt .link { font-size: clamp(14px, 3.8vw, 15px); padding: 6px 2px; }
+/* Short screens (small phones): drop the intro paragraph and tips so the home screen fits. */
+@media (max-height: 640px) {
+  .home .lede, .home .scan-text-tip, .home .hint { display: none; }
+  .home h1 { margin-bottom: 12px; }
+}
 .read-why { margin: 10px 0 0; font-size: 15px; line-height: 1.45; letter-spacing: 0; color: var(--muted); }
 
 /* Crop step after a photo: a box over the name and composition; only that area is sent. */
@@ -212,7 +234,7 @@ html[lang='kn'] .saving .big, html[lang='hi'] .saving .big { font-size: 24px; li
 .saving .small { margin: 6px 0 0; color: var(--muted); font-size: 15px; font-variant-numeric: tabular-nums; }
 .pct { display: inline-block; margin-left: 6px; padding: 1px 8px; border-radius: 999px; background: var(--accent-soft); color: var(--accent); font-weight: 600; font-size: 13px; letter-spacing: 0; }
 
-.answer { background: var(--card); border-radius: var(--radius); padding: 20px; box-shadow: var(--shadow); font-size: 18px; line-height: 1.55; letter-spacing: -0.015em; }
+.answer { background: var(--card); border-radius: var(--radius); padding: 20px; box-shadow: var(--shadow); font-size: clamp(16px, 4.2vw, 18px); line-height: 1.55; letter-spacing: -0.015em; }
 .answer[lang='kn'], .answer[lang='hi'] { font-size: 17px; line-height: 1.75; letter-spacing: 0; }
 .answer .row { display: flex; justify-content: flex-start; margin-top: 14px; }
 .answer .row:has(> [hidden]:only-child) { display: none; }
@@ -246,6 +268,7 @@ html[lang='kn'] .saving .big, html[lang='hi'] .saving .big { font-size: 24px; li
 .safety svg { flex: none; color: var(--warn); margin-top: 1px; }
 .nti { background: var(--danger-soft); font-size: 16px; font-weight: 500; }
 .nti svg { color: var(--danger); }
+.answer.nti-answer { background: var(--danger-soft); font-weight: 500; }
 
 .actions { display: grid; gap: 10px; margin-top: 4px; }
 
@@ -281,11 +304,32 @@ dialog.pharmacist::backdrop { background: rgba(0,0,0,.4); backdrop-filter: blur(
 .ph-comp { font-size: 32px; font-weight: 700; line-height: 1.15; margin: 0 0 10px; letter-spacing: -0.028em; }
 .ph-sub { color: var(--muted); margin: 0 0 24px; }
 dialog.pharmacist .secondary { width: 100%; }
+dialog.pharmacist { max-height: 90dvh; overflow-y: auto; }
+.ph-list { list-style: none; margin: 0 0 8px; padding: 0; }
+.ph-list li { padding: 14px 0; border-top: 0.5px solid var(--line); }
+.ph-list li:first-child { border-top: 0; padding-top: 0; }
+.ph-list .ph-comp { font-size: clamp(22px, 6.5vw, 30px); margin: 0 0 6px; }
+.ph-list .ph-sub { margin: 0; }
+.ph-ja { margin: 8px 0 0; font-size: 16px; font-weight: 600; color: var(--accent); }
+.ph-nti { margin: 8px 0 0; font-size: 15px; font-weight: 600; color: var(--danger); }
+.ph-remove { padding: 6px 0 0; font-size: 14px; }
+.ph-hint { margin: 4px 0 14px; text-align: left; }
+#phClear[hidden] { display: none; }
+
+/* Scan menu: Take photo / Choose from gallery. A bottom sheet on phones. */
+dialog.sheet { border: 0; border-radius: 24px; padding: 24px 20px 16px; width: min(480px, calc(100vw - 24px)); background: var(--card); color: var(--text); box-shadow: 0 24px 80px rgba(0,0,0,.25); }
+@media (max-width: 600px) { dialog.sheet { margin: auto auto 12px; } }
+dialog.sheet[open] { animation: pop .25s var(--ease) both; }
+dialog.sheet::backdrop { background: rgba(0,0,0,.4); }
+.sheet-title { font-size: 19px; font-weight: 600; margin: 0 0 4px; text-align: center; }
+dialog.sheet .crop-actions .secondary { width: 100%; }
+.crop-links [hidden] { display: none; }
+
+/* Home: the list of medicines checked so far. */
+.list-btn { width: 100%; margin-top: 12px; background: var(--card); box-shadow: var(--shadow); }
+.list-btn[hidden] { display: none; }
 
 @media (min-width: 700px) {
-  h1 { font-size: 56px; letter-spacing: -0.035em; }
-  html[lang='kn'] h1, html[lang='hi'] h1 { font-size: 40px; }
-  main { padding-top: 64px; }
-  .langs button { padding: 7px 14px; }
+  h1 { letter-spacing: -0.035em; }
 }
 @media (prefers-reduced-motion: reduce) { *, *::before { animation: none !important; transition: none !important; } }

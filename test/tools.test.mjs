@@ -117,7 +117,7 @@ test('answer: same facts, safety line in all three languages; NTI never suggests
   assert.match(composeAnswer('hi', f), /डॉक्टर या फ़ार्मासिस्ट/);
   for (const lang of ['en', 'kn', 'hi']) assert.match(composeAnswer(lang, f), /532/);
   const nti = composeAnswer('en', { ...f, brand: 'Warf 5 Tablet', composition: 'Warfarin 5 mg', nti: true });
-  assert.match(nti, /Do not switch/);
+  assert.match(nti, /Do not change its brand/);
   assert.doesNotMatch(nti, /lowest-priced/);
 });
 
@@ -150,7 +150,7 @@ test('agent: narrow-therapeutic-index medicine shows no cheaper list', async () 
   assert.equal(r.status, 'ok');
   assert.equal(r.medicine.nti, true);
   assert.equal(r.same_salt.items.length, 0);
-  assert.match(r.answer, /Do not switch/);
+  assert.match(r.answer, /Do not change its brand/);
 });
 
 test('identify: typed generic combination without "+" or dosage form still gets the exact key', async () => {
@@ -339,6 +339,6 @@ test('safety: for a never-switch medicine the Jan Aushadhi product is informatio
   assert.equal(r.jan_aushadhi.product.drug_code, '2295');
   assert.equal(r.same_salt.items.length, 0); // no brand list
   assert.equal(r.saving.saving_pack, null); // no saving
-  assert.match(r.answer, /Do not switch/);
+  assert.match(r.answer, /Do not change its brand/);
   assert.doesNotMatch(r.answer, /Jan Aushadhi|₹/); // no price in the spoken answer
 });

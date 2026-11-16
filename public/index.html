@@ -13,6 +13,8 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Noto+Sans+Kannada:wght@400;500;600;700&family=Noto+Sans+Devanagari:wght@400;500;600;700&display=optional" rel="stylesheet">
+  <!-- The name in an Indic-style display face, as on the logo (only these letters are downloaded). -->
+  <link href="https://fonts.googleapis.com/css2?family=Rozha+One&text=SamaltMir-&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="/styles.css">
   <!-- Hold the page until app.js has put in the text for the chosen language, so a refresh
        doesn't paint empty or English text first and then jump. Shown anyway after 1.5 s. -->
@@ -22,9 +24,9 @@
   <header class="top">
     <a class="brand" href="/" aria-label="SamaSalt-Mitra home">
       <img class="logo" src="/icon-128.png" width="34" height="34" alt="">
-      <span>SamaSalt-Mitra</span>
+      <span class="wordmark">SamaSalt<span class="wm-mitra">-Mitra</span></span>
     </a>
-    <div class="langs" role="radiogroup" aria-label="Language" id="langs"></div>
+    <select class="lang-menu" id="langs" aria-label="Language"></select>
   </header>
 
   <main id="app">
@@ -36,13 +38,14 @@
         <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 8.5A2.5 2.5 0 0 1 5.5 6h1.8l1.4-2h6.6l1.4 2h1.8A2.5 2.5 0 0 1 21 8.5v9a2.5 2.5 0 0 1-2.5 2.5h-13A2.5 2.5 0 0 1 3 17.5z"/><circle cx="12" cy="13" r="3.6"/></svg>
         <span data-t="scan">Scan a medicine strip</span>
       </button>
-      <!-- Fallbacks when the in-app camera is not available: the phone camera app, or the gallery. -->
+      <!-- The phone camera app and the gallery (chosen in the scan menu below). -->
       <input id="photo" type="file" accept="image/*" capture="environment" hidden>
       <input id="gallery" type="file" accept="image/*" hidden>
-      <p class="scan-alt"><button class="link" id="galleryBtn" type="button" data-t="camGallery">Choose from gallery</button><span aria-hidden="true"> · </span><button class="link" id="inAppBtn" type="button" data-t="camUseApp">Use the in-app camera instead</button></p>
       <p class="cam-note" id="camLost" hidden data-t="camLost"></p>
       <p class="scan-alt" id="camLostActions" hidden><button class="link" id="camUseApp" type="button" data-t="camUseApp">Use the in-app camera instead</button></p>
       <p class="hint" data-t="scanHint"></p>
+      <!-- Medicines checked so far (kept on this phone only), to show the pharmacist in one go. -->
+      <button class="secondary list-btn" id="homeListBtn" type="button" hidden></button>
 
       <div class="divider"><span data-t="orType">or type the name</span></div>
       <p class="field-note scan-text-tip" data-t="scanTextTip"></p>
@@ -128,11 +131,23 @@
     <p class="data-note" id="dataNote"></p>
   </footer>
 
+  <!-- "Scan a medicine strip": take a photo or choose one from the gallery. -->
+  <dialog id="scanSheet" class="sheet">
+    <p class="sheet-title" data-t="scan">Scan a medicine strip</p>
+    <div class="crop-actions">
+      <button class="primary" id="sheetCamera" type="button" data-t="camShoot">Take photo</button>
+      <button class="secondary" id="sheetGallery" type="button" data-t="camGallery">Choose from gallery</button>
+      <p class="crop-links"><button class="link" id="sheetInApp" type="button" data-t="camUseApp">Use the in-app camera instead</button></p>
+      <form method="dialog" class="crop-links"><button class="link" data-t="cropCancel">Cancel</button></form>
+    </div>
+  </dialog>
+
+  <!-- Shown to the pharmacist: every medicine checked, by composition, with its Jan Aushadhi code. -->
   <dialog id="pharmacist" class="pharmacist">
-    <p class="ph-lead" data-t="pharmacistCard"></p>
-    <p class="ph-comp" id="phComp"></p>
-    <p class="ph-sub" id="phSub"></p>
-    <form method="dialog"><button class="secondary" data-t="close">Close</button></form>
+    <p class="ph-lead" id="phLead"></p>
+    <ol class="ph-list" id="phList"></ol>
+    <p class="field-note ph-hint" data-t="listHint"></p>
+    <form method="dialog" class="crop-actions"><button class="secondary" data-t="close">Close</button><button class="link" id="phClear" type="button" value="clear" data-t="listClear">Clear list</button></form>
   </dialog>
 
   <script type="module" src="/app.js"></script>

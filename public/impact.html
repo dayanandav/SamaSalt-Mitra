@@ -4,12 +4,13 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <title>SamaSalt-Mitra impact</title>
-  <meta name="description" content="Live, anonymous impact data from real SamaSalt-Mitra lookups: medicines checked, savings found, people who switched.">
+  <meta name="description" content="Live, anonymous impact data from real SamaSalt-Mitra lookups: medicines checked, savings found, people who chose a lower-priced option.">
   <link rel="icon" href="/icon-128.png" type="image/png">
   <link rel="apple-touch-icon" href="/icon-256.png">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=optional" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Rozha+One&text=SamaltMir-&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="/styles.css">
   <style>
     :root { --bar: #0a7a4b; }
@@ -55,7 +56,7 @@
   <header class="top">
     <a class="brand" href="/" aria-label="SamaSalt-Mitra home">
       <img class="logo" src="/icon-128.png" width="34" height="34" alt="">
-      <span>SamaSalt-Mitra</span>
+      <span class="wordmark">SamaSalt<span class="wm-mitra">-Mitra</span></span>
     </a>
     <a href="/">Check a medicine</a>
   </header>
@@ -95,7 +96,7 @@
         <li>One row per completed lookup: time, matched medicine, its price per unit, the cheapest same-salt brand and the Jan Aushadhi price per unit, language, the first 3 digits of the PIN code if typed, and an optional "did you switch?" answer.</li>
         <li>No photos (they are read in memory and discarded), names, phone numbers, IP addresses or precise locations are stored.</li>
         <li><b>Saving found</b> = (scanned brand price − cheaper of lowest-priced same-salt brand and Jan Aushadhi) per unit × units in the scanned pack. It is the saving <i>available</i> on one pack, not money actually saved.</li>
-        <li><b>Reported saving</b> counts only lookups where the person tapped "Yes, I switched".</li>
+        <li><b>Reported saving</b> counts only lookups where the person answered "Yes" to "Will you buy a lower-priced option?" (an intention, not a confirmed purchase).</li>
         <li>Brand prices are printed MRPs from a November 2022 dataset; Jan Aushadhi prices are from the official PMBJP list (date above).</li>
         <li>Test traffic (automated evals, demo recordings, developer checks) is flagged and excluded: <span id="testCount">—</span> test lookups excluded so far.</li>
         <li>Raw aggregate JSON: <a href="/api/impact">/api/impact</a> · data status: <a href="/api/health">/api/health</a></li>
@@ -132,7 +133,7 @@
       [num(T.with_cheaper_option) + ' / ' + num(T.matched), 'matched medicines with a cheaper exact-salt option'],
       [num(T.not_found), 'not found (to fix the data)'],
       [inr(T.potential_saving), 'saving found, one pack each'],
-      [num(T.switched_yes), 'said they switched'],
+      [num(T.switched_yes), 'said they will switch'],
       [inr(T.reported_saving), 'saving reported by switchers'],
       [num(T.volunteer_lookups), 'lookups with a volunteer'],
     ];
