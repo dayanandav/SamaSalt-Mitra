@@ -74,7 +74,7 @@ The agent is a **fixed, auditable tool plan** — `read_strip → identify_medic
 
 ## Accuracy (tests and evals)
 
-- **Unit tests:** `node --import ./test/register-md.mjs --test test/normalize.test.mjs test/tools.test.mjs` → **29/29 pass** — strength normalisation (650 mg = 0.65 g = 650 MG), multi-salt order and spelling (Amoxycillin/Amoxicillin), SR vs plain, combinations vs single salts, NTI handling, PIN/location Kendra search, savings, the three-language answer, typed generic combinations ("amoxicillin clavulanic acid 500 125 tablet"), and the whole agent with a stubbed vision model. `python test/test_build_ja.py` checks the PMBJP-name parser.
+- **Unit tests:** `node --import ./test/register-md.mjs --test test/*.test.mjs` → **71/71 pass** — the safety rules for what the page shows (no Jan Aushadhi code or switch question for never-switch medicines, nothing before a photo read is confirmed, Listen only in the right language), strength normalisation (650 mg = 0.65 g = 650 MG), multi-salt order and spelling (Amoxycillin/Amoxicillin), SR vs plain, combinations vs single salts, NTI handling, PIN/location Kendra search, savings, the three-language answer, typed generic combinations ("amoxicillin clavulanic acid 500 125 tablet"), and the whole agent with a stubbed vision model. `python test/test_build_ja.py` checks the PMBJP-name parser.
 - **Key parity:** the JavaScript key builder reproduces the Python pipeline's key on **2,000/2,000** randomly sampled database rows.
 - **End-to-end evals against the live deployment** (`node evals/run_evals.mjs`, results in [`evals/RESULTS.md`](evals/RESULTS.md)): **23/23** — 15 strip photos, 3 deliberately hard photos (heavy blur, cropped, a brand not in the database, which is matched by its printed composition) and 5 typed queries including Kannada and Hindi script. Last run 12 Oct 2026, after the Jan Aushadhi data was loaded: 23/23, median 2.4 s per lookup. One earlier run had a transient failure on the very first request after a deploy; the app and the eval runner now retry once.
 - **Prompt eval in AgentFoundry:** the `understand_text` prompt passes **12/12** cases (Kannada/Hindi/Hinglish brands, "no medicine" text, prompt injection, JSON-only) on AF's served model.
@@ -116,7 +116,7 @@ git clone https://github.com/dayanandav/SamaSalt-Mitra && cd SamaSalt-Mitra
 git clone https://github.com/darshanrajagoli/samesalt ../samesalt          # brand database (Git LFS)
 
 # tests
-node --import ./test/register-md.mjs --test test/normalize.test.mjs test/tools.test.mjs
+node --import ./test/register-md.mjs --test test/*.test.mjs
 python test/test_build_ja.py
 
 # Cloudflare: database + seed

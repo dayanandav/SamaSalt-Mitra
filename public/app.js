@@ -1,4 +1,5 @@
 import { LANGS, STRINGS, t, rupees, unitKind } from '/strings.js';
+import { pharmacistEntry, mergeMedList, asksToSwitch, canShowPharmacist, listenAllowed, pickVoice } from '/rules.js';
 
 const $ = (s) => document.querySelector(s);
 const store = {
@@ -486,18 +487,7 @@ function saveMedList(list) {
   renderHomeList();
 }
 function addToMedList(r) {
-  const m = r.medicine;
-  const ja = r.jan_aushadhi || {};
-  const entry = {
-    ckey: m.ckey,
-    name: m.name,
-    composition: m.composition.split(' · ')[0],
-    form: m.form || '',
-    nti: !!m.nti,
-    // A never-switch medicine gets no Jan Aushadhi code: the pharmacist is asked for the same brand.
-    ja: ja.available && !m.nti ? { name: ja.product.generic_name, code: ja.product.drug_code } : null,
-  };
-  saveMedList([entry, ...medList().filter((x) => x.ckey !== entry.ckey)]);
+  if (canShowPharmacist(r)) saveMedList(mergeMedList(medList(), pharmacistEntry(r), MAX_LIST));
 }
 function renderHomeList() {
   const n = medList().length;
@@ -652,7 +642,7 @@ function render(r) {
   const readName = (r.read?.brand || '').trim();
   // "Will you buy a lower-priced option?" whenever an option is listed: the Jan Aushadhi generic
   // or another brand with the same composition. Never for a never-switch medicine.
-  const hasOption = !m.nti && (ja.available || (s.saving_pack > 0) || items.some((x) => x.name.toLowerCase() !== m.name.toLowerCase()));
+  const hasOption = asksToSwitch(r);
   addToMedList(r);
 
   const steps = (r.trace || []).map((st) => `<li><code>${esc(st.tool)}</code> ${esc(summarizeStep(st))} <span class="muted">· ${st.ms} ms</span></li>`).join('');
@@ -745,13 +735,9 @@ function setupListen(text, textLang) {
   if (!btn || !('speechSynthesis' in window)) return;
   speechSynthesis.cancel(); // nothing from an earlier result keeps playing
   const want = { en: 'en-IN', hi: 'hi-IN', kn: 'kn-IN' }[textLang] || 'en-IN';
-  const norm = (v) => String(v.lang || '').replace('_', '-').toLowerCase();
-  const pick = () => {
-    const voices = speechSynthesis.getVoices();
-    return voices.find((v) => norm(v) === want.toLowerCase()) || voices.find((v) => norm(v).startsWith(textLang + '-')) || null;
-  };
+  const pick = () => pickVoice(textLang, speechSynthesis.getVoices());
   // Only offered when the phone has a voice for this language (else it would read in the wrong one).
-  const enable = () => { btn.hidden = textLang !== lang || !pick(); };
+  const enable = () => { btn.hidden = !listenAllowed(textLang, lang, speechSynthesis.getVoices()); };
   enable();
   speechSynthesis.onvoiceschanged = enable;
   btn.onclick = () => {
