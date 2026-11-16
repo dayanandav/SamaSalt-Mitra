@@ -90,9 +90,10 @@ button { -webkit-tap-highlight-color: transparent; }
 .brand:hover { text-decoration: none; }
 .brand .logo { width: 34px; height: 34px; border-radius: 8px; flex: none; }
 /* The name in the logo's colours (navy "SamaSalt", saffron "-Mitra"), in the standard app font. */
-/* Indic-style display face as on the logo, for the name only (Latin letters, same in every language). */
-.wordmark { font-family: 'Rozha One', Georgia, 'Times New Roman', serif; font-weight: 400; font-size: clamp(19px, 5.4vw, 24px); line-height: 1; letter-spacing: 0; color: var(--brand-navy); }
-.wm-mitra { color: var(--brand-saffron); }
+/* The name as drawn on the logo (public/assets/SamaSalt-Mitra-Wordmark.svg): an image, so it looks
+   the same on every phone and in every language. Sized by height in the bar; never wider than the room left. */
+.brand-wordmark { display: block; height: clamp(22px, 6.4vw, 30px); width: auto; max-width: min(100%, 520px); object-fit: contain; min-width: 0; }
+@media (prefers-color-scheme: dark) { .brand-wordmark { filter: brightness(1.9) saturate(1.1); } }
 
 /* Language menu, top-right corner. English by default; add languages to LANGS in strings.js. */
 .lang-menu {
@@ -316,13 +317,6 @@ dialog.pharmacist { max-height: 90dvh; overflow-y: auto; }
 .ph-hint { margin: 4px 0 14px; text-align: left; }
 #phClear[hidden] { display: none; }
 
-/* Scan menu: Take photo / Choose from gallery. A bottom sheet on phones. */
-dialog.sheet { border: 0; border-radius: 24px; padding: 24px 20px 16px; width: min(480px, calc(100vw - 24px)); background: var(--card); color: var(--text); box-shadow: 0 24px 80px rgba(0,0,0,.25); }
-@media (max-width: 600px) { dialog.sheet { margin: auto auto 12px; } }
-dialog.sheet[open] { animation: pop .25s var(--ease) both; }
-dialog.sheet::backdrop { background: rgba(0,0,0,.4); }
-.sheet-title { font-size: 19px; font-weight: 600; margin: 0 0 4px; text-align: center; }
-dialog.sheet .crop-actions .secondary { width: 100%; }
 .crop-links [hidden] { display: none; }
 
 /* Home: the list of medicines checked so far. */
@@ -333,3 +327,12 @@ dialog.sheet .crop-actions .secondary { width: 100%; }
   h1 { letter-spacing: -0.035em; }
 }
 @media (prefers-reduced-motion: reduce) { *, *::before { animation: none !important; transition: none !important; } }
+
+/* "Why?" for never-switch medicines: tap to read the reason. */
+details.why { margin: 8px 0 0; }
+details.why summary { cursor: pointer; list-style: none; }
+details.why summary::-webkit-details-marker { display: none; }
+details.why .why-link { color: var(--accent); font-weight: 600; text-decoration: underline; text-underline-offset: 3px; white-space: nowrap; }
+details.why p { margin: 8px 0 0; font-size: 15px; font-weight: 400; line-height: 1.5; color: var(--text); letter-spacing: 0; }
+details.ph-nti summary > span:first-child { color: var(--danger); font-weight: 600; font-size: 15px; }
+details.why-inline { margin-top: 12px; }

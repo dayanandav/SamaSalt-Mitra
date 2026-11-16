@@ -6,7 +6,7 @@ import assert from 'node:assert/strict';
 import { fixtureDb } from './d1shim.mjs';
 import { runAgent } from '../worker/src/agent.js';
 import { STRINGS, composeAnswer } from '../public/strings.js';
-import { pharmacistEntry, mergeMedList, asksToSwitch, canShowPharmacist, listenAllowed, pickVoice } from '../public/rules.js';
+import { pharmacistEntry, mergeMedList, asksToSwitch, canShowPharmacist, shouldAddToList, listenAllowed, pickVoice } from '../public/rules.js';
 
 // TEST FIXTURES ONLY (made-up codes and prices).
 const JA = [
@@ -115,7 +115,7 @@ test('critical: never-switch answer has one caution, no price, no Jan Aushadhi, 
 
 test('warning texts: standard disclaimer and caution exist in every language, never name the app', () => {
   for (const lang of Object.keys(STRINGS)) {
-    for (const key of ['safety', 'nti', 'phNti', 'phJa', 'switchQ', 'switchYes', 'switchAsk', 'switchNo', 'cropUse', 'cropFull', 'pharmacistBtnN', 'pharmacistCardMany', 'listHint']) {
+    for (const key of ['safety', 'nti', 'phNti', 'phJa', 'switchQ', 'switchYes', 'switchAsk', 'switchNo', 'cropUse', 'cropFull', 'pharmacistBtnN', 'pharmacistCardMany', 'listHint', 'ntiWhyTitle', 'ntiWhy']) {
       assert.equal(typeof STRINGS[lang][key], 'string', `${lang}.${key}`);
       assert.ok(STRINGS[lang][key].length > 0, `${lang}.${key}`);
     }
@@ -125,4 +125,27 @@ test('warning texts: standard disclaimer and caution exist in every language, ne
   }
   // The caution itself must not point to any cheaper product.
   assert.doesNotMatch(composeAnswer('en', { brand: 'Warf 5 Tablet', composition: 'Warfarin 5 mg', nti: true, count: 9, cheapBrand: 'Cheap', cheapUnit: 1, yourUnit: 2, jaName: 'JA', jaUnit: 1, saving: 5, pack: 10, form: 'tablet' }), /Cheap|JA|₹/);
+});
+
+test('critical: a removed medicine does not come back after a language change', async () => {
+  const r = await ask('Dolo 650');
+  r.fresh = true; // a new lookup
+  assert.equal(shouldAddToList(r), true);
+  r.addedToList = true;
+  assert.equal(shouldAddToList(r), false, 'the same result re-rendered is not added twice');
+  const relang = await ask('Dolo 650', 'kn');
+  relang.fresh = false; // the app re-asks with relog:false when only the language changes
+  assert.equal(shouldAddToList(relang), false, 'language re-ask never re-adds');
+  const scanned = await scan('Dolo 650\nParacetamol Tablets IP 650 mg\nEach uncoated tablet contains Paracetamol IP 650 mg');
+  scanned.fresh = true;
+  assert.equal(shouldAddToList(scanned), false, 'not before the read is confirmed');
+  scanned.confirmed = true;
+  assert.equal(shouldAddToList(scanned), true);
+});
+
+test('never-switch: the reason is explained in every language, with no price and no brand advice', () => {
+  for (const lang of Object.keys(STRINGS)) {
+    assert.ok(STRINGS[lang].ntiWhy.length > 80, lang);
+    assert.doesNotMatch(STRINGS[lang].ntiWhy, /₹|SamaSalt|Jan Aushadhi|ಜನ ಔಷಧಿ|जन औषधि/, lang);
+  }
 });

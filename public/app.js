@@ -1,5 +1,5 @@
 import { LANGS, STRINGS, t, rupees, unitKind } from '/strings.js';
-import { pharmacistEntry, mergeMedList, asksToSwitch, canShowPharmacist, listenAllowed, pickVoice } from '/rules.js';
+import { pharmacistEntry, mergeMedList, asksToSwitch, shouldAddToList, listenAllowed, pickVoice } from '/rules.js';
 
 const $ = (s) => document.querySelector(s);
 const store = {
@@ -66,6 +66,7 @@ function setLang(code) {
   renderLangs();
   applyStrings();
   renderHomeList();
+  if ($('#pharmacist').open) showPharmacist();
   if (last) {
     // Re-ask so the agent's answer is composed in the new language (cheap: no photo is re-sent).
     // Not yet confirmed: only redraw in the new language (re-asking by name would skip the check).
@@ -192,20 +193,14 @@ Object.assign($('#camStage .cam-guide').style, { left: '8%', top: '25%', width: 
 // automatic switch, so phones switched automatically are back on the phone camera).
 store.set('ss_cam_mode', null);
 const camMode = () => store.get('ss_cam_choice') || 'phone';
-// "Scan a medicine strip" opens a small menu: take a photo, or choose one from the gallery.
-const scanSheet = $('#scanSheet');
-$('#scanBtn').onclick = () => {
-  // Already on the in-app camera: its own "Use phone camera" link switches back.
-  $('#sheetInApp').hidden = camMode() === 'app';
-  if (scanSheet.showModal) scanSheet.showModal();
-  else $('#sheetCamera').click();
-};
-$('#sheetCamera').onclick = () => { scanSheet.close?.(); camMode() === 'app' ? openCamera() : phoneCamera(); };
-$('#sheetGallery').onclick = () => { scanSheet.close?.(); $('#gallery').click(); };
-// Always available: the in-app camera never leaves the page, so Android cannot lose the photo.
-$('#sheetInApp').onclick = () => { scanSheet.close?.(); $('#camUseApp').click(); };
-// Tap outside the menu to close it.
-scanSheet.addEventListener('click', (e) => { if (e.target === scanSheet) scanSheet.close(); });
+// "Scan a medicine strip" opens the phone's own picker with the camera AND the gallery in one place.
+// If this phone was switched to the in-app camera (after Android closed the page for low memory),
+// that camera opens instead; it has its own "Choose from gallery" button.
+function pickPhoto() {
+  store.set('ss_cam_at', String(Date.now())); // the camera may close this page: noticed on reload
+  $('#pick').click();
+}
+$('#scanBtn').onclick = () => (camMode() === 'app' ? openCamera() : pickPhoto());
 $('#camUseApp').onclick = () => {
   store.set('ss_cam_choice', 'app'); // the person chose the in-app camera on this phone
   $('#camLost').hidden = true;
@@ -282,7 +277,10 @@ document.addEventListener('visibilitychange', () => {
   }
 }
 
-for (const id of ['#photo', '#gallery']) $(id).addEventListener('change', (e) => handlePhotoFile(e));
+for (const id of ['#pick', '#photo', '#gallery']) $(id).addEventListener('change', (e) => handlePhotoFile(e));
+// Picker closed without a photo: the page was not closed by the camera, so forget the marker
+// (else a later reload would wrongly switch this phone to the in-app camera).
+for (const id of ['#pick', '#photo']) $(id).addEventListener('cancel', () => store.set('ss_cam_at', null));
 
 async function handlePhotoFile(e) {
   store.set('ss_cam_at', null);
@@ -470,10 +468,17 @@ async function ask({ text, image, ocr, relog = true }) {
   // on real strips it read junk and matched wrong medicines. Ask for typing / keyboard scan.
   if (r.status === 'vision_unavailable') r = { status: 'vision_down' };
   if (!relog && last?.lookup_id) r.lookup_id = last.lookup_id; // keep feedback tied to the original lookup
+  // A re-ask for a language change is the same lookup: it must not add to the pharmacist list again.
+  r.fresh = relog;
   last = r;
   render(r);
 }
 
+
+// "Same brand only. Do not substitute. Why?" — tap to read the reason (never-switch medicines).
+function whyHtml(cls, lead) {
+  return `<details class="why ${cls}"><summary>${lead ? `<span>${esc(lead)}</span> ` : ''}<span class="why-link">${esc(t(lang, 'ntiWhyTitle'))}</span></summary><p>${esc(t(lang, 'ntiWhy'))}</p></details>`;
+}
 
 // ── Medicine list for the pharmacist ────────────────────────────────────────
 // Every medicine found (and confirmed, for photos) is added, one entry per composition, so the
@@ -487,7 +492,9 @@ function saveMedList(list) {
   renderHomeList();
 }
 function addToMedList(r) {
-  if (canShowPharmacist(r)) saveMedList(mergeMedList(medList(), pharmacistEntry(r), MAX_LIST));
+  if (!shouldAddToList(r)) return;
+  r.addedToList = true;
+  saveMedList(mergeMedList(medList(), pharmacistEntry(r), MAX_LIST));
 }
 function renderHomeList() {
   const n = medList().length;
@@ -504,7 +511,7 @@ function showPharmacist() {
     <li>
       <p class="ph-comp">${esc(nbspUnits(x.composition))}</p>
       <p class="ph-sub">${esc([x.form, x.name].filter(Boolean).join(' · '))}</p>
-      ${x.nti ? `<p class="ph-nti">${esc(t(lang, 'phNti'))}</p>` : ''}
+      ${x.nti ? whyHtml('ph-nti', t(lang, 'phNti')) : ''}
       ${x.ja ? `<p class="ph-ja">${esc(t(lang, 'phJa', { name: x.ja.name, code: x.ja.code }))}</p>` : ''}
       ${list.length > 1 ? `<button class="link ph-remove" type="button" data-i="${i}">${esc(t(lang, 'listRemove'))}</button>` : ''}
     </li>`).join('');
@@ -659,7 +666,8 @@ function render(r) {
     ${!m.nti && s.saving_pack > 0 ? `<div class="saving"><p class="big">${esc(t(lang, 'saveUpTo', { amount: rupees(s.saving_pack) }))}</p><p class="small">${rupees(s.scanned_unit)} → ${rupees(s.best_unit)} ${esc(per)}<span class="pct">−${s.pct}%</span></p></div>` : ''}
 
     <div class="answer${m.nti ? ' nti-answer' : ''}" lang="${lang}"><div id="answerText">${esc(r.answer)}</div>
-      <div class="row"><button class="pill" id="listenBtn" hidden>${speakerIcon}${esc(t(lang, 'listen'))}</button></div></div>
+      <div class="row"><button class="pill" id="listenBtn" hidden>${speakerIcon}${esc(t(lang, 'listen'))}</button></div>
+      ${m.nti ? whyHtml('why-inline', '') : ''}</div>
 
     ${!m.nti ? `<div class="card">
       <p class="eyebrow">${esc(t(lang, 'sameSaltTitle'))}</p>

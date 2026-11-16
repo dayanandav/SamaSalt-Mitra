@@ -39,6 +39,14 @@ export function canShowPharmacist(r) {
   return r?.status === 'ok' && !!r.medicine && !(r.needs_confirmation && !r.confirmed);
 }
 
+/**
+ * Add to the pharmacist list only on a NEW lookup, once. Re-showing the same result (after a
+ * language change, or the confirm step) must never bring back a medicine the person removed.
+ */
+export function shouldAddToList(r) {
+  return canShowPharmacist(r) && r.fresh !== false && !r.addedToList;
+}
+
 /** Listen reads the answer only in the language it is written in, and only if that is the chosen one. */
 export function listenAllowed(answerLang, uiLang, voices) {
   if (answerLang !== uiLang) return false;
