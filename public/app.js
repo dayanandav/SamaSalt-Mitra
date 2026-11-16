@@ -234,10 +234,12 @@ store.set('ss_cam_mode', null);
 store.set('ss_cam_choice', null);
 const hasInAppCamera = () => !!navigator.mediaDevices?.getUserMedia;
 // No in-app camera at all (very old browsers): the phone camera app, opened directly.
-$('#scanBtn').onclick = () => (hasInAppCamera() ? openCamera() : phoneCamera());
-// The other two options sit on the home screen too.
+// "Take a photo" = the phone's own camera app (sharpest photos; chosen as the default, Nov 2026).
+// If Android closes the page meanwhile (low memory), the note on reload offers the in-app camera.
+$('#scanBtn').onclick = () => phoneCamera();
 $('#homeGallery').onclick = () => $('#gallery').click();
-$('#homePhoneCam').onclick = () => phoneCamera();
+// Backup: the camera inside the app (never leaves the page).
+$('#homeInApp').onclick = () => (hasInAppCamera() ? openCamera() : phoneCamera());
 $('#camUseApp').onclick = () => {
   $('#camLost').hidden = true;
   $('#camLostActions').hidden = true;
@@ -306,8 +308,9 @@ document.addEventListener('visibilitychange', () => {
   if (at && Date.now() - at < 10 * 60_000) {
     // Android closed the browser for lack of memory while its camera app was open (Chrome shows
     // "Unable to complete previous operation due to low memory"); the photo cannot be recovered.
-    // Scan already uses the in-app camera (never leaves the page); say what happened.
+    // Say what happened and offer the in-app camera, which never leaves the page.
     $('#camLost').hidden = false;
+    $('#camLostActions').hidden = false;
   }
 }
 
