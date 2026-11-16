@@ -516,7 +516,7 @@ function showPharmacist() {
       <p class="ph-sub">${esc([x.form, x.name].filter(Boolean).join(' · '))}</p>
       ${x.nti ? whyHtml('ph-nti', t(lang, 'phNti')) : ''}
       ${x.ja ? `<p class="ph-ja">${esc(t(lang, 'phJa', { name: x.ja.name, code: x.ja.code }))}</p>` : ''}
-      ${list.length > 1 ? `<button class="link ph-remove" type="button" data-i="${i}">${esc(t(lang, 'listRemove'))}</button>` : ''}
+      <button class="link ph-remove" type="button" data-i="${i}">${esc(t(lang, 'listRemove'))}</button>
     </li>`).join('');
   for (const b of $('#phList').querySelectorAll('.ph-remove')) {
     b.onclick = () => {
@@ -528,13 +528,12 @@ function showPharmacist() {
       updatePhBtn();
     };
   }
-  $('#phClear').hidden = list.length < 2;
+  $('#phClear').hidden = false; // always: the whole list can be cleared at any time
   if (!$('#pharmacist').open) $('#pharmacist').showModal();
 }
+// Clear list: removes EVERY medicine (nothing is kept, not even the one on screen).
 $('#phClear').onclick = () => {
-  // Keep the medicine on screen (if any); clear the rest.
-  const keep = last?.status === 'ok' && !$('#result').hidden ? medList().filter((x) => x.ckey === last.medicine?.ckey) : [];
-  saveMedList(keep);
+  saveMedList([]);
   $('#pharmacist').close();
   updatePhBtn();
 };
@@ -708,7 +707,11 @@ function render(r) {
     <button class="secondary" id="againBtn">${esc(t(lang, 'another'))}</button>
   `;
 
-  $('#phBtn').onclick = showPharmacist;
+  $('#phBtn').onclick = () => {
+    if (!medList().some((x) => x.ckey === m.ckey)) saveMedList(mergeMedList(medList(), pharmacistEntry(r), MAX_LIST));
+    updatePhBtn();
+    showPharmacist();
+  };
   updatePhBtn();
   for (const b of out.querySelectorAll('.chip')) {
     b.onclick = async () => {
