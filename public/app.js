@@ -119,32 +119,67 @@ function stopCamera() {
   camVideo.srcObject = null;
 }
 
-async function openCamera() {
+// The in-app camera. Some phones refuse the detailed request (full HD + continuous focus), so it
+// falls back to simpler requests; a camera that gives no picture is restarted once. If it still
+// cannot open, the person is told exactly why (permission blocked, camera busy, did not start).
+const CAM_REQUESTS = [
+  { facingMode: { ideal: 'environment' }, width: { ideal: 1920 }, height: { ideal: 1080 }, advanced: [{ focusMode: 'continuous' }] },
+  { facingMode: { ideal: 'environment' } },
+  true,
+];
+let camTry = 0; // increases on every open, so a slow earlier attempt never takes over
+async function openCamera(isRestart = false) {
+  if (isRestart !== true) openCamera.restarted = false; // a new tap gets its own restart
+  const myTry = ++camTry;
+  stopCamera();
   $('#camError').hidden = true;
+  $('#camRetry').hidden = true;
+  $('#camShoot').hidden = false;
   $('#camShoot').textContent = t(lang, 'camShoot');
   show('camera');
-  if (!navigator.mediaDevices?.getUserMedia) return cameraUnavailable();
-  try {
-    camStream = await navigator.mediaDevices.getUserMedia({
-      audio: false,
-      // Continuous autofocus where the phone supports it (unknown options are ignored).
-      video: { facingMode: { ideal: 'environment' }, width: { ideal: 1920 }, height: { ideal: 1080 }, advanced: [{ focusMode: 'continuous' }] },
-    });
-  } catch {
-    return cameraUnavailable();
+  if (!navigator.mediaDevices?.getUserMedia) return cameraUnavailable('NotSupported');
+  let stream = null;
+  let lastErr = null;
+  for (const video of CAM_REQUESTS) {
+    try {
+      stream = await navigator.mediaDevices.getUserMedia({ audio: false, video });
+      break;
+    } catch (e) {
+      lastErr = e;
+      // Blocked by the person or the browser: asking again in another way does not help.
+      if (e?.name === 'NotAllowedError' || e?.name === 'SecurityError') break;
+    }
   }
-  if ($('#camera').hidden) return stopCamera(); // cancelled while the permission prompt was open
+  if (myTry !== camTry) { stream?.getTracks().forEach((tr) => tr.stop()); return; }
+  if (!stream) return cameraUnavailable(lastErr?.name || 'Error');
+  if ($('#camera').hidden) { stream.getTracks().forEach((tr) => tr.stop()); return; } // cancelled meanwhile
+  camStream = stream;
   camVideo.srcObject = camStream;
-  await camVideo.play().catch(() => {});
+  // No picture after 5 s (seen on some phones; play() may then never finish, so the check is
+  // started first): restart once, then explain.
+  setTimeout(() => {
+    if (myTry !== camTry || $('#camera').hidden || camVideo.videoWidth) return;
+    if (!openCamera.restarted) { openCamera.restarted = true; openCamera(true); }
+    else cameraUnavailable('NoPicture');
+  }, 5000);
+  camVideo.play().catch(() => {});
   sizeCamStage();
 }
 
-// No in-app camera (not supported, or permission refused): offer the phone camera and the gallery.
-function cameraUnavailable() {
+// The in-app camera could not open: say why, offer Try again, the gallery and the phone camera.
+function cameraUnavailable(reason) {
   stopCamera();
-  $('#camError').hidden = false;
-  $('#camShoot').textContent = t(lang, 'camUsePhone');
+  const key = reason === 'NotAllowedError' || reason === 'SecurityError' ? 'camBlocked'
+    : reason === 'NotReadableError' || reason === 'AbortError' ? 'camInUse'
+    : reason === 'NoPicture' ? 'camNoPicture' : 'camDenied';
+  const err = $('#camError');
+  err.dataset.t = key; // stays right after a language change
+  err.textContent = t(lang, key) + (devMode ? ` (developer: ${reason})` : '');
+  err.hidden = false;
+  $('#camShoot').hidden = true;
+  $('#camRetry').hidden = reason === 'NotSupported';
 }
+$('#camRetry').onclick = () => openCamera();
 
 // The phone camera app: Android may close this page (or the whole home-screen app) meanwhile, so
 // remember that we asked, in localStorage: it survives a full restart, sessionStorage does not.
