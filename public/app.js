@@ -187,15 +187,18 @@ window.addEventListener('resize', sizeCamStage);
 // The guide box shows the area the crop step starts with.
 Object.assign($('#camStage .cam-guide').style, { left: '8%', top: '25%', width: '84%', height: '50%' });
 
-// The phone's own camera app takes the sharpest photos, so it is the default. Phones that close
-// this page while that camera is open are detected (below) and switched to the in-app camera.
-// Only the person's own choice switches to the in-app camera (a different key from the earlier
-// automatic switch, so phones switched automatically are back on the phone camera).
+// "Scan a medicine strip" opens the camera INSIDE the page by default (full-resolution still photos,
+// with "Choose from gallery" on the same screen). The phone's own camera app makes Android close
+// the browser for memory on many phones, and the photo is lost: that happened again with the
+// system picker (Nov 2026), so the phone camera is now only used when the person picks it
+// ("Use phone camera" on the camera screen) or when this browser has no in-app camera.
 store.set('ss_cam_mode', null);
-const camMode = () => store.get('ss_cam_choice') || 'phone';
-// "Scan a medicine strip" opens the phone's own picker with the camera AND the gallery in one place.
-// If this phone was switched to the in-app camera (after Android closed the page for low memory),
-// that camera opens instead; it has its own "Choose from gallery" button.
+const camMode = () => {
+  const choice = store.get('ss_cam_choice');
+  if (choice === 'phone' || choice === 'app') return choice;
+  return navigator.mediaDevices?.getUserMedia ? 'app' : 'phone';
+};
+// Phone camera (opt-in): the phone's own picker, camera and gallery together.
 function pickPhoto() {
   store.set('ss_cam_at', String(Date.now())); // the camera may close this page: noticed on reload
   $('#pick').click();
@@ -208,7 +211,7 @@ $('#camUseApp').onclick = () => {
   openCamera();
 };
 $('#camPhone').onclick = () => {
-  store.set('ss_cam_choice', null); // back to the phone camera on this phone
+  store.set('ss_cam_choice', 'phone'); // the person chose the phone camera on this phone
   stopCamera();
   show('home');
   phoneCamera();
