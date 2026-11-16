@@ -37,9 +37,8 @@
         <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 8.5A2.5 2.5 0 0 1 5.5 6h1.8l1.4-2h6.6l1.4 2h1.8A2.5 2.5 0 0 1 21 8.5v9a2.5 2.5 0 0 1-2.5 2.5h-13A2.5 2.5 0 0 1 3 17.5z"/><circle cx="12" cy="13" r="3.6"/></svg>
         <span data-t="scan">Scan a medicine strip</span>
       </button>
-      <!-- "Scan": the phone's own picker, which offers the camera and the gallery together
-           (no capture attribute, so Android and iPhone show both). #photo opens the camera directly. -->
-      <input id="pick" type="file" accept="image/*" hidden>
+      <!-- Scan opens the in-app camera. #photo = the phone camera app, opened directly (capture);
+           #gallery = the gallery. (A picker without capture is gallery-only on newer Android.) -->
       <input id="photo" type="file" accept="image/*" capture="environment" hidden>
       <input id="gallery" type="file" accept="image/*" hidden>
       <p class="cam-note" id="camLost" hidden data-t="camLost"></p>

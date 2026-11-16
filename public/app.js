@@ -227,26 +227,21 @@ Object.assign($('#camStage .cam-guide').style, { left: '8%', top: '25%', width: 
 // the browser for memory on many phones, and the photo is lost: that happened again with the
 // system picker (Nov 2026), so the phone camera is now only used when the person picks it
 // ("Use phone camera" on the camera screen) or when this browser has no in-app camera.
+// Scan ALWAYS opens the in-app camera when the browser has one. Nothing is remembered: a stored
+// "phone camera" choice made Scan open the plain picker, which newer Android shows as the gallery
+// only (no camera) - reported Nov 2026. Older stored choices are cleared.
 store.set('ss_cam_mode', null);
-const camMode = () => {
-  const choice = store.get('ss_cam_choice');
-  if (choice === 'phone' || choice === 'app') return choice;
-  return navigator.mediaDevices?.getUserMedia ? 'app' : 'phone';
-};
-// Phone camera (opt-in): the phone's own picker, camera and gallery together.
-function pickPhoto() {
-  store.set('ss_cam_at', String(Date.now())); // the camera may close this page: noticed on reload
-  $('#pick').click();
-}
-$('#scanBtn').onclick = () => (camMode() === 'app' ? openCamera() : pickPhoto());
+store.set('ss_cam_choice', null);
+const hasInAppCamera = () => !!navigator.mediaDevices?.getUserMedia;
+// No in-app camera at all (very old browsers): the phone camera app, opened directly.
+$('#scanBtn').onclick = () => (hasInAppCamera() ? openCamera() : phoneCamera());
 $('#camUseApp').onclick = () => {
-  store.set('ss_cam_choice', 'app'); // the person chose the in-app camera on this phone
   $('#camLost').hidden = true;
   $('#camLostActions').hidden = true;
   openCamera();
 };
+// "Use phone camera": opens the camera app directly (capture attribute), this once only.
 $('#camPhone').onclick = () => {
-  store.set('ss_cam_choice', 'phone'); // the person chose the phone camera on this phone
   stopCamera();
   show('home');
   phoneCamera();
@@ -308,17 +303,15 @@ document.addEventListener('visibilitychange', () => {
   if (at && Date.now() - at < 10 * 60_000) {
     // Android closed the browser for lack of memory while its camera app was open (Chrome shows
     // "Unable to complete previous operation due to low memory"); the photo cannot be recovered.
-    // On THIS phone, Scan now uses the in-app camera (full-resolution still photos, never leaves
-    // the page). "Use phone camera" on the camera screen switches back. Other phones are unaffected.
+    // Scan already uses the in-app camera (never leaves the page); say what happened.
     $('#camLost').hidden = false;
-    store.set('ss_cam_choice', 'app');
   }
 }
 
-for (const id of ['#pick', '#photo', '#gallery']) $(id).addEventListener('change', (e) => handlePhotoFile(e));
+for (const id of ['#photo', '#gallery']) $(id).addEventListener('change', (e) => handlePhotoFile(e));
 // Picker closed without a photo: the page was not closed by the camera, so forget the marker
 // (else a later reload would wrongly switch this phone to the in-app camera).
-for (const id of ['#pick', '#photo']) $(id).addEventListener('cancel', () => store.set('ss_cam_at', null));
+for (const id of ['#photo']) $(id).addEventListener('cancel', () => store.set('ss_cam_at', null));
 
 async function handlePhotoFile(e) {
   store.set('ss_cam_at', null);
