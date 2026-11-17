@@ -135,6 +135,7 @@
       [num(T.switched_yes), 'said they will switch'],
       [inr(T.reported_saving), 'saving reported by switchers'],
       [num(T.volunteer_lookups), 'lookups with a volunteer'],
+      [num(T.active_volunteers), 'registered volunteers who helped'],
     ];
     $('#tiles').innerHTML = tiles.map(([v, l]) => `<div class="tile"><p class="v">${esc(v)}</p><p class="l">${esc(l)}</p></div>`).join('');
     $('#testCount').textContent = num(d.excluded_test_lookups);

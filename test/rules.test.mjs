@@ -47,7 +47,7 @@ test('pharmacist list: a normal medicine carries its Jan Aushadhi name and code'
   const r = await ask('Dolo 650');
   const e = pharmacistEntry(r);
   assert.equal(e.nti, false);
-  assert.deepEqual(e.ja, { name: 'Paracetamol Tablets IP 650 mg', code: 'TEST-1' });
+  assert.deepEqual(e.ja, { name: 'Paracetamol Tablets IP 650 mg', code: 'TEST-1', unit_size: '10 tablets', mrp: 10 });
   assert.equal(e.composition, 'Paracetamol 650 mg');
 });
 

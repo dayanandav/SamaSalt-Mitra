@@ -28,6 +28,34 @@
     .pilot { font-size: 14px; color: var(--muted); letter-spacing: 0; line-height: 1.5; }
     .pilot p { margin: 0; }
     .print-links { text-align: center; color: var(--muted); font-size: 14px; margin: 20px 0 0; letter-spacing: 0; }
+
+    /* v1.3 registered volunteers */
+    .join { margin-top: 12px; }
+    .join [hidden] { display: none !important; }
+    .join .eyebrow { margin: 0 0 4px; font-size: 13px; font-weight: 600; color: var(--accent, #0a7a4b); text-transform: uppercase; letter-spacing: .04em; }
+    .join h3 { font-size: 16px; margin: 20px 0 4px; }
+    .join .muted { color: var(--muted); margin: 6px 0 0; }
+    .join-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: 10px; margin-top: 14px; }
+    .join-grid div { padding: 12px 14px; border-radius: 14px; background: var(--bg, #f5f5f7); }
+    .join-grid b { display: block; margin-bottom: 2px; }
+    .join-grid span { color: var(--muted); font-size: 14px; }
+    .join .terms { margin-top: 16px; border: 0.5px solid var(--line); border-radius: 14px; padding: 10px 14px; }
+    .join .terms summary { cursor: pointer; font-weight: 600; }
+    .join .terms ol { padding-left: 20px; margin: 10px 0 0; }
+    .join .terms li { margin: 8px 0; line-height: 1.5; }
+    .join .af { display: grid; gap: 12px; margin-top: 8px; }
+    .join .af label { display: grid; gap: 4px; font-size: 14px; color: var(--muted); }
+    .join .af input[type=text] { font: inherit; font-size: 16px; padding: 10px 12px; border-radius: 12px; border: 1px solid var(--line); background: var(--card); color: var(--text); }
+    .join .af .two { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+    @media (max-width: 420px) { .join .af .two { grid-template-columns: 1fr; } }
+    .join .consent { display: flex !important; gap: 10px; align-items: flex-start; color: var(--text) !important; font-size: 15px !important; }
+    .join .consent input { width: 20px; height: 20px; margin-top: 1px; }
+    .join .btns { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 12px; }
+    .join .btns .primary, .join .btns .secondary { width: auto; display: inline-flex; align-items: center; min-height: 44px; padding: 10px 18px; font-size: 15px; }
+    .join .vtext { white-space: pre-wrap; font: inherit; font-size: 14px; background: var(--bg, #f5f5f7); border-radius: 12px; padding: 12px 14px; margin: 10px 0 0; }
+    .amsg { margin: 0; padding: 10px 12px; border-radius: 12px; font-size: 14px; }
+    .amsg.err { background: color-mix(in srgb, var(--danger, #d70015) 8%, var(--card)); color: var(--danger, #d70015); }
+    .amsg[hidden] { display: none; }
     @media print {
       @page { margin: 14mm; }
       .top, .foot, .noprint { display: none !important; }
@@ -48,7 +76,7 @@
   </header>
   <main>
     <h1>Volunteer mode</h1>
-    <p class="lede">For NGO and ASHA volunteers helping patients check their medicines. Lookups made in volunteer mode are counted separately on the <a href="/impact">impact page</a>. No patient names or numbers are ever entered or stored.</p>
+    <p class="lede">For NGO and ASHA volunteers helping patients check their medicines. Lookups made in volunteer mode are counted separately on the <a href="/impact">impact page</a>. No patient names or numbers are ever entered or stored. <a href="#join">Become a registered volunteer</a>.</p>
 
     <div class="card qr">
       <img src="/qr-volunteer.svg" alt="QR code that opens SamaSalt-Mitra in volunteer mode">
@@ -87,6 +115,66 @@
         <li>ರೋಗಿಯನ್ನು ಮತ್ತೆ ಭೇಟಿಯಾದಾಗ, ಅವರು ಬದಲಾಯಿಸಿದರೇ ಎಂದು ಕೇಳಿ, ಅದೇ ಔಷಧಿಯನ್ನು ಮತ್ತೆ ಹುಡುಕಿ ಉತ್ತರವನ್ನು ಒತ್ತಿ.</li>
       </ol>
     </div>
+
+    <!-- v1.3 Registered volunteers: apply here (nothing is saved from this page); a Registrar enters
+         the request, a Reviewer calls and sees an ID, then sends the personal link. -->
+    <section class="card join noprint" id="join">
+      <p class="eyebrow">Registered volunteers</p>
+      <h2>Become a registered SamaSalt-Mitra volunteer</h2>
+      <p class="muted">Help patients at health camps, Jan Aushadhi Kendras and in your village check whether a cheaper medicine with exactly the same salt exists. Free, no fee, no targets.</p>
+      <div class="join-grid">
+        <div><b>Your own link</b><span>A personal link turns on volunteer mode on your phone, with your volunteer code.</span></div>
+        <div><b>Your help counted</b><span>The team sees how many checks you helped with. Never any patient's name or number.</span></div>
+        <div><b>Checked by two people</b><span>A Registrar enters your request; a Reviewer calls you and sees an ID before you are approved.</span></div>
+      </div>
+
+      <h3>How it works</h3>
+      <ol class="stepsv">
+        <li>Fill in the form below and send the request by email (or read it out on the phone to the team).</li>
+        <li>A Registrar enters your request. Keep an ID ready (Aadhaar, voter ID, driving licence or your organisation's ID): they only note which ID they saw, never its number.</li>
+        <li>A Reviewer calls you to confirm your details and the terms.</li>
+        <li>When approved, you get your personal link on WhatsApp. Open it on the phone you use with patients.</li>
+      </ol>
+
+      <details class="terms" id="vTerms">
+        <summary>Volunteer terms (please read)</summary>
+        <ol>
+          <li><b>No medical advice.</b> Never advise on doses, on stopping a medicine, or on which medicine to take. Show the answer; the patient decides with their doctor or pharmacist.</li>
+          <li><b>"Same brand only" means same brand.</b> Never suggest a switch for a medicine marked "same brand only" (blood thinners, thyroid, epilepsy, transplant and similar medicines).</li>
+          <li><b>No patient data.</b> Do not write down, photograph or keep any patient's name, number, prescription or address. SamaSalt-Mitra never asks for them.</li>
+          <li><b>No money, no selling.</b> Do not take money or gifts from patients, Kendras, pharmacies or companies for this work, and do not promote any shop or brand.</li>
+          <li><b>Your details.</b> Your name, mobile, district and organisation are seen only by the SamaSalt-Mitra staff who register and review volunteers, and are never shown to patients. You can ask to be removed at any time; staff can also remove a registration.</li>
+          <li><b>Your link is yours.</b> Do not share your personal link; ask the team for a new one if your phone changes.</li>
+        </ol>
+      </details>
+
+      <form class="af" id="vForm" novalidate autocomplete="on">
+        <h3>Your details</h3>
+        <label>Full name<input type="text" name="name" maxlength="60" autocomplete="name" required></label>
+        <label>Mobile number (WhatsApp)<input type="text" name="mobile" inputmode="tel" maxlength="16" autocomplete="tel" placeholder="98765 43210" required></label>
+        <div class="two">
+          <label>District where you help<input type="text" name="district" maxlength="40" placeholder="e.g. Dharwad" required></label>
+          <label>PIN code (optional)<input type="text" name="pin" inputmode="numeric" maxlength="6" placeholder="580001"></label>
+        </div>
+        <label>Organisation (optional)<input type="text" name="organisation" maxlength="80" placeholder="e.g. NGO name, ASHA, NSS unit, college"></label>
+        <label>Languages you use with patients (optional)<input type="text" name="languages" maxlength="60" placeholder="e.g. Kannada, Hindi"></label>
+        <label class="consent"><input type="checkbox" name="consent"> I have read the volunteer terms above and agree to them.</label>
+        <p class="amsg err" id="vErr" hidden></p>
+        <button class="primary" type="submit">Prepare my request</button>
+      </form>
+
+      <div id="vSend" hidden>
+        <h3>Send your request</h3>
+        <p class="muted" id="vSendHint">Your request is ready. Nothing has been saved yet: send it to the SamaSalt-Mitra team.</p>
+        <div class="btns">
+          <a class="primary" id="vMail" href="#">Send email</a>
+          <button class="secondary" type="button" id="vCopy">Copy the request</button>
+          <button class="secondary" type="button" id="vEdit">Change details</button>
+        </div>
+        <p class="muted-sm" id="vTo"></p>
+        <pre class="vtext" id="vText"></pre>
+      </div>
+    </section>
     <div class="card pilot">
       <p>First field pilot: Uttara Karnataka Sneha Loka (UKSL), North Karnataka, from late October 2026. Disclosure: the builder's father is a trustee of UKSL.</p>
     </div>
@@ -94,6 +182,7 @@
     <p class="print-links noprint"><a href="javascript:print()">Print this page</a> · <a href="https://github.com/dayanandav/SamaSalt-Mitra/blob/main/docs/PILOT.md">Full pilot guide</a></p>
   </main>
   <footer class="foot"><p>SamaSalt-Mitra · <a href="/">Check a medicine</a></p></footer>
+  <script type="module" src="/volunteer.js"></script>
   <script src="/envbanner.js"></script>
 </body>
 </html>

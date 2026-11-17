@@ -12,7 +12,10 @@ export function pharmacistEntry(r) {
     composition: String(m.composition || '').split(' · ')[0],
     form: m.form || '',
     nti,
-    ja: ja.available && !nti && ja.product ? { name: ja.product.generic_name, code: ja.product.drug_code } : null,
+    // The Jan Aushadhi generic (from the PMBI list: name, code, pack size, MRP). Never for NTI.
+    ja: ja.available && !nti && ja.product
+      ? { name: ja.product.generic_name, code: ja.product.drug_code, unit_size: ja.product.unit_size || '', mrp: Number(ja.product.mrp) || null }
+      : null,
   };
 }
 
@@ -194,4 +197,154 @@ export function registrationEmail(k = {}, d = {}) {
     `Date: ${d.date || blank}`,
   ].join('\n');
   return { subject, body };
+}
+
+// ── v1.2 Order requests (pickup only) ────────────────────────────────────────
+// The patient sends a list of Jan Aushadhi medicines, in packs, to a registered Kendra by WhatsApp
+// or SMS from their own phone. Nothing is stored on our server. Quantities are packs to collect,
+// never doses (no dosage advice). Never-switch (NTI) medicines and medicines without a Jan Aushadhi
+// equivalent are left out, with the reason shown.
+
+export const ORDER_MAX_PACKS = 10;
+
+/** Packs for one item: a whole number from 1 to ORDER_MAX_PACKS (anything else → 1). */
+export function orderQty(n) {
+  const q = Math.floor(Number(n));
+  return Number.isFinite(q) && q >= 1 ? Math.min(q, ORDER_MAX_PACKS) : 1;
+}
+
+/**
+ * Split the medicine list into what can be ordered from a Jan Aushadhi Kendra and what cannot.
+ * Returns { items: [{ ckey, name, code, unit_size, mrp, qty, line }], excluded: [{ ckey, name, reason: 'nti' | 'noja' }], total }.
+ */
+export function orderItems(list) {
+  const items = [];
+  const excluded = [];
+  for (const x of Array.isArray(list) ? list : []) {
+    if (!x) continue;
+    if (x.nti) excluded.push({ ckey: x.ckey, name: x.name, reason: 'nti' });
+    else if (!x.ja) excluded.push({ ckey: x.ckey, name: x.name, reason: 'noja' });
+    else {
+      const qty = orderQty(x.qty);
+      const mrp = Number.isFinite(x.ja.mrp) && x.ja.mrp > 0 ? x.ja.mrp : null;
+      items.push({ ckey: x.ckey, name: x.ja.name, code: x.ja.code, unit_size: x.ja.unit_size || '', mrp, qty, line: mrp != null ? Math.round(mrp * qty * 100) / 100 : null });
+    }
+  }
+  // A total only when every item has an MRP (otherwise it would understate the bill).
+  const total = items.length && items.every((i) => i.line != null) ? Math.round(items.reduce((a, i) => a + i.line, 0) * 100) / 100 : null;
+  return { items, excluded, total };
+}
+
+const msgClean = (s) => String(s ?? '').replace(/[\u0000-\u001f\u007f<>]/g, ' ').replace(/\s+/g, ' ').trim();
+
+/**
+ * The message the patient sends. `tr(key, vars)` gives the text in the patient's language and
+ * `en(key, vars)` in English; medicine names are the official PMBI (English) names. When the
+ * patient's language is not English, the instructions are given in both.
+ * Keys: msgHead, msgKendra, msgPacks, msgTotal, msgPickup, msgReply.
+ */
+export function orderMessage(kendra, order, tr, en = null, money = (v) => `Rs ${v}`) {
+  const lines = (f) => [
+    f('msgHead'),
+    f('msgKendra', { code: kendraCode(kendra?.code) || '' }),
+    '',
+    ...order.items.map((i, n) => `${n + 1}. ${msgClean(i.name)} (PMBJP ${msgClean(i.code)})${i.unit_size ? ` - ${msgClean(i.unit_size)}` : ''} - ${f('msgPacks', { n: i.qty })}`),
+    '',
+    ...(order.total != null ? [f('msgTotal', { amount: money(order.total) }), ''] : []),
+    f('msgPickup'),
+    f('msgReply'),
+  ];
+  const main = lines(tr);
+  if (!en) return main.join('\n');
+  // English for the pharmacist, without repeating the list.
+  return [...main, '', '---', en('msgHead'), en('msgPickup'), en('msgReply')].join('\n');
+}
+
+/** WhatsApp and SMS links that open the patient's own app with the message ready to send. */
+export function waLink(mobile, text) {
+  const m = mobile10(mobile);
+  return m ? `https://wa.me/91${m}?text=${encodeURIComponent(text)}` : null;
+}
+export function smsLink(mobile, text) {
+  const m = mobile10(mobile);
+  return m ? `sms:+91${m}?body=${encodeURIComponent(text)}` : null;
+}
+
+// ── v1.3 weak-network mode ──────────────────────────────────────────────────
+// Photo upload size: smaller on a slow connection or when the phone asks to save data, but never
+// so small that the print on a strip cannot be read (the vision check rejects blurry reads anyway).
+export const PHOTO_SEND = { side: 1280, quality: 0.85 };
+export const PHOTO_SEND_LIGHT = { side: 1024, quality: 0.72 };
+export function photoSendSize(conn) {
+  if (!conn) return PHOTO_SEND;
+  if (conn.saveData) return PHOTO_SEND_LIGHT;
+  return ['slow-2g', '2g', '3g'].includes(conn.effectiveType) ? PHOTO_SEND_LIGHT : PHOTO_SEND;
+}
+
+// How long to wait for an answer before saying the connection is too slow (photos take longer).
+export function askTimeoutMs(hasImage, conn) {
+  const slow = conn && (conn.saveData || ['slow-2g', '2g'].includes(conn.effectiveType));
+  return (hasImage ? 45_000 : 25_000) * (slow ? 2 : 1);
+}
+
+// The last answer, kept for this visit only (sessionStorage) so it can be seen again without
+// internet. Only a finished answer is kept; never a photo, never a pending confirmation.
+export function savableAnswer(r) {
+  if (!r || r.status !== 'ok' || !r.medicine) return null;
+  if (r.needs_confirmation && !r.confirmed) return null;
+  const { image, trace, ...rest } = r; // eslint-disable-line no-unused-vars
+  return { ...rest, fresh: false, savedAt: Date.now() };
+}
+
+// ── v1.3 Registered volunteers ──────────────────────────────────────────────
+// A volunteer's code (SV- and 5 letters/digits, no 0/O/1/I), as in the personal link /v/SV-XXXXX.
+export function volunteerCode(s) {
+  const m = String(s ?? '').trim().toUpperCase().match(/^SV-?([A-HJ-NP-Z2-9]{5})$/);
+  return m ? `SV-${m[1]}` : null;
+}
+export const VOLUNTEER_IDS = ['aadhaar', 'voter', 'driving', 'pan', 'org', 'other'];
+export const VOLUNTEER_CHANNELS = ['phone', 'email', 'in_person'];
+
+/** Check a volunteer's details. { ok, value } or { ok: false, error } (error: a vErr* key). */
+export function validateVolunteer(b) {
+  b = b && typeof b === 'object' ? b : {};
+  const name = clean(b.name, 60);
+  if (name.length < 2) return { ok: false, error: 'vErrName' };
+  const mobile = mobile10(b.mobile);
+  if (!mobile) return { ok: false, error: 'vErrMobile' };
+  const district = clean(b.district, 40);
+  if (district.length < 2) return { ok: false, error: 'vErrDistrict' };
+  let pin = null;
+  if (String(b.pin ?? '').trim()) {
+    pin = String(b.pin).replace(/\D/g, '');
+    if (!/^[1-9]\d{5}$/.test(pin)) return { ok: false, error: 'vErrPin' };
+  }
+  const organisation = clean(b.organisation, 80) || null;
+  const languages = clean(b.languages, 60) || null;
+  if (b.consent !== true) return { ok: false, error: 'vErrConsent' };
+  return { ok: true, value: { name, mobile, district, pin, organisation, languages } };
+}
+
+/** The request a person sends to become a volunteer (prepared on /volunteer; nothing is saved). */
+export function volunteerRequest(v, d = new Date()) {
+  const line = (k, x) => (x ? `${k}: ${String(x).replace(/[<>]/g, ' ')}\n` : '');
+  return {
+    subject: `Volunteer registration request - ${v.district || ''}`.trim(),
+    body:
+      'Dear SamaSalt-Mitra team,\n\nI would like to register as a SamaSalt-Mitra volunteer.\n\n' +
+      line('Name', v.name) + line('Mobile', v.mobile ? showMobile(v.mobile) : '') + line('District', v.district) +
+      line('PIN code', v.pin) + line('Organisation', v.organisation) + line('Languages', v.languages) +
+      '\nI have read and agree to the volunteer terms on the SamaSalt-Mitra volunteer page. ' +
+      'I will show an ID (Aadhaar, voter ID or other) when the registrar asks.\n\n' +
+      `Date: ${d.toLocaleDateString('en-IN', { timeZone: 'Asia/Kolkata', day: 'numeric', month: 'short', year: 'numeric' })}\n`,
+  };
+}
+
+/** The message a reviewer sends a newly approved volunteer, with their personal link. */
+export function volunteerWelcome(v, origin) {
+  return `Hello ${v.name}, you are now a registered SamaSalt-Mitra volunteer (${v.code}).\n\n` +
+    `Open your personal link on the phone you use with patients: ${origin}/v/${v.code}\n\n` +
+    'It turns on volunteer mode and counts the checks you help with (never any patient details). ' +
+    'Remember: never advise on doses, never suggest switching a medicine marked "same brand only", ' +
+    'and always ask the patient to check with their doctor or pharmacist before switching. Thank you!';
 }

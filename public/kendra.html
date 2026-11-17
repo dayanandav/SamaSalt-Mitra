@@ -188,7 +188,8 @@
       .panel-head .link { margin-left: auto; font-size: 14px; }
       .panel .cmp { grid-template-columns: minmax(0, 1fr); }
       /* Forms in two columns */
-      #nrForm, #userForm { grid-template-columns: repeat(2, minmax(0, 1fr)); column-gap: 16px; }
+      #nrForm, #userForm, #vNewForm { grid-template-columns: repeat(2, minmax(0, 1fr)); column-gap: 16px; }
+      #vNewForm > :is(h2, div:has(#vChannel), label:has(#vRef), fieldset, .btns) { grid-column: 1 / -1; }
       #nrForm > :is(div:first-child, label:has(#nrRef), label:has(#nrHours), .nr-row, #nrFound, fieldset, .btns),
       #userForm > :is(h2, .role-help, .btns) { grid-column: 1 / -1; }
       #userForm > label:has(#uRole) { grid-column: 1 / -1; max-width: calc(50% - 8px); }
@@ -198,6 +199,11 @@
     .role-help ul { margin: 0; padding-left: 18px; display: grid; gap: 3px; }
     .role-help .cant { color: var(--muted); margin: 6px 0 0; }
     .muted-sm { color: var(--muted); font-size: 13px; }
+    .vol-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
+    .vol-head .primary { width: auto; min-height: 44px; padding: 10px 18px; font-size: 15px; }
+    #vNewForm { border: 0.5px solid var(--line); border-radius: 16px; padding: 16px; margin: 12px 0; }
+    #vNewForm[hidden], #vNewBtn[hidden], .vremove[hidden] { display: none !important; }
+    .help-n { font-variant-numeric: tabular-nums; font-weight: 600; }
     .nr-row { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 8px; align-items: end; }
     .nr-row .secondary { width: auto; min-height: 46px; padding: 10px 16px; }
     .af label[hidden], #signin[hidden], #app[hidden], .amsg[hidden], .review[hidden], .edit-box[hidden] { display: none !important; }
@@ -352,7 +358,7 @@
     <div id="adminView" hidden>
       <a class="back" href="/kendra" id="backLink">← Kendra registration</a>
       <h1>Staff console</h1>
-      <p class="lede">For SamaSalt-Mitra staff who register and review Jan Aushadhi Kendras.</p>
+      <p class="lede">For SamaSalt-Mitra staff who register and review Jan Aushadhi Kendras and volunteers.</p>
 
       <section class="card" id="signin" hidden>
         <h2>Staff sign in</h2>
@@ -380,8 +386,9 @@
         </section>
 
         <nav class="tabs" role="tablist" aria-label="Staff tasks">
-          <button type="button" role="tab" data-tab="regsTab" aria-selected="true">Registrations</button>
-          <button type="button" role="tab" data-tab="newTab" aria-selected="false" hidden>New registration</button>
+          <button type="button" role="tab" data-tab="regsTab" aria-selected="true">Kendras</button>
+          <button type="button" role="tab" data-tab="newTab" aria-selected="false" hidden>New Kendra</button>
+          <button type="button" role="tab" data-tab="volTab" aria-selected="false">Volunteers</button>
           <button type="button" role="tab" data-tab="staffTab" aria-selected="false" hidden>Staff accounts</button>
         </nav>
 
@@ -436,6 +443,59 @@
             <div class="btns"><button class="primary" type="submit" id="nrSubmit" disabled>Register Kendra</button></div>
           </form>
           <p class="amsg" id="nrMsg" hidden></p>
+        </section>
+
+        <!-- v1.3 Registered volunteers: Registrar registers; Reviewer approves, removes, modifies -->
+        <section class="card tab" id="volTab" role="tabpanel" hidden>
+          <div class="vol-head"><h2>Volunteers</h2><button class="primary" id="vNewBtn" type="button" hidden>Register a volunteer</button></div>
+          <p class="muted-sm" style="margin:0" id="vHint"></p>
+          <form class="af" id="vNewForm" hidden autocomplete="off" novalidate>
+            <h2 style="font-size:16px;margin:0">Register a volunteer</h2>
+            <div>
+              <p class="muted-sm" style="margin:0 0 6px">Request received</p>
+              <div class="seg" role="group" aria-label="Request received" id="vChannel">
+                <button type="button" data-c="phone" aria-pressed="true">By phone</button>
+                <button type="button" data-c="email" aria-pressed="false">By email</button>
+                <button type="button" data-c="in_person" aria-pressed="false">In person</button>
+              </div>
+            </div>
+            <label>Request (date, and how it came)<input type="text" id="vRef" maxlength="160" placeholder="e.g. 17 Nov 2026 · call from the volunteer"></label>
+            <label>Full name<input type="text" id="vName" maxlength="60"></label>
+            <label>Mobile number (WhatsApp)<input type="text" id="vMobile" inputmode="tel" maxlength="16" placeholder="98765 43210"></label>
+            <label>District where they help<input type="text" id="vDistrict" maxlength="40"></label>
+            <label>PIN code (optional)<input type="text" id="vPin" inputmode="numeric" maxlength="6"></label>
+            <label>Organisation (optional)<input type="text" id="vOrg" maxlength="80" placeholder="NGO, ASHA, NSS unit, college"></label>
+            <label>Languages (optional)<input type="text" id="vLangs" maxlength="60" placeholder="e.g. Kannada, Hindi"></label>
+            <label>ID seen (type only: never write its number)<select id="vId">
+              <option value="">Choose…</option>
+              <option value="aadhaar">Aadhaar</option>
+              <option value="voter">Voter ID</option>
+              <option value="driving">Driving licence</option>
+              <option value="pan">PAN card</option>
+              <option value="org">Organisation ID (NGO, ASHA, college)</option>
+              <option value="other">Other government photo ID</option>
+            </select></label>
+            <fieldset class="checks">
+              <legend>Before registering, confirm:</legend>
+              <label><input type="checkbox" name="terms"> They read (or I read to them) the volunteer terms, and they agreed.</label>
+              <label><input type="checkbox" name="idseen"> I saw the ID chosen above, with their name and photo, and did not write down its number.</label>
+            </fieldset>
+            <div class="btns"><button class="primary" type="submit" id="vSubmit" disabled>Register volunteer</button><button class="secondary" type="button" id="vCancel">Cancel</button></div>
+          </form>
+          <p class="amsg" id="vNewMsg" hidden></p>
+          <form class="reg-search" id="vSearchForm" role="search" autocomplete="off">
+            <input type="search" id="vSearch" maxlength="40" placeholder="Name, code, district or mobile" aria-label="Search volunteers">
+            <button class="secondary" type="submit">Search</button>
+          </form>
+          <div class="seg" role="group" aria-label="Show" id="vFilters">
+            <button type="button" data-s="pending" aria-pressed="true">Waiting</button>
+            <button type="button" data-s="approved" aria-pressed="false">Approved</button>
+            <button type="button" data-s="rejected" aria-pressed="false">Rejected</button>
+            <button type="button" data-s="withdrawn" aria-pressed="false">Removed</button>
+            <button type="button" data-s="all" aria-pressed="false">All</button>
+          </div>
+          <p class="amsg info" id="vListMsg" hidden></p>
+          <div id="vols"></div>
         </section>
 
         <!-- Staff accounts: Admin (Reviewers, Registrars); system owner (also Admins) -->

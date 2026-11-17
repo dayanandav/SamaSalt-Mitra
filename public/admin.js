@@ -7,6 +7,7 @@
 // The Worker checks every permission again; this page only hides what a role cannot use.
 // The session is an HttpOnly cookie set by /api/admin/login; this page never sees it.
 import { showMobile, kendraCode } from '/rules.js';
+import { startVolunteers } from '/vol-admin.js';
 
 const $ = (s) => document.querySelector(s);
 const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
@@ -21,8 +22,8 @@ const whenShort = (iso) => {
 const KROLE = { pharmacist: 'Pharmacist', owner: 'Owner', staff: 'Staff' };
 const ROLE = { admin: 'Admin', reviewer: 'Reviewer', registrar: 'Registrar', owner: 'System owner' };
 const CAN_TEXT = {
-  registrar: 'You register Kendras from their requests (email or in person). A Reviewer approves them.',
-  reviewer: 'You call Kendras, then approve, reject, withdraw or modify their registrations.',
+  registrar: 'You register Kendras and volunteers from their requests (email, phone or in person). A Reviewer approves them.',
+  reviewer: 'You call Kendras and volunteers, then approve, reject, withdraw or modify their registrations.',
   admin: 'You manage Reviewer and Registrar accounts, and can register, review and modify.',
   owner: 'Setup key: everything, including Admin accounts.',
 };
@@ -83,6 +84,7 @@ function showApp(who) {
   showTab(who.role === 'registrar' ? 'newTab' : 'regsTab');
   loadRegs();
   if (can('staff')) loadUsers();
+  startVolunteers({ api, msg, esc, when, whenShort, can, wide, pointWord });
 }
 
 function showTab(id) {
@@ -590,6 +592,7 @@ const ROLE_HELP = {
       'Checks the 4 documents: PMBI allotment letter, drug licence, pharmacist certificate, owner’s signed consent.',
       'Checks the Kendra code and address against the official PMBI list.',
       'Registers the Kendra and gives the Kendra its reference (KR-…).',
+      'Registers volunteers from their request, after seeing an ID (type only, never its number).',
     ],
     cant: 'Cannot approve, modify or manage accounts. A Reviewer approves, so every Kendra is checked by two people.',
   },
@@ -598,6 +601,7 @@ const ROLE_HELP = {
       'Calls the Kendra’s number and confirms the code, the address and the terms.',
       'Approves or rejects waiting registrations, with a note on how it was checked.',
       'Modifies details (numbers, contact, hours) and withdraws a Kendra when needed.',
+      'Calls volunteers, approves them and sends their personal link; removes a volunteer when needed.',
     ],
     cant: 'Cannot register Kendras or manage accounts.',
   },

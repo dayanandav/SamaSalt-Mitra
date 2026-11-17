@@ -15,6 +15,8 @@ Full design: *SamaSalt-Mitra Design Document* (`docs/SamaSalt-Mitra Design Docum
 | 1.0 | before Nov 2026 | v1.0 Find: same-salt brands, Jan Aushadhi generic and MRP, nearest Kendra; en/kn/hi |
 | 1.1.0 | 17 Nov 2026 | v1.1 Kendra registry: partner-style Kendra page (apply online, then email with documents), QR poster, staff console with Registrar / Reviewer / Admin roles and system-owner setup key, modify with audit history, Registered Kendra for patients (pilot mode on live) |
 | 1.1.1 | 17 Nov 2026 | Staff console on desktop: tables with side panel for registrations and staff accounts, two-column forms; phones unchanged |
+| 1.2.0 | 17 Nov 2026 | v1.2 Order requests: packs per medicine, "Order for pickup" at Registered Kendras, WhatsApp/SMS message from the patient's phone (nothing stored), NTI and no-equivalent medicines left out; `ORDER_REQUESTS` pilot on live. Owner approved. Remove button in the medicine list made a soft light red |
+| 1.3.0 | 17 Nov 2026 | v1.3 Reach: registered volunteers (Registrar registers, Reviewer approves, personal link `/v/SV-…`, help counted by volunteer code only); weak-network mode: the app opens without internet (service worker), offline notice, a check waits and runs by itself when the internet is back, last answer kept for the visit, smaller photos on 2G/3G or Save-Data |
 
 ## Overview
 
@@ -23,8 +25,8 @@ Full design: *SamaSalt-Mitra Design Document* (`docs/SamaSalt-Mitra Design Docum
 | 0 | v1.0 Find | Photo or name → same-salt brands, Jan Aushadhi generic and MRP, nearest Kendra (en/kn/hi) | **Done**, live | Send the design document to PMBI |
 | 1 | v1.1 Kendra registry | Kendras apply; staff register, review and approve; QR poster; "Registered Kendra" for patients | **Done**: reviewed and accepted by the owner 17 Nov 2026 (live in pilot mode) | PMBI agrees to QR posters and contact registration |
 | 1+ | v1.1.x Staff console on desktop | Wide table layout for staff on laptops (phones unchanged) | **Done**: approved by the owner 17 Nov 2026, live | none |
-| 2 | v1.2 Order requests | Patient sends a medicine list with pack quantities to a registered Kendra by WhatsApp/SMS link; pickup only | Not started | PMBI confirms reserve-and-collect fits PMBJP rules |
-| 3 | v1.3 Reach | More languages, weak-network mode, volunteer helpers | Not started | Inform PMBI |
+| 2 | v1.2 Order requests | Patient sends a medicine list with pack quantities to a registered Kendra by WhatsApp/SMS link; pickup only | **Done (approved 17 Nov 2026): public on the test site, pilot on live until PMBI confirms** | PMBI confirms reserve-and-collect fits PMBJP rules |
+| 3 | v1.3 Reach | More languages, weak-network mode, volunteer helpers | **Done (approved 17 Nov 2026)**: weak-network mode and registered volunteers on the test site; live after migration 0006 and DPDP review. More languages: later (owner) | Inform PMBI |
 | 4 | v2.0 WhatsApp bot | Check a medicine and send order requests inside WhatsApp | Not started | PMBI approves message templates; DPDP legal review |
 | 5 | v2.1 Doctor network | PMBJP-recommended volunteer doctors, registered and verified like Kendras | Not started | PMBI provides or endorses the doctor list |
 | 6 | v2.2 Request doctor review | Patient asks an approved doctor to review a switch to the Jan Aushadhi generic | Not started | PMBI agrees; Telemedicine Practice Guidelines and DPDP review |
@@ -78,7 +80,7 @@ The current patient app: scan a strip or type a name, see every brand with exact
 
 On screens wider than about 1000 px: full width; registrations and staff accounts as tables, with details opening in a side panel; two-column registration form. Phones stay as they are. About half a day. Optional: on the Kendra page, form and documents side by side on wide screens.
 
-## Stage 2: v1.2 Order requests (next)
+## Stage 2: v1.2 Order requests (done)
 
 - From the result screen, the patient builds an **order list**: the Jan Aushadhi generic(s) with **pack quantity** (packs, not doses: no dosage advice).
 - **Send to a Registered Kendra** by WhatsApp or SMS link (`wa.me` / `sms:`), prefilled message in the patient's language plus English; nothing stored on our server.
@@ -87,9 +89,37 @@ On screens wider than about 1000 px: full width; registrations and staff account
 - Only Kendras approved in Stage 1, only when the registry is public.
 - Gate: PMBI confirms reserve-and-collect fits PMBJP rules.
 
-## Stage 3: v1.3 Reach
+**What was built**
+- Each medicine in the per-visit list keeps a **pack count** (1 to 10; packs to collect, never doses).
+- A Registered Kendra in the answer shows **Order for pickup**; the pharmacist list has **Order these from a Kendra**.
+- The order sheet: Kendra (choice if several), Jan Aushadhi items with PMBJP code, pack size, MRP per pack and **− / +** packs; estimated total at MRP (from the PMBI list, never from a model); medicines left out and why (NTI: same brand only; no Jan Aushadhi equivalent); pickup-only note.
+- **Send on WhatsApp** (`wa.me`) and **Send SMS** open the patient's own app with the message ready (patient's language + English for the pharmacist). Nothing is stored on our server; the Kendra replies directly.
+- Gate: `ORDER_REQUESTS` in `worker/wrangler.toml`: `pilot` on live (only developer mode sees the button), `public` on the test site. Switch live to `public` only after PMBI confirms.
+- Code: `orderItems`, `orderQty`, `orderMessage`, `waLink`, `smsLink` in `public/rules.js`; order sheet in `public/app.js` and `public/index.html`; `markOrders` in `worker/src/index.js`. Tests: `test/orders.test.mjs` (7); full suite 103.
+
+**Open points**: native-speaker review of the Kannada/Hindi order text; PMBI wording of the message; whether to count (anonymously) how many order messages are opened, for the impact page.
+
+## Stage 3: v1.3 Reach (done; more languages later)
 
 More Indian languages (after native review), weak-network mode (smaller pages, offline last result), volunteer helpers who assist patients at camps and Kendras.
+
+**Part 1, weak-network mode (built, on the test site)**
+- `public/sw.js`: the patient app's own files are kept on the phone; network first with a 4-second wait, then the saved copy. Never stored: `/api/*`, staff, developer and Kendra pages. `VERSION` equals `APP_VERSION`; a new version replaces the saved copy at once.
+- No internet: a notice at the top; a check is not lost: it says so, offers **Try again**, and runs by itself when the internet is back. Very slow: says so after 25 s (names) / 45 s (photos), doubled on 2G.
+- The last answer is kept for this visit (sessionStorage, no photo): **Show the last answer again** on the home screen. Opening the page again without internet keeps the medicine list and the last answer; with internet it starts empty, as before.
+- Language change without internet keeps the answer on screen and says it changes when the internet is back.
+- Photos are sent at 1024 px (quality 0.72) on 2G/3G or Save-Data, 1280 px otherwise.
+- Ordering by SMS works without mobile data (v1.2 sheet).
+- Code: `photoSendSize`, `askTimeoutMs`, `savableAnswer` in `public/rules.js`; `ask`, `renderNet`, `#lastBtn`, `#offlineBar` in `public/app.js` / `index.html`. Tests: `test/offline.test.mjs` (5); full suite 108.
+
+**Part 2, more languages**: later. The owner will handle the choice of languages and the native-speaker review.
+
+**Part 3, registered volunteers (built, on the test site)**: chosen by the owner over an anonymous camp mode.
+- Public `/volunteer` → **Become a registered volunteer**: benefits, how it works, six terms (no medical advice; never a switch for "same brand only"; no patient data; no money or selling; who sees their details, removal any time; the link is personal). The form prepares a request to send by email (`REGISTRATION_EMAIL`), as for Kendras: **nothing is saved from the public page**.
+- Staff console → **Volunteers** tab (tabs renamed **Kendras**, **New Kendra**, **Volunteers**). Registrar: **Register a volunteer** from a request by phone, email or in person, with the **type of ID seen** (never its number) and the volunteer's agreement; one active registration per mobile. Reviewer: approve (called, ID seen, terms understood + note), reject, **Remove volunteer**, **Modify details** (a new mobile sends an approved volunteer back to Waiting), **Send link on WhatsApp**, **Copy link**. History of every action. Table + side panel on desktop, one line each on phones.
+- Each approved volunteer gets a code `SV-XXXXX` and a personal link `/v/SV-XXXXX` → volunteer mode with the code (green banner; "link not active yet" if not approved). A check made through it records the volunteer's code in `lookups.volunteer` (only if approved): the console shows **Helped** per volunteer; `/impact` shows "registered volunteers who helped". No patient data is added.
+- Data: migration `0006_volunteers.sql` (`volunteers`, `volunteer_reviews`, `lookups.volunteer`); applied to the test database only. Code: `worker/src/volunteers.js`, `validateVolunteer`/`volunteerCode`/`volunteerRequest`/`volunteerWelcome` in `public/rules.js`, `public/vol-admin.js` (console tab), `public/volunteer.js` (public form). `/v/*` added to `run_worker_first`. Tests: `test/volunteers.test.mjs` (7); full suite 115.
+- Gate: volunteers' personal data (name, mobile) is staff-only, like Kendra contacts. **Before live**: apply migration 0006 to the live database; DPDP review of volunteer data (consent, retention, removal on request); native-speaker Kannada/Hindi text for the volunteer section (English only now).
 
 ## Stage 4: v2.0 WhatsApp bot
 

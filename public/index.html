@@ -29,6 +29,8 @@
   </header>
 
   <main id="app">
+    <!-- v1.3 weak-network mode: shown while the phone has no internet. -->
+    <p class="offline-bar" id="offlineBar" role="status" hidden data-t="offlineBar"></p>
     <section id="home" class="home">
       <h1 data-t="tagline">Same medicine. Lower price.</h1>
       <p class="lede" data-t="intro"></p>
@@ -65,6 +67,8 @@
       <p class="hint" data-t="scanHint"></p>
       <!-- Medicines checked so far (kept on this phone only), to show the pharmacist in one go. -->
       <button class="secondary list-btn" id="homeListBtn" type="button" hidden></button>
+      <!-- v1.3: the last answer of this visit (also without internet). -->
+      <button class="secondary list-btn" id="lastBtn" type="button" hidden data-t="lastAnswer"></button>
 
       <div class="divider"><span data-t="orType">or type the name</span></div>
       <p class="field-note scan-text-tip" data-t="scanTextTip"></p>
@@ -160,7 +164,26 @@
     <p class="ph-lead" id="phLead"></p>
     <ol class="ph-list" id="phList"></ol>
     <p class="field-note ph-hint" data-t="listHint"></p>
+    <button class="primary ph-order" id="phOrder" type="button" hidden data-t="orderFromList">Order these from a Kendra</button>
     <form method="dialog" class="crop-actions"><button class="secondary" data-t="close">Close</button><button class="link" id="phClear" type="button" value="clear" data-t="listClear">Clear list</button></form>
+  </dialog>
+
+  <!-- v1.2 Order for pickup: the medicine list in packs, sent by the patient to a registered Kendra
+       by WhatsApp or SMS from their own phone. Nothing is stored. -->
+  <dialog id="order" class="pharmacist order">
+    <p class="eyebrow" data-t="orderTitle">Order for pickup</p>
+    <div id="orderKendra"></div>
+    <ol class="ph-list order-list" id="orderList"></ol>
+    <ul class="order-excluded" id="orderExcluded"></ul>
+    <p class="order-total" id="orderTotal"></p>
+    <p class="field-note" id="orderPriceNote" data-t="orderPriceNote"></p>
+    <p class="order-pickup" data-t="orderPickup"></p>
+    <div class="order-send" id="orderSend">
+      <a class="primary" id="orderWa" target="_blank" rel="noopener" href="#"><span data-t="orderWhatsapp">Send on WhatsApp</span></a>
+      <a class="secondary" id="orderSms" href="#"><span data-t="orderSms">Send SMS</span></a>
+    </div>
+    <p class="field-note" data-t="orderHint"></p>
+    <form method="dialog" class="crop-actions"><button class="secondary" data-t="close">Close</button></form>
   </dialog>
 
   <!-- Short confirmation after an action (list cleared, removed, added). -->

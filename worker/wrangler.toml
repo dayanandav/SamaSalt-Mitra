@@ -8,7 +8,7 @@ directory = "../public"
 binding = "ASSETS"
 html_handling = "auto-trailing-slash"
 not_found_handling = "404-page"
-run_worker_first = ["/api/*", "/k/*"]
+run_worker_first = ["/api/*", "/k/*", "/v/*"]
 
 # Reference data + anonymous impact log (free tier).
 [[d1_databases]]
@@ -21,6 +21,9 @@ migrations_dir = "migrations"
 # PMBJP agrees) | "public".
 [vars]
 KENDRA_REGISTRY = "pilot"
+# v1.2 order requests (WhatsApp/SMS to a registered Kendra, pickup only): "pilot" = test traffic only,
+# until PMBI confirms reserve-and-collect fits PMBJP rules; then "public".
+ORDER_REQUESTS = "pilot"
 
 # Vision + text models (Workers AI free allocation).
 [ai]
@@ -47,6 +50,7 @@ name = "samasalt-mitra-staging"
 
 [env.staging.vars]
 KENDRA_REGISTRY = "public"
+ORDER_REQUESTS = "public"
 
 [[env.staging.d1_databases]]
 binding = "DB"

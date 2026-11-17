@@ -6,9 +6,10 @@ import { lookupKendra, staffRegisterKendra, attachContacts, adminListKendras, ad
 import { whoIs, csrfOk, login, logout, listAdmins, createAdmin, updateAdmin, can, permissions } from './admin.js';
 import { kendraContactsVisible } from '../../public/rules.js';
 import { nearestKendra } from './tools.js';
+import { registerVolunteer, listVolunteers, decideVolunteer, updateVolunteer, volunteerHistory, activeVolunteer, volunteerLinkStatus } from './volunteers.js';
 
 // Not exported: a Worker's main module may only export handlers.
-const APP_VERSION = '1.1.1';
+const APP_VERSION = '1.3.0';
 
 const MAX_IMAGE_CHARS = 2_500_000; // ~1.8 MB JPEG as a data URL; the app resizes to ~1 MP first
 
@@ -34,9 +35,11 @@ async function logLookup(env, body, result, isTest) {
   const id = crypto.randomUUID();
   const s = result.saving || {};
   const device = typeof body.device === 'string' && /^[a-z0-9]{8,40}$/i.test(body.device) ? body.device : null;
+  // v1.3: an approved volunteer's code (from their personal link), never anything about the patient.
+  const volunteer = body.mode === 'volunteer' && body.volunteer ? await activeVolunteer(env.DB, body.volunteer).catch(() => null) : null;
   await env.DB.prepare(
-    `INSERT INTO lookups (id, ts, day, status, input, medicine, ckey, pack, scanned_unit, cheapest_unit, ja_unit, saving_pack, equivalents, lang, pin3, mode, device, is_test)
-     VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?10, ?11, ?12, ?13, ?14, ?15, ?16, ?17, ?18)`
+    `INSERT INTO lookups (id, ts, day, status, input, medicine, ckey, pack, scanned_unit, cheapest_unit, ja_unit, saving_pack, equivalents, lang, pin3, mode, device, is_test, volunteer)
+     VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?10, ?11, ?12, ?13, ?14, ?15, ?16, ?17, ?18, ?19)`
   )
     .bind(
       id,
@@ -56,7 +59,8 @@ async function logLookup(env, body, result, isTest) {
       result.pin3 ?? null,
       body.mode === 'volunteer' ? 'volunteer' : 'self',
       device,
-      isTest ? 1 : 0
+      isTest ? 1 : 0,
+      volunteer
     )
     .run();
   return id;
@@ -82,6 +86,7 @@ async function handleAsk(request, env, ctx) {
   if (result.kendras?.items?.length && kendraContactsVisible(env.KENDRA_REGISTRY, isTest)) {
     try {
       await attachContacts(env.DB, result.kendras.items);
+      markOrders(result.kendras.items, env, isTest);
     } catch {} // the registry table may not exist yet on an old database: show the list without it
   }
   if (result.status !== 'vision_unavailable' && !body.nolog) {
@@ -129,6 +134,8 @@ async function handleImpact(env) {
       SUM(switched = 'no') AS switched_no,
       ROUND(SUM(CASE WHEN switched = 'yes' AND saving_pack > 0 THEN saving_pack ELSE 0 END), 2) AS reported_saving,
       SUM(mode = 'volunteer') AS volunteer_lookups,
+      SUM(volunteer IS NOT NULL) AS registered_volunteer_lookups,
+      COUNT(DISTINCT volunteer) AS active_volunteers,
       SUM(input LIKE 'photo%') AS photo_lookups,
       MIN(ts) AS first_ts,
       MAX(ts) AS last_ts
@@ -207,6 +214,20 @@ async function handleAdmin(request, env, url) {
     return json(r.body, r.status);
   }
 
+  // v1.3 Registered volunteers: Registrar registers; Reviewer approves, rejects, removes, modifies.
+  if (path === '/volunteer/list') return json(await listVolunteers(env.DB, url.searchParams.get('status') || 'pending', url.searchParams.get('q') || ''));
+  if (path === '/volunteer/history') return json({ items: await volunteerHistory(env.DB, url.searchParams.get('code')) });
+  if (path === '/volunteer/register' && post) {
+    if (!can(who, 'register')) return json({ error: 'forbidden', detail: 'Only a Registrar or Admin can register volunteers.' }, 403);
+    const r = await registerVolunteer(env.DB, await readJson(), who);
+    return json(r.body, r.status);
+  }
+  if ((path === '/volunteer/decide' || path === '/volunteer/update') && post) {
+    if (!can(who, 'review')) return json({ error: 'forbidden', detail: 'Only a Reviewer or Admin can approve, remove or modify volunteers.' }, 403);
+    const r = path === '/volunteer/decide' ? await decideVolunteer(env.DB, await readJson(), who) : await updateVolunteer(env.DB, await readJson(), who);
+    return json(r.body, r.status);
+  }
+
   // Staff accounts: Admin manages Reviewers and Registrars; only the system owner manages Admins.
   if (path.startsWith('/users')) {
     if (!can(who, 'staff')) return json({ error: 'forbidden', detail: 'Only an Admin can manage staff accounts.' }, 403);
@@ -227,6 +248,14 @@ async function handleAdmin(request, env, url) {
   if (path === '/pmbi/context') return await handlePmbiContext(env);
   if (path === '/pmbi/apply' && post) return await handlePmbiApply(request, env);
   return json({ error: 'not_found' }, 404);
+}
+
+// v1.2 order requests: a registered Kendra's contact gets orders: true where ORDER_REQUESTS allows
+// it ("pilot": test traffic only, until PMBI confirms reserve-and-collect; "public"; "off").
+// The order itself is a WhatsApp/SMS message the patient sends from their own phone: nothing is stored.
+function markOrders(items, env, isTest) {
+  const on = kendraContactsVisible(env.ORDER_REQUESTS, isTest);
+  for (const x of items || []) if (x.contact) x.contact.orders = on;
 }
 
 // Brand medicines: the static files when deployed (see medstore.js), else the D1 table.
@@ -302,6 +331,9 @@ export default {
     const url = new URL(request.url);
     const qr = url.pathname.match(/^\/k\/([A-Za-z0-9]{6,12})\/?$/);
     if (qr) return Response.redirect(`${url.origin}/?k=${encodeURIComponent(qr[1].toUpperCase())}`, 302);
+    // v1.3: a registered volunteer's personal link turns on volunteer mode with their code.
+    const vl = url.pathname.match(/^\/v\/(SV-?[A-Za-z0-9]{5})\/?$/i);
+    if (vl) return Response.redirect(`${url.origin}/?volunteer=${encodeURIComponent(vl[1].toUpperCase())}`, 302);
     try {
       if (url.pathname.startsWith('/api/admin/')) return await handleAdmin(request, env, url);
       if (url.pathname === '/api/ask' && request.method === 'POST') return await handleAsk(request, env, ctx);
@@ -309,13 +341,13 @@ export default {
       if (url.pathname === '/api/impact') return await handleImpact(env);
       if (url.pathname === '/api/health') {
         const r = await env.DB.prepare('SELECT key, value FROM meta').all();
-        return json({ ok: true, version: APP_VERSION, kendra_registry: env.KENDRA_REGISTRY || 'off', registration_email: env.REGISTRATION_EMAIL || null, meta: Object.fromEntries((r.results || []).map((x) => [x.key, x.value])) });
+        return json({ ok: true, version: APP_VERSION, kendra_registry: env.KENDRA_REGISTRY || 'off', registration_email: env.REGISTRATION_EMAIL || null, order_requests: env.ORDER_REQUESTS || 'off', meta: Object.fromEntries((r.results || []).map((x) => [x.key, x.value])) });
       }
       // Nearest Kendras for a PIN, for the PIN box in an answer's Kendra card (no lookup is logged).
       if (url.pathname === '/api/kendras') {
         const r = await nearestKendra(env.DB, { pin: url.searchParams.get('pin') || '' });
         if (r.items?.length && kendraContactsVisible(env.KENDRA_REGISTRY, isTestRequest(request, null))) {
-          try { await attachContacts(env.DB, r.items); } catch {}
+          try { await attachContacts(env.DB, r.items); markOrders(r.items, env, isTestRequest(request, null)); } catch {}
         }
         return json({ ...r, pin: String(url.searchParams.get('pin') || '').replace(/\D/g, '').slice(0, 6) });
       }
@@ -327,8 +359,11 @@ export default {
       const km = url.pathname.match(/^\/api\/kendra\/([A-Za-z0-9]{6,12})$/);
       if (km && request.method === 'GET') {
         const r = await lookupKendra(env.DB, km[1], { showContact: kendraContactsVisible(env.KENDRA_REGISTRY, isTestRequest(request, null)) });
+        if (r.contact) markOrders([r], env, isTestRequest(request, null));
         return json(r, r.found ? 200 : r.error === 'krErrCode' ? 400 : 404);
       }
+      const vm = url.pathname.match(/^\/api\/volunteer\/([A-Za-z0-9-]{5,10})$/);
+      if (vm && request.method === 'GET') return json(await volunteerLinkStatus(env.DB, vm[1]));
       if (url.pathname.startsWith('/api/')) return json({ error: 'not_found' }, 404);
     } catch (e) {
       return json({ error: 'server_error', detail: String(e?.message || e).slice(0, 200) }, 500);
