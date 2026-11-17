@@ -169,6 +169,7 @@ input[type='text']::placeholder { color: var(--faint); }
 
 /* ── Results ────────────────────────────────────────────────────────── */
 .result { display: grid; gap: 12px; }
+.result[hidden] { display: none; }
 .result > * { animation: rise .45s var(--ease) both; }
 .result > *:nth-child(2) { animation-delay: .04s; }
 .result > *:nth-child(3) { animation-delay: .08s; }
@@ -348,3 +349,26 @@ details.why-inline { margin-top: 12px; }
 .scan-row .secondary { gap: 8px; padding: 8px 12px; min-height: clamp(46px, 6.5vh, 52px); font-size: clamp(14px, 3.8vw, 16px); line-height: 1.2; text-align: center; background: var(--card); box-shadow: var(--shadow); }
 .scan-row .secondary svg { flex: none; }
 @media (max-width: 340px) { .scan-row { grid-template-columns: 1fr; } }
+.scan-row.single { grid-template-columns: 1fr; }
+.scan-row [hidden] { display: none; }
+/* Short confirmation after an action. */
+.toast { position: fixed; left: 50%; bottom: max(20px, env(safe-area-inset-bottom)); z-index: 50; transform: translate(-50%, 8px); max-width: calc(100vw - 32px); padding: 10px 18px; border-radius: 999px; background: #1d1d1f; color: #fff; font-size: 15px; font-weight: 500; letter-spacing: 0; box-shadow: 0 8px 24px rgba(0,0,0,.2); opacity: 0; transition: opacity .2s var(--ease), transform .2s var(--ease); pointer-events: none; }
+.toast.show { opacity: 1; transform: translate(-50%, 0); }
+.toast[hidden] { display: none; }
+@media (prefers-color-scheme: dark) { .toast { background: #f5f5f7; color: #1d1d1f; } }
+/* Inside the pharmacist list: in the flow at the bottom, never over its buttons. */
+dialog .toast { position: static; transform: none; display: block; width: fit-content; margin: 12px auto 0; text-align: center; }
+dialog .toast.show { transform: none; }
+
+/* v1.1: "You are at Jan Aushadhi Kendra …" after scanning a Kendra's QR poster. */
+.kendra-here { display: flex; gap: 12px; align-items: flex-start; justify-content: space-between; margin: 0 0 14px; padding: 12px 14px;
+  border-radius: var(--radius-sm); background: var(--accent-soft); color: var(--text); font-size: 14px; line-height: 1.4; }
+.kendra-here[hidden] { display: none; }
+.kendra-here b { display: block; font-size: 15px; }
+.kendra-here .kh-addr { color: var(--muted); }
+.kendra-here .kh-close { flex: none; font-size: 14px; }
+
+/* PIN box in an answer's Kendra card. */
+.k-pin { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; gap: 8px; align-items: center; margin-top: 12px; padding-top: 12px; border-top: 0.5px solid var(--line); }
+.k-pin input { font: inherit; font-size: 17px; min-width: 0; color: var(--text); background: var(--fill); border: 0.5px solid var(--line); border-radius: 10px; padding: 8px 10px; }
+.k-pin .secondary { width: auto; min-height: 40px; padding: 8px 14px; font-size: 15px; }

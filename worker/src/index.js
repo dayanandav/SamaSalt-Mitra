@@ -2,6 +2,13 @@
 import { runAgent, resetMetaCache } from './agent.js';
 import { validateProducts, insertStatements } from '../../public/pmbi.js';
 import { assetMeds, d1Meds } from './medstore.js';
+import { lookupKendra, staffRegisterKendra, attachContacts, adminListKendras, adminDecideKendra, adminUpdateKendra, adminKendraHistory } from './kendra.js';
+import { whoIs, csrfOk, login, logout, listAdmins, createAdmin, updateAdmin, can, permissions } from './admin.js';
+import { kendraContactsVisible } from '../../public/rules.js';
+import { nearestKendra } from './tools.js';
+
+// Not exported: a Worker's main module may only export handlers.
+const APP_VERSION = '1.1.1';
 
 const MAX_IMAGE_CHARS = 2_500_000; // ~1.8 MB JPEG as a data URL; the app resizes to ~1 MP first
 
@@ -71,6 +78,12 @@ async function handleAsk(request, env, ctx) {
   }
   const isTest = isTestRequest(request, body);
   const result = await runAgent(env, body);
+  // v1.1: registered Kendra numbers, only where KENDRA_REGISTRY allows (pilot: test traffic only).
+  if (result.kendras?.items?.length && kendraContactsVisible(env.KENDRA_REGISTRY, isTest)) {
+    try {
+      await attachContacts(env.DB, result.kendras.items);
+    } catch {} // the registry table may not exist yet on an old database: show the list without it
+  }
   if (result.status !== 'vision_unavailable' && !body.nolog) {
     try {
       result.lookup_id = await logLookup(env, body, result, isTest);
@@ -148,15 +161,72 @@ async function handleImpact(env) {
 
 const MAX_IMPORT_CHARS = 8_000_000;
 
-async function adminDenied(request, env) {
-  if (!env.ADMIN_TOKEN) return json({ error: 'admin_disabled', detail: 'Set the ADMIN_TOKEN secret to enable data import.' }, 503);
-  const got = (request.headers.get('authorization') || '').replace(/^Bearer\s+/i, '');
-  const enc = new TextEncoder();
-  const [a, b] = await Promise.all([got, env.ADMIN_TOKEN].map((s) => crypto.subtle.digest('SHA-256', enc.encode(s))));
-  const x = new Uint8Array(a);
-  const y = new Uint8Array(b);
-  const same = crypto.subtle.timingSafeEqual ? crypto.subtle.timingSafeEqual(a, b) : x.every((v, i) => v === y[i]);
-  return same ? null : json({ error: 'unauthorized' }, 401);
+// /api/admin/*: sign-in (worker/src/admin.js), then what each role may do.
+//   reviewer: me, logout, Kendra registrations (list, history, decide)
+//   owner (ADMIN_TOKEN, or an owner account): all of that, plus accounts and the PMBI data import
+const withCookie = (res, cookie) => { if (cookie) res.headers.append('set-cookie', cookie); return res; };
+
+async function handleAdmin(request, env, url) {
+  const path = url.pathname.slice('/api/admin'.length);
+  const readJson = () => request.json().catch(() => null);
+  if (path === '/login' && request.method === 'POST') {
+    const r = await login(env, await readJson());
+    return withCookie(json(r.body, r.status), r.cookie);
+  }
+  if (path === '/logout' && request.method === 'POST') {
+    const r = await logout(request, env);
+    return withCookie(json(r.body, r.status), r.cookie);
+  }
+  const who = await whoIs(request, env);
+  if (!who) {
+    const bearer = /^Bearer\s+\S/i.test(request.headers.get('authorization') || '');
+    if (bearer && !env.ADMIN_TOKEN) return json({ error: 'admin_disabled', detail: 'Set the ADMIN_TOKEN secret to enable the admin API.' }, 503);
+    return json({ error: 'unauthorized', detail: 'Sign in again.' }, 401);
+  }
+  if (!csrfOk(request, who)) return json({ error: 'forbidden' }, 403);
+  const post = request.method === 'POST';
+
+  if (path === '/me') return json({ ...who, can: permissions(who) });
+  if (path === '/kendra/list') return json(await adminListKendras(env.DB, url.searchParams.get('status') || 'pending', url.searchParams.get('q') || ''));
+  if (path === '/kendra/history') return json({ items: await adminKendraHistory(env.DB, url.searchParams.get('code')) });
+  // Registrar (or Admin) enters a Kendra's request received by email or in person.
+  if (path === '/kendra/register' && post) {
+    if (!can(who, 'register')) return json({ error: 'forbidden', detail: 'Only a Registrar or Admin can register Kendras.' }, 403);
+    const r = await staffRegisterKendra(env.DB, await readJson(), who);
+    return json(r.body, r.status);
+  }
+  // Reviewer (or Admin) calls the Kendra and approves, rejects, withdraws or modifies.
+  if (path === '/kendra/decide' && post) {
+    if (!can(who, 'review')) return json({ error: 'forbidden', detail: 'Only a Reviewer or Admin can approve, reject or withdraw.' }, 403);
+    const r = await adminDecideKendra(env.DB, await readJson(), who);
+    return json(r.body, r.status);
+  }
+  if (path === '/kendra/update' && post) {
+    if (!can(who, 'review')) return json({ error: 'forbidden', detail: 'Only a Reviewer or Admin can modify a registration.' }, 403);
+    const r = await adminUpdateKendra(env.DB, await readJson(), who);
+    return json(r.body, r.status);
+  }
+
+  // Staff accounts: Admin manages Reviewers and Registrars; only the system owner manages Admins.
+  if (path.startsWith('/users')) {
+    if (!can(who, 'staff')) return json({ error: 'forbidden', detail: 'Only an Admin can manage staff accounts.' }, 403);
+    if (path === '/users') return json({ items: await listAdmins(env) });
+    if (path === '/users/create' && post) {
+      const r = await createAdmin(env, await readJson(), who);
+      return json(r.body, r.status);
+    }
+    if (path === '/users/update' && post) {
+      const r = await updateAdmin(env, await readJson(), who);
+      return json(r.body, r.status);
+    }
+    return json({ error: 'not_found' }, 404);
+  }
+
+  if (!can(who, 'data')) return json({ error: 'forbidden', detail: 'Only the system owner can do this.' }, 403);
+  if (path === '/status') return await handleAdminStatus(env);
+  if (path === '/pmbi/context') return await handlePmbiContext(env);
+  if (path === '/pmbi/apply' && post) return await handlePmbiApply(request, env);
+  return json({ error: 'not_found' }, 404);
 }
 
 // Brand medicines: the static files when deployed (see medstore.js), else the D1 table.
@@ -230,21 +300,34 @@ async function handlePmbiApply(request, env) {
 export default {
   async fetch(request, env, ctx) {
     const url = new URL(request.url);
+    const qr = url.pathname.match(/^\/k\/([A-Za-z0-9]{6,12})\/?$/);
+    if (qr) return Response.redirect(`${url.origin}/?k=${encodeURIComponent(qr[1].toUpperCase())}`, 302);
     try {
-      if (url.pathname.startsWith('/api/admin/')) {
-        const denied = await adminDenied(request, env);
-        if (denied) return denied;
-        if (url.pathname === '/api/admin/status') return await handleAdminStatus(env);
-        if (url.pathname === '/api/admin/pmbi/context') return await handlePmbiContext(env);
-        if (url.pathname === '/api/admin/pmbi/apply' && request.method === 'POST') return await handlePmbiApply(request, env);
-        return json({ error: 'not_found' }, 404);
-      }
+      if (url.pathname.startsWith('/api/admin/')) return await handleAdmin(request, env, url);
       if (url.pathname === '/api/ask' && request.method === 'POST') return await handleAsk(request, env, ctx);
       if (url.pathname === '/api/feedback' && request.method === 'POST') return await handleFeedback(request, env);
       if (url.pathname === '/api/impact') return await handleImpact(env);
       if (url.pathname === '/api/health') {
         const r = await env.DB.prepare('SELECT key, value FROM meta').all();
-        return json({ ok: true, meta: Object.fromEntries((r.results || []).map((x) => [x.key, x.value])) });
+        return json({ ok: true, version: APP_VERSION, kendra_registry: env.KENDRA_REGISTRY || 'off', registration_email: env.REGISTRATION_EMAIL || null, meta: Object.fromEntries((r.results || []).map((x) => [x.key, x.value])) });
+      }
+      // Nearest Kendras for a PIN, for the PIN box in an answer's Kendra card (no lookup is logged).
+      if (url.pathname === '/api/kendras') {
+        const r = await nearestKendra(env.DB, { pin: url.searchParams.get('pin') || '' });
+        if (r.items?.length && kendraContactsVisible(env.KENDRA_REGISTRY, isTestRequest(request, null))) {
+          try { await attachContacts(env.DB, r.items); } catch {}
+        }
+        return json({ ...r, pin: String(url.searchParams.get('pin') || '').replace(/\D/g, '').slice(0, 6) });
+      }
+      // v1.1 Kendra registry. Self-registration is closed: a Kendra emails its request with the
+      // required documents, and a registrar enters it (/api/admin/kendra/register).
+      if (url.pathname === '/api/kendra/register') {
+        return json({ error: 'krRegisterByEmail', detail: 'Kendras register by email; see /kendra.', email: env.REGISTRATION_EMAIL || null }, 410);
+      }
+      const km = url.pathname.match(/^\/api\/kendra\/([A-Za-z0-9]{6,12})$/);
+      if (km && request.method === 'GET') {
+        const r = await lookupKendra(env.DB, km[1], { showContact: kendraContactsVisible(env.KENDRA_REGISTRY, isTestRequest(request, null)) });
+        return json(r, r.found ? 200 : r.error === 'krErrCode' ? 400 : 404);
       }
       if (url.pathname.startsWith('/api/')) return json({ error: 'not_found' }, 404);
     } catch (e) {

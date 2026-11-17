@@ -183,5 +183,6 @@
     $('#pins').innerHTML = table(d.by_pin_prefix || [], [{ h: 'PIN', f: (r) => `${r.pin3}xxx` }, { h: 'Lookups', num: 1, f: (r) => num(r.n) }]);
     $('#meds').innerHTML = table(d.top_medicines || [], [{ h: 'Medicine', f: (r) => r.medicine }, { h: 'Lookups', num: 1, f: (r) => num(r.n) }, { h: 'Avg saving / pack', num: 1, f: (r) => (r.avg_saving > 0 ? inr(r.avg_saving) : '—') }]);
   </script>
+  <script src="/envbanner.js"></script>
 </body>
 </html>

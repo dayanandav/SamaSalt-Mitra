@@ -149,3 +149,36 @@ test('never-switch: the reason is explained in every language, with no price and
     assert.doesNotMatch(STRINGS[lang].ntiWhy, /₹|SamaSalt|Jan Aushadhi|ಜನ ಔಷಧಿ|जन औषधि/, lang);
   }
 });
+
+test('phone camera options only on phones and tablets, never on a computer browser', async () => {
+  const { isPhoneBrowser } = await import('../public/rules.js');
+  const android = 'Mozilla/5.0 (Linux; Android 14; Pixel 7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0 Mobile Safari/537.36';
+  const iphone = 'Mozilla/5.0 (iPhone; CPU iPhone OS 17_5 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.5 Mobile/15E148 Safari/604.1';
+  const ipad = 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.5 Safari/605.1.15';
+  const windows = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0 Safari/537.36 Edg/130.0';
+  const mac = ipad;
+  assert.equal(isPhoneBrowser({ userAgent: android }), true);
+  assert.equal(isPhoneBrowser({ userAgent: iphone }), true);
+  assert.equal(isPhoneBrowser({ userAgent: ipad, maxTouchPoints: 5 }), true); // iPadOS
+  assert.equal(isPhoneBrowser({ userAgent: windows, maxTouchPoints: 0 }), false);
+  assert.equal(isPhoneBrowser({ userAgent: windows, userAgentData: { mobile: false } }), false);
+  assert.equal(isPhoneBrowser({ userAgent: mac, maxTouchPoints: 0 }), false);
+  assert.equal(isPhoneBrowser({ userAgent: 'x', userAgentData: { mobile: true } }), true);
+  assert.equal(isPhoneBrowser(undefined), false);
+});
+
+test('critical: old medicines never reach the pharmacist list (1-hour limit, untimed entries dropped)', async () => {
+  const { freshMedList, LIST_MAX_AGE_MS } = await import('../public/rules.js');
+  const now = Date.UTC(2026, 10, 16, 12);
+  const list = [
+    { ckey: 'new', at: now - 5 * 60_000 },
+    { ckey: 'edge', at: now - LIST_MAX_AGE_MS + 1000 },
+    { ckey: 'old', at: now - LIST_MAX_AGE_MS - 1 },
+    { ckey: 'yesterday', at: now - 24 * 3600_000 },
+    { ckey: 'untimed' }, // saved by an earlier version
+    { ckey: 'future', at: now + 3600_000 }, // phone clock changed
+    null,
+  ];
+  assert.deepEqual(freshMedList(list, now).map((x) => x.ckey), ['new', 'edge']);
+  assert.deepEqual(freshMedList('junk', now), []);
+});

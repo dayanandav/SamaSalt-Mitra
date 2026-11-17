@@ -1,0 +1,469 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Register your Jan Aushadhi Kendra · SamaSalt-Mitra</title>
+  <meta name="description" content="For Jan Aushadhi Kendras: apply online to be listed as a registered Kendra on SamaSalt-Mitra, and print your QR poster. Pickup at the counter only.">
+  <link rel="icon" href="/icon-128.png" type="image/png">
+  <link rel="stylesheet" href="/styles.css">
+  <style>
+    /* ── Public page: partner-style onboarding (hero, benefits, steps, form, terms, FAQ) ── */
+    .top-right { display: flex; align-items: center; gap: 8px; flex: none; }
+    .staff-link { font-size: 14px; font-weight: 500; white-space: nowrap; padding: 6px 4px; }
+    .staff-link[hidden] { display: none; }
+    .hero { padding: 4px 0 6px; }
+    /* Jumps land below the sticky header. */
+    #apply, #poster, #formCard, #sendCard, #terms { scroll-margin-top: 72px; }
+    .eyebrow { display: inline-block; font-size: 13px; font-weight: 600; color: var(--accent); background: var(--accent-soft); border-radius: 999px; padding: 4px 10px; margin-bottom: 10px; }
+    .hero .lede { margin-bottom: 16px; }
+    .ctas { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+    .ctas .primary, .ctas .secondary { width: 100%; min-height: 52px; font-size: 16px; text-decoration: none; text-align: center; padding: 8px 12px; box-sizing: border-box; }
+    @media (max-width: 380px) { .ctas { grid-template-columns: minmax(0, 1fr); } }
+    .poster-quick { display: grid; gap: 10px; margin-top: 16px; background: var(--accent-soft); border-radius: var(--radius); padding: 16px; }
+    .poster-quick h2 { font-size: 17px; margin: 0; display: flex; gap: 8px; align-items: center; }
+    .poster-quick p { margin: 0; font-size: 14px; color: var(--muted); line-height: 1.45; }
+    .poster-quick form { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 8px; }
+    .poster-quick input { font: inherit; font-size: 17px; color: var(--text); background: var(--card); border: 0.5px solid var(--line); border-radius: 12px; padding: 10px 12px; min-height: 48px; min-width: 0; box-sizing: border-box; }
+    .poster-quick .primary { width: auto; min-height: 48px; padding: 8px 16px; font-size: 15px; }
+    .sec-title { font-size: 19px; margin: 28px 0 12px; }
+    .benefits { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; }
+    @media (max-width: 560px) { .benefits { grid-template-columns: minmax(0, 1fr); } }
+    .benefit { background: var(--card); border-radius: var(--radius-sm); box-shadow: var(--shadow); padding: 14px; display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 4px 12px; align-items: start; }
+    .benefit svg { grid-row: span 2; width: 26px; height: 26px; color: var(--accent); margin-top: 2px; }
+    .benefit b { font-size: 15px; }
+    .benefit span { font-size: 14px; color: var(--muted); line-height: 1.45; }
+    .steps { list-style: none; margin: 0; padding: 0; display: grid; gap: 0; counter-reset: s; }
+    .steps li { counter-increment: s; display: grid; grid-template-columns: 32px minmax(0, 1fr); gap: 12px; align-items: start; padding: 0 0 16px; position: relative; font-size: 15px; line-height: 1.45; }
+    .steps li::before { content: counter(s); width: 32px; height: 32px; border-radius: 50%; background: var(--accent); color: var(--accent-ink); font-weight: 700; display: grid; place-items: center; font-size: 15px; }
+    .steps li:not(:last-child)::after { content: ''; position: absolute; left: 15px; top: 34px; bottom: 2px; width: 2px; background: var(--accent-soft); }
+    .steps li span { padding-top: 5px; }
+    .docs { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; }
+    .docs li { display: grid; grid-template-columns: 22px minmax(0, 1fr); gap: 10px; font-size: 15px; line-height: 1.45; }
+    .docs li svg { width: 22px; height: 22px; color: var(--accent); margin-top: 1px; }
+    .stepper { display: flex; gap: 6px; align-items: center; font-size: 13px; color: var(--muted); margin: 0 0 6px; font-weight: 600; text-transform: uppercase; letter-spacing: .04em; }
+    .kr { display: grid; gap: 14px; margin-top: 12px; }
+    .kr fieldset { border: 0; margin: 0; padding: 0; display: grid; gap: 12px; }
+    .kr legend { font-weight: 600; font-size: 16px; padding: 0; margin-bottom: 8px; }
+    .kr label { display: grid; gap: 6px; font-size: 15px; color: var(--muted); }
+    .kr input[type='text'], .kr input[type='tel'], .kr select {
+      font: inherit; font-size: 17px; color: var(--text); background: var(--fill); border: 0.5px solid var(--line);
+      border-radius: 12px; padding: 12px; width: 100%; box-sizing: border-box; min-height: 48px;
+    }
+    .kr .row { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 8px; align-items: end; }
+    .kr .row .secondary { width: auto; min-height: 48px; padding: 10px 18px; }
+    .two { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+    @media (max-width: 480px) { .two { grid-template-columns: minmax(0, 1fr); } }
+    .found { background: var(--accent-soft); border-radius: 12px; padding: 12px 14px; font-size: 15px; line-height: 1.45; }
+    .found b { display: block; margin-bottom: 2px; }
+    .consent { display: flex !important; gap: 10px; align-items: flex-start; color: var(--text) !important; line-height: 1.45; }
+    .consent input { width: 22px; height: 22px; margin-top: 1px; flex: none; }
+    .kmsg { margin: 0; padding: 10px 12px; border-radius: 12px; font-size: 15px; line-height: 1.45; }
+    .kmsg.err { background: var(--danger-soft); color: var(--danger); }
+    .kmsg.ok { background: var(--accent-soft); color: var(--accent); }
+    .kmsg.info { background: var(--warn-soft); color: var(--warn); }
+    .summary { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 6px 14px; margin: 12px 0; font-size: 15px; line-height: 1.45; background: var(--fill); border-radius: 12px; padding: 12px 14px; }
+    .summary dt { color: var(--muted); }
+    .summary dd { margin: 0; overflow-wrap: anywhere; }
+    .send-big { margin-top: 14px; }
+    .send-big .primary { text-decoration: none; }
+    .send-row { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; }
+    .send-row .secondary { width: auto; min-height: 44px; padding: 8px 16px; font-size: 15px; }
+    .email-to { margin: 12px 0 0; font-weight: 600; overflow-wrap: anywhere; }
+    details.see { margin-top: 12px; }
+    details.see summary, details.acc summary { cursor: pointer; color: var(--accent); font-size: 15px; font-weight: 500; }
+    pre.email { margin: 8px 0 0; white-space: pre-wrap; overflow-wrap: anywhere; background: var(--fill); border: 0.5px solid var(--line); border-radius: 12px;
+      padding: 12px 14px; font: 13px/1.5 var(--mono); color: var(--text); max-height: 360px; overflow: auto; }
+    .acc-list { background: var(--card); border-radius: var(--radius); box-shadow: var(--shadow); padding: 4px 16px; }
+    details.acc { border-bottom: 0.5px solid var(--line); }
+    details.acc:last-child { border-bottom: 0; }
+    details.acc summary { list-style: none; display: flex; justify-content: space-between; gap: 12px; padding: 14px 0; color: var(--text); font-weight: 600; }
+    details.acc summary::-webkit-details-marker { display: none; }
+    details.acc summary::after { content: '+'; color: var(--accent); font-size: 20px; line-height: 1; }
+    details.acc[open] summary::after { content: '−'; }
+    details.acc .acc-body { padding: 0 0 14px; font-size: 15px; line-height: 1.5; color: var(--muted); }
+    details.acc ol { margin: 0; padding-left: 20px; display: grid; gap: 6px; }
+    .card + .card { margin-top: 12px; }
+    .card h2 { font-size: 19px; margin: 0 0 6px; }
+    .kr[hidden], .found[hidden], .kmsg[hidden], .card[hidden], .send-big [hidden], .send-row [hidden], .email-to[hidden] { display: none !important; }
+    #regView[hidden], #adminView[hidden] { display: none !important; }
+
+    /* ── Staff console (#admin) ── */
+    .back { display: inline-block; font-size: 15px; margin: 0 0 10px; }
+    .card + section, section + .card { margin-top: 12px; }
+    .af { display: grid; gap: 12px; margin-top: 12px; }
+    .af label { display: grid; gap: 6px; font-size: 14px; color: var(--muted); }
+    .af input[type='text'], .af input[type='password'], .af select, .af textarea {
+      font: inherit; font-size: 16px; color: var(--text); background: var(--fill); border: 0.5px solid var(--line);
+      border-radius: 12px; padding: 11px 12px; width: 100%; box-sizing: border-box; min-height: 46px;
+    }
+    .af textarea { min-height: 64px; resize: vertical; }
+    .btns { display: flex; flex-wrap: wrap; gap: 8px; }
+    .btns .primary, .btns .secondary { width: auto; min-height: 44px; padding: 10px 18px; font-size: 15px; }
+    .primary[disabled] { opacity: .45; cursor: not-allowed; }
+    .seg { display: inline-flex; background: var(--fill); border-radius: 12px; padding: 3px; gap: 2px; flex-wrap: wrap; }
+    .seg button { font: inherit; font-size: 14px; border: 0; background: none; color: var(--muted); padding: 8px 12px; border-radius: 9px; cursor: pointer; }
+    .seg button[aria-pressed='true'] { background: var(--card); color: var(--text); font-weight: 600; box-shadow: var(--shadow); }
+    .who { display: flex; flex-wrap: wrap; gap: 8px 14px; align-items: center; justify-content: space-between; }
+    .who b { font-size: 16px; }
+    .badge { display: inline-block; font-size: 12px; font-weight: 700; padding: 3px 9px; border-radius: 999px; background: var(--accent-soft); color: var(--accent); vertical-align: 2px; margin-left: 4px; }
+    .badge.admin, .badge.owner { background: var(--warn-soft); color: var(--warn); }
+    .who .can { flex-basis: 100%; margin: 0; }
+    .tabs { display: flex; gap: 4px; margin: 12px 0 0; border-bottom: 0.5px solid var(--line); overflow-x: auto; }
+    .tabs button { font: inherit; font-size: 15px; border: 0; background: none; color: var(--muted); padding: 10px 12px; cursor: pointer; border-bottom: 2px solid transparent; white-space: nowrap; min-height: 44px; }
+    .tabs button[aria-selected='true'] { color: var(--accent); border-bottom-color: var(--accent); font-weight: 600; }
+    .tabs button[hidden], .tab[hidden] { display: none !important; }
+    .tab { margin-top: 12px; }
+    .amsg { margin: 10px 0 0; padding: 10px 12px; border-radius: 12px; font-size: 14px; line-height: 1.45; }
+    .amsg.ok { background: var(--accent-soft); color: var(--accent); }
+    .amsg.err { background: var(--danger-soft); color: var(--danger); }
+    .amsg.info { background: var(--fill); color: var(--muted); }
+    .amsg.warn { background: var(--warn-soft); color: var(--warn); }
+    details.ownerkey summary { cursor: pointer; color: var(--accent); font-size: 14px; margin-top: 14px; }
+    /* Registrations: search, then one numbered line per Kendra; tap a line for the details. */
+    .reg-search { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 8px; margin: 4px 0 12px; }
+    .reg-search input { font: inherit; font-size: 16px; color: var(--text); background: var(--fill); border: 0.5px solid var(--line); border-radius: 12px; padding: 10px 12px; min-height: 46px; min-width: 0; box-sizing: border-box; }
+    .reg-search .secondary { width: auto; min-height: 46px; padding: 10px 16px; font-size: 15px; }
+    #regs { margin-top: 10px; border-top: 0.5px solid var(--line); }
+    .reg { border-bottom: 0.5px solid var(--line); }
+    .reg > summary.line { list-style: none; display: flex; align-items: center; gap: 8px; padding: 12px 2px; cursor: pointer; min-height: 48px; box-sizing: border-box; white-space: nowrap; overflow: hidden; }
+    .reg > summary.line::-webkit-details-marker { display: none; }
+    .reg > summary.line::after { content: '›'; margin-left: auto; padding-left: 8px; color: var(--muted); font-size: 20px; line-height: 1; transition: transform .15s var(--ease); }
+    .reg[open] > summary.line::after { transform: rotate(90deg); }
+    .reg > summary.line:hover, .reg > summary.line:focus-visible { background: var(--fill); }
+    .reg .sn { color: var(--muted); font-variant-numeric: tabular-nums; min-width: 1.6em; text-align: right; font-size: 14px; }
+    .reg .line b { font-size: 15px; letter-spacing: .01em; font-variant-numeric: tabular-nums; }
+    .reg .line .st { font-size: 11px; padding: 2px 7px; }
+    .reg .line .meta { color: var(--muted); font-size: 13px; overflow: hidden; text-overflow: ellipsis; min-width: 0; }
+    .reg .body { display: grid; gap: 10px; padding: 2px 0 16px; }
+    .hist .cap2 { font-size: 12px; font-weight: 600; color: var(--muted); text-transform: uppercase; letter-spacing: .04em; margin: 4px 0 0; }
+    .hist ol { margin: 6px 0 0; padding-left: 18px; font-size: 13px; line-height: 1.5; color: var(--muted); display: grid; gap: 4px; }
+    .st { font-size: 12px; font-weight: 600; padding: 3px 9px; border-radius: 999px; background: var(--fill); color: var(--muted); }
+    .st.pending { background: var(--warn-soft); color: var(--warn); }
+    .st.approved { background: var(--accent-soft); color: var(--accent); }
+    .st.rejected, .st.withdrawn { background: var(--danger-soft); color: var(--danger); }
+    .cmp { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
+    .cmp > div { background: var(--fill); border-radius: 12px; padding: 10px 12px; font-size: 14px; line-height: 1.5; min-width: 0; overflow-wrap: anywhere; }
+    .cmp .cap2 { display: block; font-size: 12px; font-weight: 600; color: var(--muted); text-transform: uppercase; letter-spacing: .04em; margin-bottom: 2px; }
+    .cmp a { font-variant-numeric: tabular-nums; font-weight: 600; }
+    @media (max-width: 560px) { .cmp { grid-template-columns: minmax(0, 1fr); } }
+    .checks { display: grid; gap: 8px; margin: 0; padding: 0; border: 0; }
+    .checks legend { font-weight: 600; font-size: 15px; margin-bottom: 4px; padding: 0; }
+    .checks label { display: flex; gap: 10px; align-items: flex-start; font-size: 15px; line-height: 1.4; color: var(--text); }
+    .checks input { width: 22px; height: 22px; flex: none; margin-top: 0; }
+    .edit-box { background: var(--fill); border-radius: 12px; padding: 4px 12px 12px; }
+    .edit-box .af input[type='text'], .edit-box .af select, .edit-box .af textarea { background: var(--card); }
+    /* Staff accounts: one numbered line per account (same look as registrations); tap for details. */
+    .users { margin-top: 10px; border-top: 0.5px solid var(--line); }
+    .user-row .line .badge { margin-left: 0; font-size: 11px; padding: 2px 7px; }
+    .user-row .body { gap: 10px; }
+    .secondary.danger { color: var(--danger); }
+    .primary.danger-fill { background: var(--danger); }
+    .pwbox { margin-top: 0; }
+    .pwbox[hidden], .confirm[hidden] { display: none !important; }
+    /* ── Staff console on wide screens (laptops, desktops): full width, tables + side panel ── */
+    @media (min-width: 1000px) {
+      body.console main { max-width: 1240px; }
+      body.console .top { padding-left: max(16px, calc((100% - 1208px) / 2)); padding-right: max(16px, calc((100% - 1208px) / 2)); }
+      body.console .who { flex-wrap: nowrap; }
+      body.console .who .can { flex-basis: auto; order: 1; flex: 1; }
+      body.console .who .btns { order: 2; }
+      .trow.sel .badge, .trow.sel .st { background: var(--card); }
+      .split { display: grid; grid-template-columns: minmax(0, 1fr) minmax(380px, 440px); gap: 20px; align-items: start; border-top: 0 !important; }
+      .tbl-wrap { overflow-x: auto; border: 0.5px solid var(--line); border-radius: 12px; }
+      .tbl { width: 100%; border-collapse: collapse; font-size: 14px; }
+      .tbl th { text-align: left; font-size: 12px; font-weight: 600; color: var(--muted); text-transform: uppercase; letter-spacing: .04em; padding: 10px 12px; background: var(--fill); border-bottom: 0.5px solid var(--line); white-space: nowrap; }
+      .tbl td { padding: 10px 12px; border-bottom: 0.5px solid var(--line); white-space: nowrap; max-width: 220px; overflow: hidden; text-overflow: ellipsis; }
+      .tbl tbody tr:last-child td { border-bottom: 0; }
+      .tbl .num { color: var(--muted); font-variant-numeric: tabular-nums; width: 2.5em; text-align: right; }
+      .tbl td b { font-variant-numeric: tabular-nums; }
+      .tbl .st, .tbl .badge { font-size: 11px; padding: 2px 8px; margin: 0; }
+      .trow { cursor: pointer; }
+      .trow:hover td { background: var(--fill); }
+      .trow:focus-visible { outline: 2px solid var(--accent); outline-offset: -2px; }
+      .trow.sel td { background: var(--accent-soft); }
+      .panel { position: sticky; top: 68px; max-height: calc(100vh - 84px); overflow: auto; background: var(--card); border: 0.5px solid var(--line); border-radius: 14px; padding: 4px 16px 16px; border-bottom: 0.5px solid var(--line) !important; }
+      .panel.empty { padding: 16px; }
+      .panel-head { display: flex; align-items: center; gap: 8px; padding: 12px 0 8px; position: sticky; top: 0; background: var(--card); z-index: 1; }
+      .panel-head .link { margin-left: auto; font-size: 14px; }
+      .panel .cmp { grid-template-columns: minmax(0, 1fr); }
+      /* Forms in two columns */
+      #nrForm, #userForm { grid-template-columns: repeat(2, minmax(0, 1fr)); column-gap: 16px; }
+      #nrForm > :is(div:first-child, label:has(#nrRef), label:has(#nrHours), .nr-row, #nrFound, fieldset, .btns),
+      #userForm > :is(h2, .role-help, .btns) { grid-column: 1 / -1; }
+      #userForm > label:has(#uRole) { grid-column: 1 / -1; max-width: calc(50% - 8px); }
+    }
+    .role-help { background: var(--fill); border-radius: 12px; padding: 10px 12px; font-size: 14px; line-height: 1.45; }
+    .role-help b { display: block; margin-bottom: 4px; }
+    .role-help ul { margin: 0; padding-left: 18px; display: grid; gap: 3px; }
+    .role-help .cant { color: var(--muted); margin: 6px 0 0; }
+    .muted-sm { color: var(--muted); font-size: 13px; }
+    .nr-row { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 8px; align-items: end; }
+    .nr-row .secondary { width: auto; min-height: 46px; padding: 10px 16px; }
+    .af label[hidden], #signin[hidden], #app[hidden], .amsg[hidden], .review[hidden], .edit-box[hidden] { display: none !important; }
+  </style>
+</head>
+<body>
+  <header class="top">
+    <a class="brand" href="/" aria-label="SamaSalt-Mitra home">
+      <img class="logo" src="/icon-128.png" width="34" height="34" alt="">
+      <img class="brand-wordmark" src="/assets/SamaSalt-Mitra-Wordmark.svg" alt="SamaSalt-Mitra" width="1178" height="194">
+    </a>
+    <div class="top-right">
+      <a class="staff-link" id="staffLink" href="#admin" data-t="krStaffLogin">Staff login</a>
+      <select class="lang-menu" id="langs" aria-label="Language"></select>
+    </div>
+  </header>
+
+  <main>
+    <!-- ══ Public: register a Kendra (default) ══ -->
+    <div id="regView">
+      <section class="hero">
+        <span class="eyebrow" data-t="krEyebrow">For Jan Aushadhi Kendras</span>
+        <h1 data-t="krTitle">Register your Jan Aushadhi Kendra</h1>
+        <p class="lede" data-t="krHeroSub"></p>
+        <div class="ctas">
+          <a class="primary" href="#apply" id="ctaApply" data-t="krStart">Apply now</a>
+          <a class="secondary" href="#poster" id="ctaPoster" data-t="krPosterCta">Print QR poster</a>
+        </div>
+      </section>
+
+      <!-- Registered Kendras: straight to the poster -->
+      <section class="poster-quick" id="poster">
+        <h2><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><path d="M14 14h3v3h-3zM20 14v.01M14 20h.01M17 20h4v-3"/></svg><span data-t="krPosterQuick">Already registered? Print your QR poster</span></h2>
+        <p data-t="krPosterQuickHint"></p>
+        <form id="posterForm" autocomplete="off">
+          <input type="text" id="posterCode" autocapitalize="characters" spellcheck="false" maxlength="12" placeholder="PMBJK00964" aria-label="Kendra code">
+          <button class="primary" type="submit" data-t="krPosterBtn">Open poster</button>
+        </form>
+        <p class="kmsg err" id="posterErr" hidden role="alert"></p>
+      </section>
+
+      <h2 class="sec-title" data-t="krWhyTitle">Why register</h2>
+      <div class="benefits">
+        <div class="benefit"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg><b data-t="krBen1T"></b><span data-t="krBen1"></span></div>
+        <div class="benefit"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 3h12M6 8h12M6 13l8.5 8M6 13h3M9 13c6.667 0 6.667-10 0-10"/></svg><b data-t="krBen2T"></b><span data-t="krBen2"></span></div>
+        <div class="benefit"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 9l1.5-5h15L21 9M3 9h18v11H3zM9 20v-6h6v6"/></svg><b data-t="krBen3T"></b><span data-t="krBen3"></span></div>
+      </div>
+
+      <h2 class="sec-title" data-t="krHowTitle">How it works</h2>
+      <section class="card">
+        <ol class="steps">
+          <li><span data-t="krHow1"></span></li>
+          <li><span data-t="krHow2"></span></li>
+          <li><span data-t="krHow3"></span></li>
+          <li><span data-t="krHow4"></span></li>
+        </ol>
+      </section>
+
+      <h2 class="sec-title" data-t="krDocsTitle">Documents you need</h2>
+      <section class="card">
+        <ul class="docs">
+          <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 3H6a1 1 0 0 0-1 1v16a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V8z"/><path d="M14 3v5h5M9 14l2 2 4-4"/></svg><span data-t="krDoc1"></span></li>
+          <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 3H6a1 1 0 0 0-1 1v16a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V8z"/><path d="M14 3v5h5M9 14l2 2 4-4"/></svg><span data-t="krDoc2"></span></li>
+          <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 3H6a1 1 0 0 0-1 1v16a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V8z"/><path d="M14 3v5h5M9 14l2 2 4-4"/></svg><span data-t="krDoc3"></span></li>
+          <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 3H6a1 1 0 0 0-1 1v16a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V8z"/><path d="M14 3v5h5M9 14l2 2 4-4"/></svg><span data-t="krDoc4"></span></li>
+        </ul>
+      </section>
+
+      <!-- Step 1 of 2: the online form. It saves nothing: it prepares the email (step 2). -->
+      <h2 class="sec-title" id="apply" data-t="krFormTitle">Apply online</h2>
+      <section class="card" id="formCard">
+        <p class="stepper" data-t="krStep1"></p>
+        <p class="muted" style="margin:0;font-size:15px" data-t="krFormHint"></p>
+        <form class="kr" id="applyForm" novalidate autocomplete="on">
+          <fieldset>
+            <legend data-t="krFormKendra">Your Kendra</legend>
+            <div class="row">
+              <label><span data-t="krCode">Kendra code (PMBJK…)</span>
+                <input type="text" id="code" autocomplete="off" autocapitalize="characters" spellcheck="false" maxlength="12" placeholder="PMBJK00964">
+              </label>
+              <button class="secondary" type="button" id="findBtn" data-t="krFind">Find</button>
+            </div>
+            <div class="found" id="found" hidden></div>
+            <p class="kmsg info" id="statusNote" hidden></p>
+          </fieldset>
+          <fieldset>
+            <legend data-t="krFormContact">Contact details</legend>
+            <div class="two">
+              <label><span data-t="krName">Your name</span><input type="text" id="contact_name" autocomplete="name" maxlength="60"></label>
+              <label><span data-t="krRole">You are the</span>
+                <select id="role"><option value="owner" data-t="krRoleOwner">Owner</option><option value="pharmacist" data-t="krRolePharmacist">Pharmacist</option><option value="staff" data-t="krRoleStaff">Staff</option></select>
+              </label>
+            </div>
+            <div class="two">
+              <label><span data-t="krWhatsapp">Kendra's WhatsApp number</span><input type="tel" id="whatsapp" inputmode="tel" autocomplete="tel" maxlength="16" placeholder="98765 43210"></label>
+              <label><span data-t="krSms">Number for SMS and calls (if different)</span><input type="tel" id="sms" inputmode="tel" maxlength="16"></label>
+            </div>
+            <label><span data-t="krHours">Opening hours</span><input type="text" id="hours" maxlength="80"></label>
+            <div class="two">
+              <label><span data-t="krPharmName">Pharmacist's name (optional)</span><input type="text" id="pharmacist_name" maxlength="60"></label>
+              <label><span data-t="krPharmReg">Pharmacy Council registration no. (optional)</span><input type="text" id="pharmacist_reg" maxlength="40"></label>
+            </div>
+          </fieldset>
+          <label class="consent"><input type="checkbox" id="consent"><span><span data-t="krConsent"></span> <a href="#terms" id="termsLink" data-t="krTermsLink">Read the terms</a></span></label>
+          <p class="kmsg err" id="err" hidden role="alert"></p>
+          <button class="primary" type="submit" id="submitBtn" data-t="krContinue">Submit and prepare email</button>
+        </form>
+      </section>
+
+      <!-- Step 2 of 2: send the prepared email, with the documents attached. -->
+      <section class="card" id="sendCard" hidden tabindex="-1">
+        <p class="stepper" data-t="krStep2"></p>
+        <h2 data-t="krSendTitle">Send your application email</h2>
+        <p class="muted" style="margin:0;font-size:15px" data-t="krSendHint"></p>
+        <dl class="summary" id="summary"></dl>
+        <p style="margin:0 0 6px;font-weight:600" data-t="krAttach">Attach these documents:</p>
+        <ul class="docs">
+          <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m21.4 11.6-9.2 9.2a6 6 0 0 1-8.5-8.5l9.2-9.2a4 4 0 0 1 5.7 5.7l-9.2 9.2a2 2 0 0 1-2.8-2.8l8.5-8.5"/></svg><span data-t="krDoc1"></span></li>
+          <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m21.4 11.6-9.2 9.2a6 6 0 0 1-8.5-8.5l9.2-9.2a4 4 0 0 1 5.7 5.7l-9.2 9.2a2 2 0 0 1-2.8-2.8l8.5-8.5"/></svg><span data-t="krDoc2"></span></li>
+          <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m21.4 11.6-9.2 9.2a6 6 0 0 1-8.5-8.5l9.2-9.2a4 4 0 0 1 5.7 5.7l-9.2 9.2a2 2 0 0 1-2.8-2.8l8.5-8.5"/></svg><span data-t="krDoc3"></span></li>
+          <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m21.4 11.6-9.2 9.2a6 6 0 0 1-8.5-8.5l9.2-9.2a4 4 0 0 1 5.7 5.7l-9.2 9.2a2 2 0 0 1-2.8-2.8l8.5-8.5"/></svg><span data-t="krDoc4"></span></li>
+        </ul>
+        <p class="email-to" id="emailTo"></p>
+        <div class="send-big"><a class="primary" id="emailSend" href="#" data-t="krEmailSend">Send email</a></div>
+        <div class="send-row">
+          <button class="secondary" type="button" id="emailCopy" data-t="krEmailCopy">Copy email</button>
+          <button class="secondary" type="button" id="editBtn" data-t="krEdit">Edit details</button>
+        </div>
+        <p class="kmsg ok" id="copied" hidden role="status" style="margin-top:10px"></p>
+        <details class="see"><summary data-t="krSeeEmail">See the email</summary><pre class="email" id="emailText" tabindex="0" aria-label="Email text"></pre></details>
+        <p class="muted" style="margin:14px 0 0;font-size:15px" data-t="krAfter"></p>
+      </section>
+
+      <h2 class="sec-title" data-t="krTnC">Terms and conditions</h2>
+      <div class="acc-list">
+        <details class="acc" id="terms"><summary data-t="krTnCRead">What your Kendra agrees to</summary>
+          <div class="acc-body"><ol><li data-t="krTerm1"></li><li data-t="krTerm2"></li><li data-t="krTerm3"></li><li data-t="krTerm4"></li><li data-t="krTerm5"></li></ol></div>
+        </details>
+      </div>
+
+      <h2 class="sec-title" data-t="krFaqTitle">Questions</h2>
+      <div class="acc-list">
+        <details class="acc"><summary data-t="krFaq1Q"></summary><div class="acc-body" data-t="krFaq1A"></div></details>
+        <details class="acc"><summary data-t="krFaq2Q"></summary><div class="acc-body" data-t="krFaq2A"></div></details>
+        <details class="acc"><summary data-t="krFaq3Q"></summary><div class="acc-body" data-t="krFaq3A"></div></details>
+        <details class="acc"><summary data-t="krFaq4Q"></summary><div class="acc-body" data-t="krFaq4A"></div></details>
+        <details class="acc"><summary data-t="krFaq5Q"></summary><div class="acc-body" data-t="krFaq5A"></div></details>
+      </div>
+    </div>
+
+    <!-- ══ Staff console (#admin): one sign-in; the account's role decides what each person sees ══ -->
+    <div id="adminView" hidden>
+      <a class="back" href="/kendra" id="backLink">← Kendra registration</a>
+      <h1>Staff console</h1>
+      <p class="lede">For SamaSalt-Mitra staff who register and review Jan Aushadhi Kendras.</p>
+
+      <section class="card" id="signin" hidden>
+        <h2>Staff sign in</h2>
+        <form class="af" id="loginForm" autocomplete="on">
+          <label>Username<input type="text" id="lUser" autocomplete="username" autocapitalize="none" spellcheck="false" maxlength="32"></label>
+          <label>Password<input type="password" id="lPass" autocomplete="current-password" maxlength="200"></label>
+          <div class="btns"><button class="primary" type="submit" id="loginBtn">Sign in</button></div>
+        </form>
+        <p class="amsg err" id="loginMsg" hidden></p>
+        <p class="muted-sm" style="margin:12px 0 0">Your Admin creates your account and sets your role. Forgot your password, or locked out? Ask your Admin to set a new one.</p>
+        <details class="ownerkey"><summary>System owner: sign in with the setup key</summary>
+          <form class="af" id="keyForm" autocomplete="off">
+            <label>Setup key (the ADMIN_TOKEN secret)<input type="password" id="lToken" autocomplete="off" maxlength="200"></label>
+            <div class="btns"><button class="secondary" type="submit" id="keyBtn">Sign in with setup key</button></div>
+          </form>
+          <p class="muted-sm" style="margin:8px 0 0">Only to add the first Admin accounts, or if every Admin is locked out.</p>
+        </details>
+      </section>
+
+      <div id="app" hidden>
+        <section class="card who">
+          <div><b id="whoName"></b><span class="badge" id="whoRole"></span> <span class="muted-sm" id="whoUser"></span></div>
+          <div class="btns"><button class="secondary" type="button" id="logoutBtn">Sign out</button></div>
+          <p class="muted-sm can" id="whoCan"></p>
+        </section>
+
+        <nav class="tabs" role="tablist" aria-label="Staff tasks">
+          <button type="button" role="tab" data-tab="regsTab" aria-selected="true">Registrations</button>
+          <button type="button" role="tab" data-tab="newTab" aria-selected="false" hidden>New registration</button>
+          <button type="button" role="tab" data-tab="staffTab" aria-selected="false" hidden>Staff accounts</button>
+        </nav>
+
+        <!-- Registrations: everyone signed in -->
+        <section class="card tab" id="regsTab" role="tabpanel">
+          <h2>Kendra registrations</h2>
+          <form class="reg-search" id="regSearchForm" role="search" autocomplete="off">
+            <input type="search" id="regSearch" inputmode="text" autocapitalize="characters" spellcheck="false" maxlength="12" placeholder="Kendra code, e.g. 99003" aria-label="Search by PMBJP Kendra code">
+            <button class="secondary" type="submit">Search</button>
+          </form>
+          <div class="seg" role="group" aria-label="Show" id="filters">
+            <button type="button" data-s="pending" aria-pressed="true">Waiting</button>
+            <button type="button" data-s="approved" aria-pressed="false">Approved</button>
+            <button type="button" data-s="rejected" aria-pressed="false">Rejected</button>
+            <button type="button" data-s="withdrawn" aria-pressed="false">Withdrawn</button>
+            <button type="button" data-s="all" aria-pressed="false">All</button>
+          </div>
+          <p class="amsg info" id="listMsg" hidden></p>
+          <div id="regs"></div>
+        </section>
+
+        <!-- New registration: Registrar, Admin -->
+        <section class="card tab" id="newTab" role="tabpanel" hidden>
+          <h2>New Kendra registration</h2>
+          <p class="muted-sm" style="margin:0">From a Kendra's request, received by email or in person. Check every document first. A Reviewer then calls the Kendra and approves it.</p>
+          <form class="af" id="nrForm" autocomplete="off" novalidate>
+            <div>
+              <p class="muted-sm" style="margin:0 0 6px">Request received</p>
+              <div class="seg" role="group" aria-label="Request received" id="nrChannel">
+                <button type="button" data-c="email" aria-pressed="true">By email</button>
+                <button type="button" data-c="in_person" aria-pressed="false">In person</button>
+              </div>
+            </div>
+            <label><span id="nrRefLabel">Email request (date received, and subject or sender)</span><input type="text" id="nrRef" maxlength="160" placeholder="e.g. 17 Nov 2026 · Kendra registration request - PMBJK00964 · kendra964@…"></label>
+            <div class="nr-row">
+              <label>Kendra code<input type="text" id="nrCode" maxlength="12" autocapitalize="characters" spellcheck="false" placeholder="PMBJK00964"></label>
+              <button class="secondary" type="button" id="nrFind">Find</button>
+            </div>
+            <p class="amsg info" id="nrFound" hidden></p>
+            <label>Kendra's WhatsApp number<input type="text" id="nrWa" inputmode="tel" maxlength="16" placeholder="98765 43210"></label>
+            <label>Number for SMS and calls (if different)<input type="text" id="nrSms" inputmode="tel" maxlength="16"></label>
+            <label>Person to call for confirmation<input type="text" id="nrName" maxlength="60"></label>
+            <label>Their role<select id="nrRole"><option value="pharmacist">Pharmacist</option><option value="owner">Owner</option><option value="staff">Staff</option></select></label>
+            <label>Opening hours<input type="text" id="nrHours" maxlength="80" placeholder="e.g. 9 am to 9 pm, closed Sunday"></label>
+            <fieldset class="checks">
+              <legend id="nrDocsLegend">Documents checked in the email:</legend>
+              <label><input type="checkbox" name="allotment"> PMBI allotment or agreement letter, for this Kendra code</label>
+              <label><input type="checkbox" name="licence"> Retail drug licence, valid, in the Kendra's name and address</label>
+              <label><input type="checkbox" name="pharmacist"> Pharmacist's registration certificate (State Pharmacy Council), valid</label>
+              <label><input type="checkbox" name="consent"> Owner's signed consent to the terms (pickup only, number shown to patients)</label>
+            </fieldset>
+            <div class="btns"><button class="primary" type="submit" id="nrSubmit" disabled>Register Kendra</button></div>
+          </form>
+          <p class="amsg" id="nrMsg" hidden></p>
+        </section>
+
+        <!-- Staff accounts: Admin (Reviewers, Registrars); system owner (also Admins) -->
+        <section class="card tab" id="staffTab" role="tabpanel" hidden>
+          <h2>Staff accounts</h2>
+          <p class="muted-sm" style="margin:0" id="staffHint">Add Reviewers and Registrars. Tap an account to reset its password or remove it; removing signs it out at once.</p>
+          <div class="users" id="users"></div>
+          <form class="af" id="userForm" autocomplete="off">
+            <h2 style="margin:8px 0 0;font-size:16px">Add an account</h2>
+            <label>Role<select id="uRole">
+              <option value="registrar">Registrar</option>
+              <option value="reviewer">Reviewer</option>
+              <option value="admin" id="uRoleAdmin">Admin</option>
+            </select></label>
+            <div class="role-help" id="uRoleHelp" aria-live="polite"></div>
+            <label>Username<input type="text" id="uUser" autocapitalize="none" spellcheck="false" maxlength="32" placeholder="e.g. ravi.k"></label>
+            <label>Full name (shown in the review log)<input type="text" id="uName" maxlength="60"></label>
+            <label>Temporary password (at least 10 characters; share it privately)<input type="text" id="uPass" maxlength="200" autocomplete="new-password"></label>
+            <div class="btns"><button class="primary" type="submit">Add account</button></div>
+          </form>
+          <p class="amsg" id="userMsg" hidden></p>
+        </section>
+      </div>
+    </div>
+  </main>
+
+  <footer class="foot"><p data-t="krPrivacy"></p></footer>
+  <script type="module" src="/kendra.js"></script>
+  <script src="/envbanner.js"></script>
+</body>
+</html>

@@ -61,3 +61,137 @@ export function pickVoice(lang, voices) {
   const list = voices || [];
   return list.find((v) => norm(v) === want) || list.find((v) => norm(v).startsWith(lang + '-')) || null;
 }
+
+/**
+ * Is this a phone or tablet browser (where a phone camera app exists)? On a computer the
+ * "phone camera" options are hidden and "Take a photo" uses the camera inside the page.
+ * `nav` is navigator (passed in so this can be tested).
+ */
+export function isPhoneBrowser(nav) {
+  if (!nav) return false;
+  if (typeof nav.userAgentData?.mobile === 'boolean' && nav.userAgentData.mobile) return true;
+  const ua = String(nav.userAgent || '');
+  if (/Android|iPhone|iPad|iPod|Mobile|Windows Phone/i.test(ua)) return true;
+  // iPadOS reports itself as a Mac; a Mac with a touch screen is an iPad.
+  return /Macintosh/.test(ua) && (nav.maxTouchPoints || 0) > 1;
+}
+
+/** How long a medicine stays on the pharmacist list after it was checked. */
+export const LIST_MAX_AGE_MS = 60 * 60 * 1000;
+/**
+ * Only medicines checked in the last hour (entries without a time are old ones: dropped).
+ * Android keeps tabs open, and restores them, for days, so "this visit" alone was not enough.
+ */
+export function freshMedList(list, now = Date.now(), maxAge = LIST_MAX_AGE_MS) {
+  if (!Array.isArray(list)) return [];
+  return list.filter((x) => x && typeof x.at === 'number' && x.at <= now + 60_000 && now - x.at < maxAge);
+}
+
+// ── v1.1 Kendra registry ─────────────────────────────────────────────────────
+// Shared by the registration page, the Worker (which re-checks everything) and the tests.
+
+/** A PMBJK Kendra code in its official form ("PMBJK00964"), or null. */
+export function kendraCode(s) {
+  const c = String(s ?? '').trim().toUpperCase().replace(/\s+/g, '');
+  return /^PMBJK\d{5}$/.test(c) ? c : null;
+}
+
+/**
+ * An Indian mobile number as 10 digits, or null. Accepts "+91 98765 43210", "098765-43210",
+ * "919876543210". Landlines and short numbers are refused: the number must take WhatsApp/SMS.
+ */
+export function mobile10(s) {
+  let d = String(s ?? '').replace(/\D/g, '');
+  if (d.length === 12 && d.startsWith('91')) d = d.slice(2);
+  else if (d.length === 11 && d.startsWith('0')) d = d.slice(1);
+  return /^[6-9]\d{9}$/.test(d) ? d : null;
+}
+
+/** "98765 43210", for showing a number on screen and on the poster. */
+export function showMobile(d) {
+  return d && d.length === 10 ? `${d.slice(0, 5)} ${d.slice(5)}` : String(d ?? '');
+}
+
+export const KENDRA_ROLES = ['pharmacist', 'owner', 'staff'];
+const clean = (s, max) => String(s ?? '').replace(/[\u0000-\u001f\u007f<>]/g, ' ').replace(/\s+/g, ' ').trim().slice(0, max);
+
+/**
+ * Check a registration form. Returns { ok: true, value } or { ok: false, error } where error
+ * is a strings.js key naming what to fix. The terms must be accepted (consent === true).
+ */
+export function validateKendraRegistration(b) {
+  b = b && typeof b === 'object' ? b : {};
+  const code = kendraCode(b.code);
+  if (!code) return { ok: false, error: 'krErrCode' };
+  const whatsapp = mobile10(b.whatsapp);
+  if (!whatsapp) return { ok: false, error: 'krErrWhatsapp' };
+  let sms = null;
+  if (String(b.sms ?? '').trim()) {
+    sms = mobile10(b.sms);
+    if (!sms) return { ok: false, error: 'krErrSms' };
+    if (sms === whatsapp) sms = null;
+  }
+  const contact_name = clean(b.contact_name, 60);
+  if (contact_name.length < 2) return { ok: false, error: 'krErrName' };
+  const role = KENDRA_ROLES.includes(b.role) ? b.role : null;
+  if (!role) return { ok: false, error: 'krErrRole' };
+  const hours = clean(b.hours, 80) || null;
+  if (b.consent !== true) return { ok: false, error: 'krErrConsent' };
+  return { ok: true, value: { code, whatsapp, sms, hours, contact_name, role } };
+}
+
+/**
+ * Who may see a registered Kendra's number. Until PMBJP agrees (KENDRA_REGISTRY = "public"),
+ * only test traffic (developer mode, the pilot team) sees it: mode "pilot". "off" hides it.
+ */
+export function kendraContactsVisible(mode, isTest) {
+  if (mode === 'public') return true;
+  if (mode === 'pilot') return !!isTest;
+  return false;
+}
+
+/**
+ * The standard Kendra registration request (English, for the SamaSalt-Mitra team), filled in
+ * with the Kendra code and official address when known. Returns { subject, body }.
+ */
+export function registrationEmail(k = {}, d = {}) {
+  const code = kendraCode(k.code) || 'PMBJK_____';
+  const addr = [k.address, k.district, k.state, k.pin].filter(Boolean).join(', ') || '____________________';
+  const blank = '__________';
+  const v = (x) => clean(x, 80) || blank;
+  const num = (x) => (mobile10(x) ? showMobile(mobile10(x)) : blank);
+  const roleWord = { owner: 'owner', pharmacist: 'pharmacist', staff: 'staff' }[d.role] || 'owner / pharmacist / staff';
+  const smsLine = String(d.sms ?? '').trim() ? num(d.sms) : d.whatsapp ? 'same as WhatsApp' : blank;
+  const subject = `Kendra registration request - ${code}`;
+  const body = [
+    'To the SamaSalt-Mitra team,',
+    '',
+    'Please register our Jan Aushadhi Kendra on SamaSalt-Mitra.',
+    '',
+    `Kendra code: ${code}`,
+    `Kendra address (as in PMBI records): ${addr}`,
+    `Kendra's WhatsApp number: ${num(d.whatsapp)}`,
+    `Number for SMS and calls (if different): ${smsLine}`,
+    `Opening hours: ${v(d.hours)}`,
+    `Registered pharmacist: name ${v(d.pharmacist_name)}, Pharmacy Council registration no. ${v(d.pharmacist_reg)}`,
+    `Person to call for confirmation: name ${v(d.contact_name)}, role ${roleWord}`,
+    '',
+    'Attached:',
+    '1. PMBI allotment or agreement letter for this Kendra',
+    '2. Valid retail drug licence of the Kendra',
+    "3. Registration certificate of the Kendra's pharmacist (State Pharmacy Council)",
+    '4. Signed consent of the Kendra owner to the terms below',
+    '',
+    'We agree that:',
+    '- patients collect their medicines at the Kendra counter; there is no online sale, online payment or home delivery;',
+    '- prescription medicines are given only against a valid prescription;',
+    '- this number may be shown to patients who look up or scan our Kendra in SamaSalt-Mitra;',
+    '- you will call this number to confirm before it is shown, and we can ask you to remove it at any time;',
+    '- we will tell you if our number or opening hours change.',
+    '',
+    `Name of the Kendra owner: ${d.role === 'owner' ? v(d.contact_name) : blank}`,
+    `Signature / seal: ${blank}`,
+    `Date: ${d.date || blank}`,
+  ].join('\n');
+  return { subject, body };
+}

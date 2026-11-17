@@ -4,7 +4,7 @@
 
 **Photograph a medicine strip (or type its name) in English, ಕನ್ನಡ or हिन्दी. SamaSalt-Mitra shows every brand with exactly the same salt, strength and form, ranked by price, the Jan Aushadhi generic and its government MRP, and the nearest Jan Aushadhi Kendra. Every lookup is counted anonymously on a public impact page.**
 
-**Demo video (2:37):** https://youtu.be/FBDnSkhKEH0 · **Live app:** https://samesalt-agent.samesalt-worker.workers.dev · **Impact dashboard:** https://samesalt-agent.samesalt-worker.workers.dev/impact · **Volunteer mode + QR:** https://samesalt-agent.samesalt-worker.workers.dev/volunteer
+**Demo video (2:37):** https://youtu.be/FBDnSkhKEH0 · **Live app:** https://samasalt-mitra.samasalt-mitra-worker.workers.dev · **Impact dashboard:** https://samasalt-mitra.samasalt-mitra-worker.workers.dev/impact · **Volunteer mode + QR:** https://samasalt-mitra.samasalt-mitra-worker.workers.dev/volunteer
 
 Entry for **Code for a Billion — Bharat Agentic-AI Hackathon 2026**, Health track ([submission #24](https://github.com/karlmehta/code-for-a-billion/issues/24)). Built in **AgentFoundry** ([how](#how-agentfoundry-was-used)). Field pilot planned with **Uttara Karnataka Sneha Loka (UKSL)**, North Karnataka, from late October 2026 ([pilot guide](docs/PILOT.md)).
 
@@ -32,7 +32,8 @@ The government's own Jan Aushadhi Sugam app searches generics by name. SamaSalt-
 5. **Nearest Jan Aushadhi Kendra** by PIN code, from the official list of 19,986 Kendras (downloaded 12 Oct 2026), shown by Kendra code and address.
 6. **Answer in English, Kannada or Hindi**, with a Listen button (device text-to-speech).
 7. **Safety:** same salt + strength + form only; every answer ends with "check with your doctor or pharmacist before switching"; **never** dosage advice; narrow-therapeutic-index medicines (warfarin, thyroxine, antiepileptics, transplant drugs, lithium, digoxin…) get a red warning and **no** cheaper option of any kind (no brand list, no Jan Aushadhi price).
-8. **Show to the pharmacist** card, **"did you switch?"** tap, and **volunteer mode** with a printable QR page for NGO volunteers.
+8. **Kendra registry (v1.1, pilot):** Jan Aushadhi pharmacists register their Kendra's WhatsApp/SMS number at `/kendra`; after an admin confirms it by phone, the Kendra is marked as registered with a Call button, and can print a QR poster (`/poster`) that opens the app for that Kendra. Until PMBJP agrees, numbers are shown to test traffic only. Roadmap: [`docs/ROADMAP.md`](docs/ROADMAP.md).
+9. **Show to the pharmacist** card, **"did you switch?"** tap, and **volunteer mode** with a printable QR page for NGO volunteers.
 
 ## Architecture
 
@@ -74,7 +75,7 @@ The agent is a **fixed, auditable tool plan** — `read_strip → identify_medic
 
 ## Accuracy (tests and evals)
 
-- **Unit tests:** `node --import ./test/register-md.mjs --test test/*.test.mjs` → **71/71 pass** — the safety rules for what the page shows (no Jan Aushadhi code or switch question for never-switch medicines, nothing before a photo read is confirmed, Listen only in the right language), strength normalisation (650 mg = 0.65 g = 650 MG), multi-salt order and spelling (Amoxycillin/Amoxicillin), SR vs plain, combinations vs single salts, NTI handling, PIN/location Kendra search, savings, the three-language answer, typed generic combinations ("amoxicillin clavulanic acid 500 125 tablet"), and the whole agent with a stubbed vision model. `python test/test_build_ja.py` checks the PMBJP-name parser.
+- **Unit tests:** `node --import ./test/register-md.mjs --test test/*.test.mjs` → **84/84 pass** — the safety rules for what the page shows (no Jan Aushadhi code or switch question for never-switch medicines, nothing before a photo read is confirmed, Listen only in the right language), strength normalisation (650 mg = 0.65 g = 650 MG), multi-salt order and spelling (Amoxycillin/Amoxicillin), SR vs plain, combinations vs single salts, NTI handling, PIN/location Kendra search, savings, the three-language answer, typed generic combinations ("amoxicillin clavulanic acid 500 125 tablet"), and the whole agent with a stubbed vision model. `python test/test_build_ja.py` checks the PMBJP-name parser.
 - **Key parity:** the JavaScript key builder reproduces the Python pipeline's key on **2,000/2,000** randomly sampled database rows.
 - **End-to-end evals against the live deployment** (`node evals/run_evals.mjs`, results in [`evals/RESULTS.md`](evals/RESULTS.md)): **23/23** — 15 strip photos, 3 deliberately hard photos (heavy blur, cropped, a brand not in the database, which is matched by its printed composition) and 5 typed queries including Kannada and Hindi script. Last run 12 Oct 2026, after the Jan Aushadhi data was loaded: 23/23, median 2.4 s per lookup. One earlier run had a transient failure on the very first request after a deploy; the app and the eval runner now retry once.
 - **Prompt eval in AgentFoundry:** the `understand_text` prompt passes **12/12** cases (Kannada/Hindi/Hinglish brands, "no medicine" text, prompt injection, JSON-only) on AF's served model.
@@ -88,14 +89,14 @@ The agent is a **fixed, auditable tool plan** — `read_strip → identify_medic
 | Jan Aushadhi product list + MRPs: 2,439 products, **1,914 loaded** | PMBI / Dept. of Pharmaceuticals: [janaushadhi.gov.in — product MRP list](https://janaushadhi.gov.in/product-portfolio/product-mrp-list), file in [`data/raw/`](data/raw/) | downloaded 11 Oct 2026 |
 | Jan Aushadhi Kendra list: 35 states/UTs, **19,986 Kendras loaded** | PMBI: [janaushadhi.gov.in — locate Kendra](https://janaushadhi.gov.in/locate-kendra), files in [`data/raw/`](data/raw/) | downloaded 12 Oct 2026 |
 
-**Jan Aushadhi data (loaded, live):** the official PMBJP product list and the per-state Kendra lists are loaded into D1, and the app shows the list date under every Jan Aushadhi price and Kendra list (`/api/health` shows the dates and counts; so does the [impact page](https://samesalt-agent.samesalt-worker.workers.dev/impact)). Of 2,439 products, **1,379** map to an exact branded composition, **535** are parsed but have no branded equivalent, and **525** (multivitamins, devices, unclear strengths) are left out on purpose rather than guessed (`data/build_ja.py`, tested by `test/test_build_ja.py`). The Kendra list has PIN codes but no coordinates, so Kendras are found by PIN (same PIN first, then the nearest PIN codes); Haryana's list is empty on the official site itself. The Kendra list's name column is often the licensee's personal name, so the app shows a Kendra by its PMBJK code and address instead.
+**Jan Aushadhi data (loaded, live):** the official PMBJP product list and the per-state Kendra lists are loaded into D1, and the app shows the list date under every Jan Aushadhi price and Kendra list (`/api/health` shows the dates and counts; so does the [impact page](https://samasalt-mitra.samasalt-mitra-worker.workers.dev/impact)). Of 2,439 products, **1,379** map to an exact branded composition, **535** are parsed but have no branded equivalent, and **525** (multivitamins, devices, unclear strengths) are left out on purpose rather than guessed (`data/build_ja.py`, tested by `test/test_build_ja.py`). The Kendra list has PIN codes but no coordinates, so Kendras are found by PIN (same PIN first, then the nearest PIN codes); Haryana's list is empty on the official site itself. The Kendra list's name column is often the licensee's personal name, so the app shows a Kendra by its PMBJK code and address instead.
 
 ## Privacy
 
 - Photos are sent to the Worker, read in memory, and **never stored**.
 - The impact log stores, per lookup: time, matched medicine, per-unit prices (scanned, cheapest same-salt, Jan Aushadhi), the saving for one pack, language, the **first 3 digits** of the PIN code if typed, self/volunteer mode, a random per-browser token (not derived from the device) for counting unique users, and the optional "did you switch?" answer.
 - **No names, phone numbers, IP addresses, user agents or precise locations.**
-- Test traffic (evals, demo recordings, developer checks: `x-samasalt-mitra-test: 1`, `?test=1`, or localhost) is flagged `is_test = 1` and **excluded from every number on [/impact](https://samesalt-agent.samesalt-worker.workers.dev/impact)**; the page shows how many test lookups were excluded.
+- Test traffic (evals, demo recordings, developer checks: `x-samasalt-mitra-test: 1`, `?test=1`, or localhost) is flagged `is_test = 1` and **excluded from every number on [/impact](https://samasalt-mitra.samasalt-mitra-worker.workers.dev/impact)**; the page shows how many test lookups were excluded.
 
 ## How AgentFoundry was used
 
@@ -144,7 +145,7 @@ cd .. && node evals/run_evals.mjs
 
 ## Pilot
 
-A field pilot with **Uttara Karnataka Sneha Loka (UKSL)**, an NGO in North Karnataka, is planned from **late October 2026**, with volunteers using volunteer mode with patients. Disclosure: the builder's father is a trustee of UKSL. The one-page volunteer guide in English and Kannada is in [`docs/PILOT.md`](docs/PILOT.md). No usage numbers are claimed here until they exist; they will appear on the [impact page](https://samesalt-agent.samesalt-worker.workers.dev/impact).
+A field pilot with **Uttara Karnataka Sneha Loka (UKSL)**, an NGO in North Karnataka, is planned from **late October 2026**, with volunteers using volunteer mode with patients. Disclosure: the builder's father is a trustee of UKSL. The one-page volunteer guide in English and Kannada is in [`docs/PILOT.md`](docs/PILOT.md). No usage numbers are claimed here until they exist; they will appear on the [impact page](https://samasalt-mitra.samasalt-mitra-worker.workers.dev/impact).
 
 ## License
 

@@ -12,7 +12,7 @@ import { randomUUID } from 'node:crypto';
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 const ROOT = join(HERE, '..');
-const BASE = process.env.SAMASALT_MITRA_URL || 'https://samesalt-agent.samesalt-worker.workers.dev';
+const BASE = process.env.SAMASALT_MITRA_URL || 'https://samasalt-mitra.samasalt-mitra-worker.workers.dev';
 const suite = JSON.parse(readFileSync(join(HERE, 'cases.json'), 'utf8'));
 const runsDir = join(ROOT, '.codenow', 'runs', 'samasalt-mitra');
 mkdirSync(runsDir, { recursive: true });

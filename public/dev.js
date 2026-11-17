@@ -8,8 +8,9 @@ const ss = {
   get(k) { try { return sessionStorage.getItem(k); } catch { return null; } },
   set(k, v) { try { sessionStorage.setItem(k, v); } catch {} },
 };
-// Opening this page turns developer mode on for this browser (same as /?dev=1).
-try { localStorage.setItem('ss_devmode', '1'); localStorage.setItem('ss_test', '1'); } catch {}
+// Developer mode is never remembered in the browser (only ?dev=1 in an address turns it on);
+// this page is protected by the admin token instead. Clear what older builds stored.
+try { localStorage.removeItem('ss_devmode'); localStorage.removeItem('ss_test'); } catch {}
 
 const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 const inr = (v) => (v == null ? '' : `₹${Number(v).toFixed(2)}`);
@@ -167,3 +168,4 @@ $('#applyBtn').onclick = async () => {
     $('#applyBtn').disabled = false;
   }
 };
+

@@ -8,7 +8,7 @@ directory = "../public"
 binding = "ASSETS"
 html_handling = "auto-trailing-slash"
 not_found_handling = "404-page"
-run_worker_first = ["/api/*"]
+run_worker_first = ["/api/*", "/k/*"]
 
 # Reference data + anonymous impact log (free tier).
 [[d1_databases]]
@@ -16,6 +16,11 @@ binding = "DB"
 database_name = "samasalt-mitra"
 database_id = "ad0b146e-7c60-448d-ab68-ee460ca1909f"
 migrations_dir = "migrations"
+
+# v1.1 Kendra registry: "off" | "pilot" (registered numbers shown to test traffic only, until
+# PMBJP agrees) | "public".
+[vars]
+KENDRA_REGISTRY = "pilot"
 
 # Vision + text models (Workers AI free allocation).
 [ai]
@@ -29,3 +34,25 @@ enabled = true
 type = "Text"
 globs = ["**/*.md"]
 fallthrough = true
+
+# ── Test environment (staging) ───────────────────────────────────────────────
+# A separate Worker and database for end-to-end testing before a stage goes live:
+#   npx wrangler deploy --env staging
+#   https://samasalt-mitra-staging.<subdomain>.workers.dev
+# Its own D1 (copy of the Jan Aushadhi data + made-up TEST Kendras PMBJK990xx), its own
+# ADMIN_TOKEN secret (npx wrangler secret put ADMIN_TOKEN --env staging), the registry public,
+# and a "Test environment" banner on every page. Nothing here touches the live site's data.
+[env.staging]
+name = "samasalt-mitra-staging"
+
+[env.staging.vars]
+KENDRA_REGISTRY = "public"
+
+[[env.staging.d1_databases]]
+binding = "DB"
+database_name = "samasalt-mitra-staging"
+database_id = "6b7834cd-e27d-4509-be61-a875507908dd"
+migrations_dir = "migrations"
+
+[env.staging.ai]
+binding = "AI"

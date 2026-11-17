@@ -1,6 +1,6 @@
 // Minimal D1-compatible wrapper over node:sqlite, so the Worker's tools run unchanged in tests.
 import { DatabaseSync } from 'node:sqlite';
-import { readFileSync } from 'node:fs';
+import { readFileSync, readdirSync } from 'node:fs';
 
 export function d1(db) {
   return {
@@ -35,7 +35,9 @@ export function d1(db) {
 
 export function fixtureDb({ ja = [], kendras = [], meta = {} } = {}) {
   const db = new DatabaseSync(':memory:');
-  db.exec(readFileSync(new URL('../worker/migrations/0001_init.sql', import.meta.url), 'utf8'));
+  // Every migration, in order, as wrangler applies them.
+  const dir = new URL('../worker/migrations/', import.meta.url);
+  for (const f of readdirSync(dir).filter((f) => f.endsWith('.sql')).sort()) db.exec(readFileSync(new URL(f, dir), 'utf8'));
   const rows = JSON.parse(readFileSync(new URL('./fixtures/med_subset.json', import.meta.url), 'utf8'));
   const ins = db.prepare('INSERT INTO medicines (id,name,manufacturer,salt,ckey,price,pack,unit_price,form,rel,nti,incomplete) VALUES (?,?,?,?,?,?,?,?,?,?,?,?)');
   db.exec('BEGIN');

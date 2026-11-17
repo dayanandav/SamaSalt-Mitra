@@ -1,5 +1,5 @@
 import { LANGS, STRINGS, t, rupees, unitKind } from '/strings.js';
-import { pharmacistEntry, mergeMedList, asksToSwitch, shouldAddToList, listenAllowed, pickVoice } from '/rules.js';
+import { pharmacistEntry, mergeMedList, asksToSwitch, shouldAddToList, listenAllowed, pickVoice, isPhoneBrowser, freshMedList, kendraCode, showMobile } from '/rules.js';
 
 const $ = (s) => document.querySelector(s);
 const store = {
@@ -9,20 +9,28 @@ const store = {
 
 // ── State: language, test flag, volunteer mode, developer mode, anonymous device token ─
 const params = new URLSearchParams(location.search);
-if (params.has('test')) store.set('ss_test', params.get('test') === '0' ? null : '1');
-// Developer mode (?dev=1 / ?dev=0): shows the impact, volunteer and GitHub links, and flags
-// this browser's lookups as test traffic so developer checks never count on /impact.
-if (params.has('dev')) store.set('ss_devmode', params.get('dev') === '0' ? null : '1');
-const devMode = store.get('ss_devmode') === '1';
-if (devMode) store.set('ss_test', '1');
-else if (params.get('dev') === '0') store.set('ss_test', null);
+// Developer mode only while the address has ?dev=1 (never remembered): the plain address is
+// always the normal patient app. It shows the developer links and steps, and flags lookups as
+// test traffic so developer checks never count on /impact. ?test=1 flags test traffic only.
+// (Old builds remembered both in this browser: cleared here.)
+store.set('ss_devmode', null);
+store.set('ss_test', null);
+const devMode = params.get('dev') === '1';
 $('#devLinks').hidden = !devMode;
+// Developer links keep ?dev=1, so the next page is in developer mode too.
+if (devMode) {
+  for (const a of document.querySelectorAll('#devLinks a[href^="/"]')) {
+    const u = new URL(a.getAttribute('href'), location.origin);
+    if (u.pathname !== '/') u.searchParams.set('dev', '1');
+    a.setAttribute('href', u.pathname + u.search + u.hash);
+  }
+}
 if (params.has('volunteer')) store.set('ss_vol', params.get('volunteer') === '0' ? null : '1');
 if (params.has('lang') && STRINGS[params.get('lang')]) store.set('ss_lang', params.get('lang'));
 
 // English unless the person has picked another language from the menu (top right).
 let lang = STRINGS[store.get('ss_lang')] ? store.get('ss_lang') : 'en';
-const isTest = store.get('ss_test') === '1';
+const isTest = devMode || params.get('test') === '1';
 const volunteer = store.get('ss_vol') === '1';
 let device = store.get('ss_dev');
 if (!device) {
@@ -65,6 +73,7 @@ function setLang(code) {
   try { speechSynthesis.cancel(); } catch {}
   renderLangs();
   applyStrings();
+  renderHere();
   renderHomeList();
   if ($('#pharmacist').open) showPharmacist();
   if (last) {
@@ -85,6 +94,63 @@ pinInput.addEventListener('input', () => {
 // The official Kendra list has PIN codes but no coordinates, so Kendras are found by PIN.
 // (The Worker still accepts lat/lng for a future geocoded list.)
 const coords = null;
+
+// ── v1.1: opened from a Kendra's QR poster (/k/PMBJK00964 → /?k=PMBJK00964) ──
+// Says which Kendra the patient is at, and uses its PIN so it is in the nearest-Kendra list.
+// Kept for this visit only (sessionStorage). v1.2 builds the order request on this.
+const sess = {
+  get(k) { try { return sessionStorage.getItem(k); } catch { return null; } },
+  set(k, v) { try { v == null ? sessionStorage.removeItem(k) : sessionStorage.setItem(k, v); } catch {} },
+};
+let hereKendra = null;
+try { hereKendra = JSON.parse(sess.get('ss_kendra') || 'null'); } catch {}
+function renderHere() {
+  const box = $('#kendraHere');
+  box.hidden = !hereKendra;
+  if (!hereKendra) return;
+  box.querySelector('.kh-title').textContent = t(lang, 'kendraHere', { code: hereKendra.code });
+  box.querySelector('.kh-addr').textContent = [hereKendra.address, hereKendra.district].filter(Boolean).join(', ');
+  box.querySelector('.kh-close').textContent = t(lang, 'kendraHereClose');
+}
+// PIN box in the answer's Kendra card: fetch the Kendras for that PIN and redraw only that card.
+$('#result').addEventListener('submit', async (e) => {
+  if (e.target.id !== 'kPinForm') return;
+  e.preventDefault();
+  const pin = ($('#kPin').value || '').replace(/\D/g, '').slice(0, 6);
+  if (pin.length !== 6 || !last) { $('#kPin').focus(); return; }
+  pinInput.value = pin;
+  store.set('ss_pin', pin);
+  const btn = e.target.querySelector('button');
+  btn.disabled = true;
+  try {
+    const res = await fetch(`/api/kendras?pin=${pin}`, { headers: isTest ? { 'x-samasalt-mitra-test': '1' } : {} });
+    if (res.ok) {
+      last.kendras = await res.json();
+      $('#kendraBody').innerHTML = kendraInner(last);
+    }
+  } catch {} finally { btn.disabled = false; }
+});
+$('#kendraHere .kh-close').onclick = () => { hereKendra = null; sess.set('ss_kendra', null); renderHere(); };
+async function openFromQr(code) {
+  try {
+    const res = await fetch(`/api/kendra/${code}`, { headers: isTest ? { 'x-samasalt-mitra-test': '1' } : {} });
+    const k = await res.json();
+    if (!k.found) return;
+    hereKendra = { code: k.code, address: k.address, district: k.district, pin: k.pin, registry: k.registry, contact: k.contact };
+    sess.set('ss_kendra', JSON.stringify(hereKendra));
+    if (k.pin && /^\d{6}$/.test(k.pin)) { pinInput.value = k.pin; store.set('ss_pin', k.pin); }
+    renderHere();
+  } catch {}
+}
+{
+  const qrCode = kendraCode(params.get('k'));
+  if (qrCode) {
+    openFromQr(qrCode);
+    // Drop ?k= from the address so a reload or a shared link doesn't repeat it.
+    params.delete('k');
+    history.replaceState(null, '', location.pathname + (params.toString() ? `?${params}` : '') + location.hash);
+  }
+}
 
 $('#typeForm').addEventListener('submit', (e) => {
   e.preventDefault();
@@ -236,7 +302,13 @@ const hasInAppCamera = () => !!navigator.mediaDevices?.getUserMedia;
 // No in-app camera at all (very old browsers): the phone camera app, opened directly.
 // "Take a photo" = the phone's own camera app (sharpest photos; chosen as the default, Nov 2026).
 // If Android closes the page meanwhile (low memory), the note on reload offers the in-app camera.
-$('#scanBtn').onclick = () => phoneCamera();
+// On a computer there is no phone camera: Take a photo uses the webcam inside the page, and the
+// "phone camera" options (home backup button, camera-screen link) are hidden.
+const onPhone = isPhoneBrowser(navigator);
+$('#scanBtn').onclick = () => (onPhone ? phoneCamera() : openCamera());
+$('#homeInApp').hidden = !onPhone; // on a computer, Take a photo already is the in-app camera
+$('#camPhone').hidden = !onPhone;
+document.querySelector('.scan-row').classList.toggle('single', !onPhone);
 $('#homeGallery').onclick = () => $('#gallery').click();
 // Backup: the camera inside the app (never leaves the page).
 $('#homeInApp').onclick = () => (hasInAppCamera() ? openCamera() : phoneCamera());
@@ -302,8 +374,10 @@ document.addEventListener('visibilitychange', () => {
 });
 
 // The page was reloaded right after opening the phone camera: say so instead of a silent home screen.
+let returnedFromCamera = false; // the page was reloaded because Android closed it during the camera
 {
   const at = Number(store.get('ss_cam_at') || 0);
+  returnedFromCamera = !!at && Date.now() - at < 10 * 60_000;
   store.set('ss_cam_at', null);
   if (at && Date.now() - at < 10 * 60_000) {
     // Android closed the browser for lack of memory while its camera app was open (Chrome shows
@@ -517,13 +591,32 @@ function whyHtml(cls, lead) {
   return `<details class="why ${cls}"><summary>${lead ? `<span>${esc(lead)}</span> ` : ''}<span class="why-link">${esc(t(lang, 'ntiWhyTitle'))}</span></summary><p>${esc(t(lang, 'ntiWhy'))}</p></details>`;
 }
 
+// Short confirmation after an action, so the person sees that it worked.
+let toastTimer = 0;
+function toast(key) {
+  const el = $('#toast');
+  // A modal dialog covers the page: show the message inside it when it is open.
+  const host = $('#pharmacist').open ? $('#pharmacist') : document.body;
+  if (el.parentNode !== host) host.appendChild(el);
+  el.textContent = t(lang, key);
+  el.hidden = false;
+  el.classList.remove('show');
+  void el.offsetWidth; // restart the fade
+  el.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => { el.classList.remove('show'); el.hidden = true; }, 2600);
+}
+
 // ── Medicine list for the pharmacist ────────────────────────────────────────
 // Every medicine found (and confirmed, for photos) is added, one entry per composition, so the
 // person can check several strips and show them all at once. Kept on this phone only.
 const MAX_LIST = 15;
 store.set('ss_medlist', null); // the old long-lived list (before Nov 2026) is removed
+// Opening the page again starts a new, empty list, except when Android closed the page while the
+// camera was open (the person did not choose to leave; keep what they had).
+if (!returnedFromCamera) session.set('ss_medlist', null);
 function medList() {
-  try { const v = JSON.parse(session.get('ss_medlist') || '[]'); return Array.isArray(v) ? v : []; } catch { return []; }
+  try { return freshMedList(JSON.parse(session.get('ss_medlist') || '[]')); } catch { return []; }
 }
 function saveMedList(list) {
   session.set('ss_medlist', list.length ? JSON.stringify(list.slice(0, MAX_LIST)) : null);
@@ -532,7 +625,8 @@ function saveMedList(list) {
 function addToMedList(r) {
   if (!shouldAddToList(r)) return;
   r.addedToList = true;
-  saveMedList(mergeMedList(medList(), pharmacistEntry(r), MAX_LIST));
+  saveMedList(mergeMedList(medList(), { ...pharmacistEntry(r), at: Date.now() }, MAX_LIST));
+  toast('toastAdded');
 }
 function renderHomeList() {
   const n = medList().length;
@@ -561,6 +655,7 @@ function showPharmacist() {
       if (l.length) showPharmacist();
       else $('#pharmacist').close();
       updatePhBtn();
+      toast('toastRemoved');
     };
   }
   $('#phClear').hidden = false; // always: the whole list can be cleared at any time
@@ -571,12 +666,14 @@ $('#phClear').onclick = () => {
   saveMedList([]);
   $('#pharmacist').close();
   updatePhBtn();
+  toast('toastCleared');
 };
 $('#homeListBtn').onclick = showPharmacist;
 function updatePhBtn() {
   const b = $('#phBtn');
   if (!b) return;
   const n = medList().length;
+  b.hidden = n === 0; // cleared or removed: nothing to show
   b.textContent = n > 1 ? t(lang, 'pharmacistBtnN', { n }) : t(lang, 'pharmacistBtn');
 }
 
@@ -619,6 +716,31 @@ function renderConfirm(r) {
   $('#confRetake').onclick = () => { wrong(); $('#scanBtn').click(); };
   $('#confType').onclick = () => { wrong(); show('home'); $('#nameInput').focus(); };
   show('result');
+}
+
+
+// The Kendra card of an answer. Has its own PIN box, so a PIN typed after the medicine was
+// checked (or a photo scanned) updates this list in place.
+function kendraInner(r) {
+  const k = r.kendras || {};
+  const kQuery = (x) => `Jan Aushadhi Kendra ${[x.address, x.district, x.pin].filter(Boolean).join(' ')}`;
+  const list = k.items?.length
+    ? `${k.by === 'nearby-pin' ? `<p class="med-meta" style="margin:0 0 4px">${esc(t(lang, 'kendraNearby'))}</p>` : ''}
+      <ul class="list">${k.items.map((x) => `
+        <li><div><div class="n">${esc(t(lang, 'kendraName'))}<span class="tag grey">${esc(x.code)}</span>${x.registered ? `<span class="tag">${esc(t(lang, 'kendraRegistered'))}</span>` : ''}</div>
+        <div class="m">${esc([x.address, x.district].filter(Boolean).join(', '))}</div>
+        ${x.contact?.hours ? `<div class="m">${esc(t(lang, 'kendraHours', { hours: x.contact.hours }))}</div>` : ''}
+        ${x.contact ? `<div class="k-actions"><a href="tel:+91${esc(x.contact.sms || x.contact.whatsapp)}">${esc(t(lang, 'call'))} ${esc(showMobile(x.contact.sms || x.contact.whatsapp))}</a></div>` : x.phone ? `<div class="k-actions"><a href="tel:${esc(x.phone)}">${esc(t(lang, 'call'))}</a></div>` : ''}</div>
+        <div class="p">${x.km != null ? `<b>${x.km} km</b>` : `<b>${esc(x.pin)}</b><span>PIN</span>`}
+          <a class="dir-btn" target="_blank" rel="noopener" href="https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(x.lat && x.lng ? `${x.lat},${x.lng}` : kQuery(x))}">${dirIcon}<span>${esc(t(lang, 'directions'))}</span></a></div></li>`).join('')}</ul>`
+    : `<p class="muted" style="margin:0">${esc(t(lang, k.pending ? 'kendraPending' : pinInput.value.length === 6 ? 'kendraNone' : 'kendraNeedPin'))}</p>`;
+  const pinNow = (k.pin || pinInput.value || '').slice(0, 6);
+  return `${list}
+      <form class="k-pin" id="kPinForm" autocomplete="off">
+        <label class="cap" for="kPin">${esc(t(lang, 'pinShort'))}</label>
+        <input id="kPin" type="text" inputmode="numeric" pattern="[0-9]{6}" maxlength="6" placeholder="580020" value="${esc(pinNow)}" autocomplete="postal-code">
+        <button class="secondary" type="submit">${esc(t(lang, 'kendraPinShow'))}</button>
+      </form>`;
 }
 
 function render(r) {
@@ -674,16 +796,7 @@ function render(r) {
   // its PMBJK code and address only.
   const k = r.kendras || {};
   const kDate = r.data?.kendra_list_date;
-  const kQuery = (x) => `Jan Aushadhi Kendra ${[x.address, x.district, x.pin].filter(Boolean).join(' ')}`;
-  const kHtml = k.items?.length
-    ? `${k.by === 'nearby-pin' ? `<p class="med-meta" style="margin:0 0 4px">${esc(t(lang, 'kendraNearby'))}</p>` : ''}
-      <ul class="list">${k.items.map((x) => `
-        <li><div><div class="n">${esc(t(lang, 'kendraName'))}<span class="tag grey">${esc(x.code)}</span></div>
-        <div class="m">${esc([x.address, x.district].filter(Boolean).join(', '))}</div>
-        ${x.phone ? `<div class="k-actions"><a href="tel:${esc(x.phone)}">${esc(t(lang, 'call'))}</a></div>` : ''}</div>
-        <div class="p">${x.km != null ? `<b>${x.km} km</b>` : `<b>${esc(x.pin)}</b><span>PIN</span>`}
-          <a class="dir-btn" target="_blank" rel="noopener" href="https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(x.lat && x.lng ? `${x.lat},${x.lng}` : kQuery(x))}">${dirIcon}<span>${esc(t(lang, 'directions'))}</span></a></div></li>`).join('')}</ul>`
-    : `<p class="muted" style="margin:0">${esc(t(lang, k.pending ? 'kendraPending' : pinInput.value.length === 6 ? 'kendraNone' : 'kendraNeedPin'))}</p>`;
+  const kHtml = kendraInner(r);
 
   // The brand name as read from the strip, when the match was made by composition alone.
   const readName = (r.read?.brand || '').trim();
@@ -720,9 +833,9 @@ function render(r) {
       ${jaHtml}
     </div>
 
-    <div class="card">
+    <div class="card" id="kendraCard">
       <p class="eyebrow">${esc(t(lang, 'kendraTitle'))}</p>
-      ${kHtml}
+      <div id="kendraBody">${kHtml}</div>
     </div>
 
     <div class="safety">${warnIcon}<div>${esc(t(lang, 'safety'))}</div></div>
@@ -745,11 +858,9 @@ function render(r) {
     <button class="secondary" id="againBtn">${esc(t(lang, 'another'))}</button>
   `;
 
-  $('#phBtn').onclick = () => {
-    if (!medList().some((x) => x.ckey === m.ckey)) saveMedList(mergeMedList(medList(), pharmacistEntry(r), MAX_LIST));
-    updatePhBtn();
-    showPharmacist();
-  };
+  // Shows the list as it is: after "Clear list" nothing is put back (the button is hidden until
+  // the next medicine is checked).
+  $('#phBtn').onclick = showPharmacist;
   updatePhBtn();
   for (const b of out.querySelectorAll('.chip')) {
     b.onclick = async () => {
@@ -804,6 +915,7 @@ function setupListen(text, textLang) {
 
 renderLangs();
 applyStrings();
+renderHere();
 renderHomeList();
 // Everything is in place: show the page (index.html holds it hidden until now).
 document.documentElement.removeAttribute('data-boot');

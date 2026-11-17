@@ -1,6 +1,6 @@
 # SamaSalt-Mitra pilot with Uttara Karnataka Sneha Loka (UKSL)
 
-**Who:** UKSL volunteers in North Karnataka, with patients they already visit. **When:** from late October 2026. **Disclosure:** the builder's father is a trustee of UKSL. **App:** https://samesalt-agent.samesalt-worker.workers.dev/volunteer (scan the QR on that page to open the app in volunteer mode).
+**Who:** UKSL volunteers in North Karnataka, with patients they already visit. **When:** from late October 2026. **Disclosure:** the builder's father is a trustee of UKSL. **App:** https://samasalt-mitra.samasalt-mitra-worker.workers.dev/volunteer (scan the QR on that page to open the app in volunteer mode).
 
 ## Volunteer guide (English) — one page
 
@@ -54,6 +54,6 @@
 | 1. Train | week 1 | 30-minute session: this page, 5 practice lookups each (with the test flag on: open the app once with `?test=1`; turn it off again with `?test=0`). |
 | 2. Run | weeks 2-6 | Volunteers use volunteer mode during their normal visits. |
 | 3. Follow up | each next visit | Ask the "did you switch?" question; tap the answer. |
-| 4. Report | weekly | Numbers come only from https://samesalt-agent.samesalt-worker.workers.dev/impact (lookups, people, saving found per pack, switches reported, saving reported by switchers, volunteer-assisted lookups, language, PIN prefix). |
+| 4. Report | weekly | Numbers come only from https://samasalt-mitra.samasalt-mitra-worker.workers.dev/impact (lookups, people, saving found per pack, switches reported, saving reported by switchers, volunteer-assisted lookups, language, PIN prefix). |
 
 **What we will measure and report (and nothing else):** number of lookups and unique browsers; share where a cheaper exact-composition option exists; saving found per pack (₹); number and share of "Yes, I switched"; saving reported by those who switched; Kannada vs Hindi vs English use; medicines not found (to fix the data). We will not report any number that the dashboard does not show.

@@ -33,6 +33,12 @@
       <h1 data-t="tagline">Same medicine. Lower price.</h1>
       <p class="lede" data-t="intro"></p>
 
+      <!-- v1.1: opened from a Kendra's QR poster: which Kendra the patient is at. -->
+      <div class="kendra-here" id="kendraHere" hidden>
+        <div><b class="kh-title"></b><span class="kh-addr"></span></div>
+        <button class="link kh-close" type="button"></button>
+      </div>
+
       <!-- Three ways to scan a strip, all on the home screen:
            Take a photo = the phone's own camera app (capture attribute), the default;
            Choose from gallery = a saved photo;
@@ -130,7 +136,7 @@
 
   <footer class="foot">
     <p data-t="privacy"></p>
-    <!-- Developer mode only (?dev=1 to turn on, ?dev=0 to turn off); hidden for patients and volunteers. -->
+    <!-- Developer mode only (only while the address has ?dev=1; the plain address is the patient app); hidden for patients and volunteers. -->
     <p class="foot-links" id="devLinks" hidden>
       <a href="/impact" data-t="impactLink">See the impact</a>
       <span aria-hidden="true">·</span>
@@ -140,7 +146,11 @@
       <span aria-hidden="true">·</span>
       <a href="/dev">Data import</a>
       <span aria-hidden="true">·</span>
-      <a href="/?dev=0">Exit developer mode</a>
+      <a href="/kendra#admin">Kendra review</a>
+      <span aria-hidden="true">·</span>
+      <a href="/kendra">Kendra registration</a>
+      <span aria-hidden="true">·</span>
+      <a href="/">Exit developer mode</a>
     </p>
     <p class="data-note" id="dataNote"></p>
   </footer>
@@ -153,6 +163,10 @@
     <form method="dialog" class="crop-actions"><button class="secondary" data-t="close">Close</button><button class="link" id="phClear" type="button" value="clear" data-t="listClear">Clear list</button></form>
   </dialog>
 
+  <!-- Short confirmation after an action (list cleared, removed, added). -->
+  <div id="toast" class="toast" role="status" aria-live="polite" hidden></div>
+
   <script type="module" src="/app.js"></script>
+  <script src="/envbanner.js"></script>
 </body>
 </html>
