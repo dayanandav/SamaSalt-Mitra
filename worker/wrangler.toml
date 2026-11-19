@@ -35,7 +35,7 @@ WHATSAPP_BOT = "off"
 WA_BOT_NUMBER = ""
 # v2.0.1 Chat in the app (home screen → Chat; the bot's conversation without WhatsApp): "off" | "on".
 # Needs migration 0007 (wa_chats).
-APP_CHAT = "off"
+APP_CHAT = "on"
 
 # Own domain (docs/DOMAIN.md): once the domain serves this Worker, set it here (e.g. "samasaltmitra.in")
 # and old workers.dev links (QR posters, shared links, the app) move to it. "" = stay on workers.dev.
