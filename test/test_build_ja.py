@@ -15,8 +15,6 @@ CASES = [
     ("Paracetamol Tablets IP 500mg", "paracetamol:500mg|tablet"),
     ("Amoxycillin and Potassium Clavulanate Tablets IP 500 mg + 125 mg", "amoxicillin:500mg+clavulanic acid:125mg|tablet"),
     ("Telmisartan Tablets IP 40 mg", "telmisartan:40mg|tablet"),
-    ("Metformin Hydrochloride Sustained Release Tablets IP 500 mg", "metformin:500mg|tablet|SR"),
-    ("Metformin Hydrochloride Tablets IP 500 mg", "metformin:500mg|tablet"),
     ("Pantoprazole Gastro-resistant Tablets IP 40 mg", "pantoprazole:40mg|tablet"),
     ("Atorvastatin Tablets IP 10 mg", "atorvastatin:10mg|tablet"),
     ("Amlodipine Tablets IP 5 mg", "amlodipine:5mg|tablet"),
@@ -28,10 +26,21 @@ CASES = [
     ("Clotrimazole 1% w/v and Lignocaine Hydrochloride 2% w/v Ear Drops", "clotrimazole:1% w/v+lidocaine:2% w/v|drops"),
 ]
 
+# Salt names that only map with the brand vocabulary (samesalt.db: "metformin hydrochloride" →
+# "metformin"). Run where the database is present (developer machine); skipped on GitHub, where
+# test/medstore.test.mjs and test/pmbi.test.mjs cover the same keys.
+VOCAB_CASES = [
+    ("Metformin Hydrochloride Sustained Release Tablets IP 500 mg", "metformin:500mg|tablet|SR"),
+    ("Metformin Hydrochloride Tablets IP 500 mg", "metformin:500mg|tablet"),
+]
+
 
 def test_parse_generic():
     bad = []
-    for name, want in CASES:
+    cases = CASES + (VOCAB_CASES if DB.exists() else [])
+    if not DB.exists():
+        print(f"note: {len(VOCAB_CASES)} vocabulary cases skipped (no {DB.name})")
+    for name, want in cases:
         got, reason = parse_generic(name, V)
         if got != want:
             bad.append((name, want, got, reason))
