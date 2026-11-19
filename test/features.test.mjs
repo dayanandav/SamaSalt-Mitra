@@ -24,7 +24,7 @@ test('share: the templated answer, the Jan Aushadhi generic and the link; an NTI
   const s = shareText(r, tr, rupees, 'per tablet', 'https://samasalt.example');
   assert.match(s, /^Dolo 650 Tablet \(Paracetamol/);
   assert.ok(s.includes(r.answer.trim()));
-  assert.match(s, /Jan Aushadhi generic: Paracetamol Tablets IP 650 mg · 15's · MRP ₹15\.47 \(PMBJP 511\)/);
+  assert.match(s, /Jan Aushadhi generic medicine: Paracetamol Tablets IP 650 mg · 15's · MRP ₹15\.47 \(PMBJP 511\)/);
   assert.match(s, /Ask your doctor or pharmacist before switching\. https:\/\/samasalt\.example$/);
   const nti = await (await post('/api/ask', { text: 'Thyronorm 100mcg', test: true })).json();
   const ns = shareText(nti, tr, rupees, 'per tablet', 'https://samasalt.example');

@@ -38,7 +38,7 @@ test('typed name: templated answer with the Jan Aushadhi generic and MRP, cheape
   const { say, logged } = setup();
   const a = bodyOf(await say({ kind: 'text', text: 'Dolo 650' }));
   assert.match(a, /\*Dolo 650 Tablet\*/);
-  assert.match(a, /Jan Aushadhi generic:\* Paracetamol Tablets IP 650 mg \(PMBJP TEST-1\) · 10 tablets · MRP ₹10/);
+  assert.match(a, /Jan Aushadhi generic medicine:\* Paracetamol Tablets IP 650 mg \(PMBJP TEST-1\) · 10 tablets · MRP ₹10/);
   assert.match(a, /Please check with your doctor or pharmacist before switching/);
   assert.match(a, /Send your 6-digit PIN code/);
   assert.doesNotMatch(a, /\b(dose of|twice a day|once a day|take \d)/i);
