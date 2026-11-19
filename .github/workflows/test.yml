@@ -20,6 +20,8 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: '3.12'
+      - name: Test lock (every test file approved by the owner)
+        run: node tools/test-lock.mjs check
       - name: JavaScript tests
         run: node --import ./test/register-md.mjs --test test/*.test.mjs
       - name: Python test (Jan Aushadhi list builder)

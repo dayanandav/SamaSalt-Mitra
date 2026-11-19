@@ -133,6 +133,24 @@ Test site (`/?test=1` so nothing counts on /impact):
 5. **Backup** (owner, from the project folder): `node tools/backup.mjs --staging` writes `backups/samasalt-mitra-staging-<date>.sql`.
 6. GitHub → **Actions**: "Tests" runs on every push; "Live site check" runs every 3 hours (or **Run workflow**).
 
+## Test lock (before every commit)
+
+The tests are the agreed design. Before each commit, `.githooks/pre-commit` runs
+`node tools/test-lock.mjs run`: every JavaScript test, the Python test, and the **test lock**. The commit
+is blocked if a test fails, or if any test file was changed, added or removed without the owner's approval.
+GitHub (Tests workflow) checks the lock again, so skipping the hook does not help.
+
+- Turn the hook on once per computer/clone: `git config core.hooksPath .githooks`
+- See what changed: `node tools/test-lock.mjs status` and `git diff -- test/`
+- **Owner only**, after reading the test changes: `node tools/test-lock.mjs approve --yes`, then commit
+  `test/APPROVED.json` together with the tests.
+- `test/core.contract.test.mjs` holds the core rules: every text in en/kn/hi with the same `{slots}`;
+  no dose advice; every rupee amount comes from the data; the doctor/pharmacist line ends every answer;
+  same salt + strength + form + release only; the never-switch list only grows and those medicines get
+  the warning only (no price, generic, order or share price); no personal data column in the impact log;
+  on live, Kendra numbers and orders stay pilot and the WhatsApp bot and volunteers stay off.
+  A requirement change that needs one of these to change = a test change = owner approval.
+
 ## Maintenance (developer)
 
 ```bash

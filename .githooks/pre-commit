@@ -1,0 +1,4 @@
+#!/bin/sh
+# Before every commit: every test must pass and every test file must be approved by the owner.
+# Turn on once per clone:  git config core.hooksPath .githooks
+exec node tools/test-lock.mjs run
