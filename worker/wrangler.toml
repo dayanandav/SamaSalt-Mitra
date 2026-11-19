@@ -8,7 +8,7 @@ directory = "../public"
 binding = "ASSETS"
 html_handling = "auto-trailing-slash"
 not_found_handling = "404-page"
-run_worker_first = ["/api/*", "/k/*", "/v/*"]
+run_worker_first = ["/api/*", "/k/*", "/v/*", "/o/*"]
 
 # Reference data + anonymous impact log (free tier).
 [[d1_databases]]
@@ -24,6 +24,18 @@ KENDRA_REGISTRY = "pilot"
 # v1.2 order requests (WhatsApp/SMS to a registered Kendra, pickup only): "pilot" = test traffic only,
 # until PMBI confirms reserve-and-collect fits PMBJP rules; then "public".
 ORDER_REQUESTS = "pilot"
+# v1.3 registered volunteers: "off" (parked by the owner, 17 Nov 2026: join section, console tab and
+# registration hidden/refused) | "on". Volunteer mode itself (/volunteer guide, ?volunteer=1) always works.
+VOLUNTEER_REGISTRY = "off"
+# v2.0 WhatsApp bot: "off" | "on". Needs secrets WA_TOKEN, WA_PHONE_ID, WA_APP_SECRET, WA_VERIFY_TOKEN
+# (and WA_HASH_KEY) and the webhook https://<site>/api/wa/webhook set in the Meta app.
+WHATSAPP_BOT = "off"
+# The bot's WhatsApp number (digits with country code, e.g. 919876543210) for the home screen's
+# "Ask on WhatsApp" button; the button shows only when WHATSAPP_BOT is "on" and this is set.
+WA_BOT_NUMBER = ""
+# v2.0.1 Chat in the app (home screen → Chat; the bot's conversation without WhatsApp): "off" | "on".
+# Needs migration 0007 (wa_chats).
+APP_CHAT = "off"
 
 # Vision + text models (Workers AI free allocation).
 [ai]
@@ -51,6 +63,10 @@ name = "samasalt-mitra-staging"
 [env.staging.vars]
 KENDRA_REGISTRY = "public"
 ORDER_REQUESTS = "public"
+VOLUNTEER_REGISTRY = "on"
+WHATSAPP_BOT = "on"
+WA_BOT_NUMBER = ""
+APP_CHAT = "on"
 
 [[env.staging.d1_databases]]
 binding = "DB"

@@ -108,7 +108,7 @@ test('modify: logged with before/after; a new mobile sends an approved volunteer
 test('Worker: /v/ link, link status, lookups counted only for approved volunteers, roles enforced', async () => {
   const { default: worker } = await import('../worker/src/index.js');
   const db = fixtureDb();
-  const env = { DB: db, ADMIN_TOKEN: 'tok', ASSETS: { fetch: () => new Response('asset') } };
+  const env = { DB: db, ADMIN_TOKEN: 'tok', VOLUNTEER_REGISTRY: 'on', ASSETS: { fetch: () => new Response('asset') } };
   const ctx = { waitUntil() {} };
   const go = (path, init = {}) => worker.fetch(new Request(`https://samasalt.example${path}`, { redirect: 'manual', ...init }), env, ctx);
 
@@ -134,4 +134,10 @@ test('Worker: /v/ link, link status, lookups counted only for approved volunteer
   const dec = await staff('/volunteer/decide', { code: (await reg.json()).code, action: 'approve', checks: allChecks, note: 'Self approve' });
   assert.equal(dec.status, 403, 'two people: the registrar cannot approve');
   assert.equal((await (await staff('/volunteer/list?status=all')).json()).items.length, 2);
+  // Parked (live): the volunteer API is closed, the health check says so; the data stays.
+  env.VOLUNTEER_REGISTRY = 'off';
+  assert.equal((await staff('/volunteer/list?status=all')).status, 403);
+  assert.equal((await staff('/volunteer/register', { ...req, mobile: '9845066666' })).status, 403);
+  assert.equal((await (await go('/api/health')).json()).volunteer_registry, 'off');
+  assert.equal(await activeVolunteer(db, code), code);
 });

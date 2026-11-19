@@ -84,7 +84,14 @@ function showApp(who) {
   showTab(who.role === 'registrar' ? 'newTab' : 'regsTab');
   loadRegs();
   if (can('staff')) loadUsers();
-  startVolunteers({ api, msg, esc, when, whenShort, can, wide, pointWord });
+  // v1.3 registered volunteers: only while VOLUNTEER_REGISTRY = "on" (parked on live).
+  const volTab = document.querySelector('.tabs [data-tab=volTab]');
+  volTab.hidden = true;
+  fetch('/api/health').then((r) => r.json()).then((h) => {
+    if (h.volunteer_registry !== 'on') return;
+    volTab.hidden = false;
+    startVolunteers({ api, msg, esc, when, whenShort, can, wide, pointWord });
+  }).catch(() => {});
 }
 
 function showTab(id) {

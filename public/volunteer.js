@@ -12,7 +12,11 @@ const ERR = {
   vErrConsent: 'Read the volunteer terms and tick the box to agree.',
 };
 let regEmail = null;
-fetch('/api/health').then((r) => r.json()).then((h) => { regEmail = h.registration_email || null; }).catch(() => {});
+// Parked on live (VOLUNTEER_REGISTRY = "off"): the join section stays hidden.
+fetch('/api/health').then((r) => r.json()).then((h) => {
+  regEmail = h.registration_email || null;
+  if (h.volunteer_registry === 'on') { $('#join').hidden = false; $('#joinLink').hidden = false; }
+}).catch(() => {});
 
 const form = $('#vForm');
 let text = '';

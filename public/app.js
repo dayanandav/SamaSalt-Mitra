@@ -1,4 +1,5 @@
 import { LANGS, STRINGS, t, rupees, unitKind } from '/strings.js';
+import { createChat, newChatId } from '/chat.js';
 import { pharmacistEntry, mergeMedList, asksToSwitch, shouldAddToList, listenAllowed, pickVoice, isPhoneBrowser, freshMedList, kendraCode, showMobile, orderItems, orderQty, orderMessage, waLink, smsLink, ORDER_MAX_PACKS, photoSendSize, askTimeoutMs, savableAnswer, volunteerCode } from '/rules.js';
 
 const $ = (s) => document.querySelector(s);
@@ -66,6 +67,7 @@ function applyStrings() {
   document.documentElement.lang = lang;
   for (const el of document.querySelectorAll('[data-t]')) el.textContent = t(lang, el.dataset.t);
   for (const el of document.querySelectorAll('[data-tp]')) el.placeholder = t(lang, el.dataset.tp);
+  for (const el of document.querySelectorAll('[data-ta]')) { el.setAttribute('aria-label', t(lang, el.dataset.ta)); el.title = t(lang, el.dataset.ta); }
   $('#volBanner').hidden = !volunteer;
   if (volCode) $('#volBanner').textContent = `${t(lang, 'volunteerOn')} · ${volCode}${volActive ? '' : ` · ${t(lang, 'volunteerInactive')}`}`;
   const jaDate = last?.data?.ja_list_date;
@@ -555,7 +557,8 @@ $('#cropCancel').onclick = () => { photo = null; show('home'); };
 // ── Agent call ─────────────────────────────────────────────────────────────
 function show(section) {
   if (section !== 'camera') stopCamera();
-  for (const id of ['home', 'camera', 'crop', 'busy', 'result']) $('#' + id).hidden = id !== section;
+  for (const id of ['home', 'camera', 'crop', 'busy', 'result', 'chatView']) $('#' + id).hidden = id !== section;
+  renderFab(section);
   window.scrollTo({ top: 0, behavior: 'instant' in window ? 'instant' : 'auto' });
 }
 
@@ -1046,6 +1049,111 @@ $('#lastBtn').onclick = () => {
 if ('serviceWorker' in navigator && location.protocol === 'https:') {
   navigator.serviceWorker.register('/sw.js', { updateViaCache: 'none' }).catch(() => {});
 }
+
+// ── v2.0.1 Chat: the WhatsApp bot's conversation, in the app or in the patient's WhatsApp ──
+// As chat apps do it: a floating chat button on the home screen and answers, suggestion chips, message
+// times, and the conversation kept while the patient moves around the app (this visit only). Shown only
+// when switched on (/api/health: app_chat, wa_bot_number). The chat id is random and per visit; the
+// Worker remembers language, PIN and one pending medicine for 24 hours at most.
+let chatId = sess.get('ss_chat');
+let chat = null;
+var chatOn = false; // var: show() may run before this line (renderFab reads it)
+var waHref = null;
+let chatFrom = 'home';
+function renderFab(section) {
+  $('#chatFab').hidden = !(chatOn || waHref) || !['home', 'result'].includes(section);
+  document.documentElement.classList.toggle('has-fab', !$('#chatFab').hidden);
+}
+function chatBox() {
+  if (!chatId) { chatId = newChatId() + newChatId(); sess.set('ss_chat', chatId); }
+  if (!chat) {
+    chat = createChat({
+      log: $('#chatLog'),
+      endpoint: '/api/chat',
+      keep: 'ss_chat_log',
+      headers: isTest ? { 'x-samasalt-mitra-test': '1' } : {},
+      body: () => ({ chat: chatId, lang, pin: pinInput.value.length === 6 ? pinInput.value : undefined, device, test: isTest ? true : undefined }),
+      // The chat's language buttons change the whole app's language.
+      onButton: (id) => { if (id.startsWith('lang:') && STRINGS[id.slice(5)] && id.slice(5) !== lang) setLang(id.slice(5)); },
+      onMissing: () => { chatOn = false; show('home'); },
+      texts: () => ({ typing: t(lang, 'chatTyping'), error: t(lang, 'chatError') }),
+    });
+  }
+  return chat;
+}
+function openChat() {
+  chatFrom = $('#result').hidden ? 'home' : 'result';
+  show('chatView');
+  if (!chatBox().size) chat.send({ text: 'Hi' });
+}
+$('#chatFab').onclick = (e) => {
+  if (chatOn) { e.preventDefault(); openChat(); }
+  // Only WhatsApp is on: the link itself opens WhatsApp.
+};
+// Same words as the bot's DELETE command (worker/src/whatsapp.js).
+const CHAT_DELETE = /^(delete|stop|erase|ಅಳಿಸಿ|मिटाएँ|मिटाओ)[\s!.]*$/i;
+// Clear chat / DELETE: the chat sends the app's PIN with every message, so it is forgotten as well.
+function forgetPin() {
+  pinInput.value = '';
+  store.set('ss_pin', null);
+}
+$('#chatBack').onclick = () => show(chatFrom === 'result' && last ? 'result' : 'home');
+$('#chatNew').onclick = () => { chatId = newChatId() + newChatId(); sess.set('ss_chat', chatId); chatBox().clear(); chat.send({ text: 'Hi' }); };
+const chatText = $('#chatText');
+const resetChatInput = () => { chatText.inputMode = 'text'; chatText.placeholder = t(lang, 'chatPlaceholder'); };
+$('#chatBar').addEventListener('submit', (e) => {
+  e.preventDefault();
+  const text = chatText.value.trim();
+  if (!text || chatBox().busy) return;
+  chatText.value = '';
+  resetChatInput();
+  // A PIN typed in the chat is also the app's PIN (same as the PIN box on the home screen).
+  if (/^\d{6}$/.test(text)) { pinInput.value = text; store.set('ss_pin', text); }
+  // DELETE (as on WhatsApp) erases the chat's memory; the app's saved PIN goes too, or the next
+  // message would hand it straight back to the bot.
+  if (CHAT_DELETE.test(text)) forgetPin();
+  chat.send({ text }, text);
+});
+$('#chatPhoto').addEventListener('change', (e) => {
+  const file = e.target.files?.[0];
+  e.target.value = '';
+  const s = sendSize();
+  if (file && !chatBox().busy) chat.photo(file, s.side, s.quality);
+});
+$('#chatChips').addEventListener('click', (e) => {
+  const b = e.target.closest('button');
+  if (!b || chatBox().busy) return;
+  const c = b.dataset.chip;
+  if (c === 'scan') $('#chatPhoto').click();
+  else if (c === 'lang') chat.send({ text: 'language' }, b.textContent.trim());
+  else if (c === 'clear') {
+    // As in chat apps: erase what the bot remembers (DELETE), empty the screen, start a fresh chat.
+    forgetPin();
+    chat.send({ text: 'DELETE' }).then(() => {
+      chatId = newChatId() + newChatId();
+      sess.set('ss_chat', chatId);
+      chat.clear();
+      toast('chatCleared');
+      chat.send({ text: 'Hi' });
+    });
+  }
+  else if (c === 'kendra') {
+    // With a PIN already in the app: ask for its Kendras; otherwise ask the patient to type it.
+    if (pinInput.value.length === 6) chat.send({ text: pinInput.value }, pinInput.value);
+    else { chatText.inputMode = 'numeric'; chatText.placeholder = t(lang, 'chatPinAsk'); chatText.focus(); }
+  }
+});
+fetch('/api/health').then((r) => r.json()).then((h) => {
+  chatOn = h.app_chat === 'on';
+  // WhatsApp: the bot's number once it is set; on the test site, developer mode opens the simulator.
+  waHref = h.wa_bot_number ? `https://wa.me/${h.wa_bot_number}?text=${encodeURIComponent('Hi')}` : devMode && h.whatsapp_bot === 'on' ? '/wa-sim?dev=1' : null;
+  $('#chatWa').hidden = !waHref;
+  if (waHref) $('#chatWa').href = waHref;
+  const fab = $('#chatFab');
+  fab.classList.toggle('wa-only', !chatOn && !!waHref);
+  if (!chatOn && waHref) { fab.href = waHref; fab.target = '_blank'; fab.rel = 'noopener'; fab.querySelector('span').dataset.t = 'askWhatsapp'; applyStrings(); }
+  renderFab([...['home', 'result']].find((id) => !$('#' + id).hidden) || 'none');
+}).catch(() => {});
 
 // v1.3: is this volunteer's link approved? (Only yes/no comes back; checks still work either way.)
 if (volCode) fetch(`/api/volunteer/${volCode}`).then((r) => r.json()).then((r) => { volActive = !!r.active; applyStrings(); }).catch(() => {});

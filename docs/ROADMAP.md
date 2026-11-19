@@ -17,6 +17,8 @@ Full design: *SamaSalt-Mitra Design Document* (`docs/SamaSalt-Mitra Design Docum
 | 1.1.1 | 17 Nov 2026 | Staff console on desktop: tables with side panel for registrations and staff accounts, two-column forms; phones unchanged |
 | 1.2.0 | 17 Nov 2026 | v1.2 Order requests: packs per medicine, "Order for pickup" at Registered Kendras, WhatsApp/SMS message from the patient's phone (nothing stored), NTI and no-equivalent medicines left out; `ORDER_REQUESTS` pilot on live. Owner approved. Remove button in the medicine list made a soft light red |
 | 1.3.0 | 17 Nov 2026 | v1.3 Reach: registered volunteers (Registrar registers, Reviewer approves, personal link `/v/SV-…`, help counted by volunteer code only); weak-network mode: the app opens without internet (service worker), offline notice, a check waits and runs by itself when the internet is back, last answer kept for the visit, smaller photos on 2G/3G or Save-Data |
+| 2.0.0 | 17 Nov 2026 | v2.0 WhatsApp bot (test site): Meta Cloud API webhook, typed name / photo (confirm first) / PIN / language / DELETE, templated answers, short order link `/o/…`, chat simulator `/wa-sim`; number never stored (HMAC chat key, 24-hour memory); `WHATSAPP_BOT` off on live. Registered volunteers parked on live |
+| 2.0.1 | 18 Nov 2026 | Chat in the app, the way other apps do it: floating **Chat** button (home and answers) → the bot's conversation inside the app (`/api/chat`, `APP_CHAT`: off on live, on on the test site; counted as mode `chat`), suggestion chips (Scan strip, Nearest Kendra, Language, Clear chat), message times, conversation kept for the visit; **Continue on WhatsApp** in the chat header once `WA_BOT_NUMBER` is set and the bot is on. Shared chat box `public/chat.js`. Clear chat / DELETE also forget the app's saved PIN. **Approved by the owner 19 Nov 2026** (test site) |
 
 ## Overview
 
@@ -26,8 +28,8 @@ Full design: *SamaSalt-Mitra Design Document* (`docs/SamaSalt-Mitra Design Docum
 | 1 | v1.1 Kendra registry | Kendras apply; staff register, review and approve; QR poster; "Registered Kendra" for patients | **Done**: reviewed and accepted by the owner 17 Nov 2026 (live in pilot mode) | PMBI agrees to QR posters and contact registration |
 | 1+ | v1.1.x Staff console on desktop | Wide table layout for staff on laptops (phones unchanged) | **Done**: approved by the owner 17 Nov 2026, live | none |
 | 2 | v1.2 Order requests | Patient sends a medicine list with pack quantities to a registered Kendra by WhatsApp/SMS link; pickup only | **Done (approved 17 Nov 2026): public on the test site, pilot on live until PMBI confirms** | PMBI confirms reserve-and-collect fits PMBJP rules |
-| 3 | v1.3 Reach | More languages, weak-network mode, volunteer helpers | **Done (approved 17 Nov 2026)**: weak-network mode and registered volunteers on the test site; live after migration 0006 and DPDP review. More languages: later (owner) | Inform PMBI |
-| 4 | v2.0 WhatsApp bot | Check a medicine and send order requests inside WhatsApp | Not started | PMBI approves message templates; DPDP legal review |
+| 3 | v1.3 Reach | More languages, weak-network mode, volunteer helpers | **Done (approved 17 Nov 2026), live**: weak-network mode live for everyone. Registered volunteers **parked** (`VOLUNTEER_REGISTRY = "off"` on live, on the test site only). More languages: later (owner) | Inform PMBI |
+| 4 | v2.0 WhatsApp bot | Check a medicine and send order requests inside WhatsApp | **Built: on the test site (simulator), off on live. Waiting for owner review, then the Meta WhatsApp account** | PMBI approves message templates; DPDP legal review |
 | 5 | v2.1 Doctor network | PMBJP-recommended volunteer doctors, registered and verified like Kendras | Not started | PMBI provides or endorses the doctor list |
 | 6 | v2.2 Request doctor review | Patient asks an approved doctor to review a switch to the Jan Aushadhi generic | Not started | PMBI agrees; Telemedicine Practice Guidelines and DPDP review |
 | 7 | v3.0 One journey | Scan → doctor-reviewed switch → order request → pickup, as one flow | Not started | PMBI agrees how pharmacists treat a reviewed request |
@@ -114,16 +116,36 @@ More Indian languages (after native review), weak-network mode (smaller pages, o
 
 **Part 2, more languages**: later. The owner will handle the choice of languages and the native-speaker review.
 
-**Part 3, registered volunteers (built, on the test site)**: chosen by the owner over an anonymous camp mode.
+**Part 3, registered volunteers (built; parked by the owner on 17 Nov 2026 for a future enhancement)**: chosen by the owner over an anonymous camp mode. Switch: `VOLUNTEER_REGISTRY` in `worker/wrangler.toml`: `"off"` on live (the join section on /volunteer, the console's Volunteers tab and the `/api/admin/volunteer/*` API are hidden or closed; the tables from migration 0006 exist and stay empty), `"on"` on the test site. To resume: DPDP review, live `ADMIN_TOKEN` and staff accounts, `REGISTRATION_EMAIL`, Kannada/Hindi text, then set `"on"` and deploy. Plain volunteer mode (/volunteer guide, `?volunteer=1`) is not affected.
 - Public `/volunteer` → **Become a registered volunteer**: benefits, how it works, six terms (no medical advice; never a switch for "same brand only"; no patient data; no money or selling; who sees their details, removal any time; the link is personal). The form prepares a request to send by email (`REGISTRATION_EMAIL`), as for Kendras: **nothing is saved from the public page**.
 - Staff console → **Volunteers** tab (tabs renamed **Kendras**, **New Kendra**, **Volunteers**). Registrar: **Register a volunteer** from a request by phone, email or in person, with the **type of ID seen** (never its number) and the volunteer's agreement; one active registration per mobile. Reviewer: approve (called, ID seen, terms understood + note), reject, **Remove volunteer**, **Modify details** (a new mobile sends an approved volunteer back to Waiting), **Send link on WhatsApp**, **Copy link**. History of every action. Table + side panel on desktop, one line each on phones.
 - Each approved volunteer gets a code `SV-XXXXX` and a personal link `/v/SV-XXXXX` → volunteer mode with the code (green banner; "link not active yet" if not approved). A check made through it records the volunteer's code in `lookups.volunteer` (only if approved): the console shows **Helped** per volunteer; `/impact` shows "registered volunteers who helped". No patient data is added.
 - Data: migration `0006_volunteers.sql` (`volunteers`, `volunteer_reviews`, `lookups.volunteer`); applied to the test database only. Code: `worker/src/volunteers.js`, `validateVolunteer`/`volunteerCode`/`volunteerRequest`/`volunteerWelcome` in `public/rules.js`, `public/vol-admin.js` (console tab), `public/volunteer.js` (public form). `/v/*` added to `run_worker_first`. Tests: `test/volunteers.test.mjs` (7); full suite 115.
 - Gate: volunteers' personal data (name, mobile) is staff-only, like Kendra contacts. **Before live**: apply migration 0006 to the live database; DPDP review of volunteer data (consent, retention, removal on request); native-speaker Kannada/Hindi text for the volunteer section (English only now).
 
-## Stage 4: v2.0 WhatsApp bot
+## Stage 4: v2.0 WhatsApp bot (built, waiting for review)
 
-Check a medicine and send an order request inside WhatsApp (WhatsApp Business API, approved templates). Needs DPDP Act legal review: consent, what is kept, for how long.
+Check a medicine and send an order request inside WhatsApp. Needs DPDP Act legal review: consent, what is kept, for how long.
+
+**Analysis**
+- Channel: **Meta WhatsApp Cloud API** straight to the Worker (no paid middleman). The patient always writes first, so every reply is inside WhatsApp's 24-hour service window: free-form replies and reply buttons, **no pre-approved templates and no per-message charge** for these replies. Templates (and PMBI approval of them) are needed only if we ever message people first (for example reminders); v2.0 does not.
+- What the bot does is exactly what the app does, from the same agent and the same templates: no model writes any price or safety line.
+- Privacy by design: the WhatsApp number is never stored. A chat is keyed by HMAC(secret, number); it remembers only language, PIN and one medicine waiting for confirmation, for at most 24 hours; **DELETE** erases it. The impact log gets mode `whatsapp`, no device, no number.
+
+**What was built**
+- Conversation: **Hi** → welcome (what it does, no dose advice, DELETE) + language buttons; typed medicine name → full answer (templated text, Jan Aushadhi generic with PMBJP code, pack and MRP, up to 3 lower-priced same-salt brands, nearest Kendras if a PIN is known, data note); **photo** → "I read this from your photo: … Is this your medicine?" [Yes, check it] [No]: nothing is priced before Yes; **6-digit PIN** → saved, nearest Kendras (registered numbers where `KENDRA_REGISTRY` allows); **kannada / hindi / english** or the buttons; **DELETE**.
+- Never-switch (NTI) medicines: the warning only; no brands, no generic, no order link.
+- Order for pickup: at a Registered Kendra with `ORDER_REQUESTS = "public"`, a short link `/o/<Kendra>/<PMBJP code>` opens the patient's WhatsApp to the Kendra with the order message (1 pack; patient's language + English). Refused for NTI products, unapproved Kendras or pilot mode.
+- Meta webhook `/api/wa/webhook`: verification (GET), signature check (`X-Hub-Signature-256`), answer 200 at once and reply in the background; duplicate deliveries answered once (`wa_seen`, 24 hours); photos downloaded from Meta into memory only.
+- **Chat simulator** `/wa-sim` (team only, test traffic, linked in developer mode): the real bot logic, nothing sent to WhatsApp.
+- Switch `WHATSAPP_BOT`: `"off"` on live, `"on"` on the test site. Migration `0007_whatsapp.sql` (`wa_chats`, `wa_seen`), applied to the test database only.
+- Code: `worker/src/whatsapp.js` (webhook, conversation, Cloud API), `worker/src/watext.js` (reply text), `wa*` keys in `public/strings.js`, `/o/` and `/api/wa/*` in `worker/src/index.js`, `public/wa-sim.html` + `wa-sim.js`. Tests: `test/whatsapp.test.mjs` (9); full suite 124.
+
+**To go live (owner)**
+1. Meta Business account (business verification), a WhatsApp Business phone number not used in the WhatsApp app, a Meta app with the WhatsApp product.
+2. Secrets on the live Worker: `WA_TOKEN` (permanent system-user token), `WA_PHONE_ID`, `WA_APP_SECRET`, `WA_VERIFY_TOKEN`, `WA_HASH_KEY`. Webhook URL `https://<live site>/api/wa/webhook`, subscribe to `messages`.
+3. DPDP review (the welcome message is the notice; DELETE and 24-hour expiry are the erasure); native-speaker check of the Kannada/Hindi bot text.
+4. Apply migration 0007 on the live database, set `WHATSAPP_BOT = "on"`, deploy. Tell PMBI.
 
 ## Stage 5: v2.1 Doctor network
 

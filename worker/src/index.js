@@ -4,12 +4,15 @@ import { validateProducts, insertStatements } from '../../public/pmbi.js';
 import { assetMeds, d1Meds } from './medstore.js';
 import { lookupKendra, staffRegisterKendra, attachContacts, adminListKendras, adminDecideKendra, adminUpdateKendra, adminKendraHistory } from './kendra.js';
 import { whoIs, csrfOk, login, logout, listAdmins, createAdmin, updateAdmin, can, permissions } from './admin.js';
-import { kendraContactsVisible } from '../../public/rules.js';
+import { kendraContactsVisible, orderItems, orderMessage, waLink } from '../../public/rules.js';
+import { t, rupees } from '../../public/strings.js';
+import { ntiFromKey } from './normalize.js';
 import { nearestKendra } from './tools.js';
+import { botOn, appChatOn, botNumber, handleWebhook, handleMessage } from './whatsapp.js';
 import { registerVolunteer, listVolunteers, decideVolunteer, updateVolunteer, volunteerHistory, activeVolunteer, volunteerLinkStatus } from './volunteers.js';
 
 // Not exported: a Worker's main module may only export handlers.
-const APP_VERSION = '1.3.0';
+const APP_VERSION = '2.0.1';
 
 const MAX_IMAGE_CHARS = 2_500_000; // ~1.8 MB JPEG as a data URL; the app resizes to ~1 MP first
 
@@ -57,7 +60,7 @@ async function logLookup(env, body, result, isTest) {
       result.same_salt?.count ?? null,
       result.lang,
       result.pin3 ?? null,
-      body.mode === 'volunteer' ? 'volunteer' : 'self',
+      body.mode === 'volunteer' ? 'volunteer' : body.mode === 'whatsapp' ? 'whatsapp' : body.mode === 'chat' ? 'chat' : 'self',
       device,
       isTest ? 1 : 0,
       volunteer
@@ -134,6 +137,8 @@ async function handleImpact(env) {
       SUM(switched = 'no') AS switched_no,
       ROUND(SUM(CASE WHEN switched = 'yes' AND saving_pack > 0 THEN saving_pack ELSE 0 END), 2) AS reported_saving,
       SUM(mode = 'volunteer') AS volunteer_lookups,
+      SUM(mode = 'whatsapp') AS whatsapp_lookups,
+      SUM(mode = 'chat') AS chat_lookups,
       SUM(volunteer IS NOT NULL) AS registered_volunteer_lookups,
       COUNT(DISTINCT volunteer) AS active_volunteers,
       SUM(input LIKE 'photo%') AS photo_lookups,
@@ -215,6 +220,8 @@ async function handleAdmin(request, env, url) {
   }
 
   // v1.3 Registered volunteers: Registrar registers; Reviewer approves, rejects, removes, modifies.
+  // Parked (VOLUNTEER_REGISTRY not "on"): the volunteer API is closed; the data stays.
+  if (path.startsWith('/volunteer/') && env.VOLUNTEER_REGISTRY !== 'on') return json({ error: 'volunteers_parked', detail: 'Registered volunteers are paused for now.' }, 403);
   if (path === '/volunteer/list') return json(await listVolunteers(env.DB, url.searchParams.get('status') || 'pending', url.searchParams.get('q') || ''));
   if (path === '/volunteer/history') return json({ items: await volunteerHistory(env.DB, url.searchParams.get('code')) });
   if (path === '/volunteer/register' && post) {
@@ -326,11 +333,35 @@ async function handlePmbiApply(request, env) {
   return json({ ok: true, applied: true, previous_count: current, new_count: items.length, list_date: body.list_date });
 }
 
+async function orderRedirect(env, code, drugCode, l) {
+  if (env.ORDER_REQUESTS !== 'public' || !kendraContactsVisible(env.KENDRA_REGISTRY, false)) return null;
+  const lang = ['en', 'kn', 'hi'].includes(l) ? l : 'en';
+  const [k, p] = await Promise.all([
+    env.DB.prepare("SELECT whatsapp FROM kendra_contacts WHERE code = ?1 AND status = 'approved'").bind(code).first(),
+    env.DB.prepare('SELECT drug_code, generic_name, unit_size, mrp, ckey FROM ja_products WHERE drug_code = ?1').bind(drugCode).first(),
+  ]);
+  if (!k?.whatsapp || !p || ntiFromKey(p.ckey)) return null;
+  const order = orderItems([{ ckey: p.ckey, name: p.generic_name, nti: false, qty: 1, ja: { name: p.generic_name, code: p.drug_code, unit_size: p.unit_size, mrp: p.mrp } }]);
+  return waLink(k.whatsapp, orderMessage({ code }, order, (key, v) => t(lang, key, v), lang === 'en' ? null : (key, v) => t('en', key, v), rupees));
+}
+
 export default {
   async fetch(request, env, ctx) {
     const url = new URL(request.url);
     const qr = url.pathname.match(/^\/k\/([A-Za-z0-9]{6,12})\/?$/);
     if (qr) return Response.redirect(`${url.origin}/?k=${encodeURIComponent(qr[1].toUpperCase())}`, 302);
+    // v2.0: short order link from the WhatsApp bot (/o/PMBJK00964/511?l=kn) → the patient's WhatsApp
+    // with the order message to that Kendra. Only an approved Kendra, only where ORDER_REQUESTS is
+    // "public", never a never-switch (NTI) medicine; anything else goes to the app's Kendra page.
+    const ol = url.pathname.match(/^\/o\/(PMBJK\d{5})\/([A-Za-z0-9-]{1,20})\/?$/i);
+    if (ol) {
+      const code = ol[1].toUpperCase();
+      try {
+        const to = await orderRedirect(env, code, decodeURIComponent(ol[2]), url.searchParams.get('l'));
+        if (to) return Response.redirect(to, 302);
+      } catch {}
+      return Response.redirect(`${url.origin}/?k=${code}`, 302);
+    }
     // v1.3: a registered volunteer's personal link turns on volunteer mode with their code.
     const vl = url.pathname.match(/^\/v\/(SV-?[A-Za-z0-9]{5})\/?$/i);
     if (vl) return Response.redirect(`${url.origin}/?volunteer=${encodeURIComponent(vl[1].toUpperCase())}`, 302);
@@ -341,7 +372,7 @@ export default {
       if (url.pathname === '/api/impact') return await handleImpact(env);
       if (url.pathname === '/api/health') {
         const r = await env.DB.prepare('SELECT key, value FROM meta').all();
-        return json({ ok: true, version: APP_VERSION, kendra_registry: env.KENDRA_REGISTRY || 'off', registration_email: env.REGISTRATION_EMAIL || null, order_requests: env.ORDER_REQUESTS || 'off', meta: Object.fromEntries((r.results || []).map((x) => [x.key, x.value])) });
+        return json({ ok: true, version: APP_VERSION, kendra_registry: env.KENDRA_REGISTRY || 'off', registration_email: env.REGISTRATION_EMAIL || null, order_requests: env.ORDER_REQUESTS || 'off', volunteer_registry: env.VOLUNTEER_REGISTRY === 'on' ? 'on' : 'off', whatsapp_bot: botOn(env) ? 'on' : 'off', wa_bot_number: botNumber(env), app_chat: appChatOn(env) ? 'on' : 'off', meta: Object.fromEntries((r.results || []).map((x) => [x.key, x.value])) });
       }
       // Nearest Kendras for a PIN, for the PIN box in an answer's Kendra card (no lookup is logged).
       if (url.pathname === '/api/kendras') {
@@ -361,6 +392,39 @@ export default {
         const r = await lookupKendra(env.DB, km[1], { showContact: kendraContactsVisible(env.KENDRA_REGISTRY, isTestRequest(request, null)) });
         if (r.contact) markOrders([r], env, isTestRequest(request, null));
         return json(r, r.found ? 200 : r.error === 'krErrCode' ? 400 : 404);
+      }
+      // v2.0 WhatsApp bot (WHATSAPP_BOT = "on"): Meta's webhook, and a simulator for test traffic.
+      if (url.pathname === '/api/wa/webhook') {
+        if (!botOn(env)) return json({ error: 'not_found' }, 404);
+        return await handleWebhook(request, env, ctx, (body, result) => logLookup(env, body, result, false));
+      }
+      if (url.pathname === '/api/wa/simulate' && request.method === 'POST') {
+        if (!botOn(env) || !isTestRequest(request, null)) return json({ error: 'not_found' }, 404);
+        const b = await request.json().catch(() => ({}));
+        const from = String(b.from || '').replace(/[^a-z0-9-]/gi, '').slice(0, 40);
+        if (!from) return json({ error: 'from_required' }, 400);
+        const image = typeof b.image === 'string' && b.image.startsWith('data:image/') && b.image.length <= MAX_IMAGE_CHARS ? b.image : null;
+        const msg = b.button ? { kind: 'button', from: `sim-${from}`, button: String(b.button) } : image ? { kind: 'image', from: `sim-${from}` } : { kind: 'text', from: `sim-${from}`, text: String(b.text || '') };
+        const replies = await handleMessage(env, msg, { isTest: true, origin: url.origin, image: () => image, log: (body, result) => logLookup(env, body, result, true) });
+        return json({ replies });
+      }
+      // v2.0.1: the bot's conversation inside the patient app (home screen → Chat). Same replies as
+      // WhatsApp; the chat id is a random per-visit id from the phone (no number exists here).
+      if (url.pathname === '/api/chat' && request.method === 'POST') {
+        if (!appChatOn(env)) return json({ error: 'not_found' }, 404);
+        const b = await request.json().catch(() => ({}));
+        const id = String(b.chat || '').replace(/[^a-z0-9]/gi, '').slice(0, 40);
+        if (id.length < 12) return json({ error: 'chat_required' }, 400);
+        const isTest = isTestRequest(request, b);
+        const from = `app-${id}`;
+        const image = typeof b.image === 'string' && b.image.startsWith('data:image/') && b.image.length <= MAX_IMAGE_CHARS ? b.image : null;
+        const msg = b.button ? { kind: 'button', from, button: String(b.button) } : image ? { kind: 'image', from } : { kind: 'text', from, text: String(b.text || '') };
+        const device = typeof b.device === 'string' ? b.device : undefined;
+        const replies = await handleMessage(env, msg, {
+          isTest, origin: url.origin, mode: 'chat', lang: b.lang, pin: b.pin, image: () => image,
+          log: (body, result) => logLookup(env, { ...body, device }, result, isTest),
+        });
+        return json({ replies });
       }
       const vm = url.pathname.match(/^\/api\/volunteer\/([A-Za-z0-9-]{5,10})$/);
       if (vm && request.method === 'GET') return json(await volunteerLinkStatus(env.DB, vm[1]));

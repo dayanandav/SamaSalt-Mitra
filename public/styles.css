@@ -409,3 +409,49 @@ dialog.order .secondary { width: 100%; }
   color: var(--text, inherit); background: color-mix(in srgb, #f5a623 12%, var(--card)); border: 1px solid color-mix(in srgb, #f5a623 30%, var(--card)); }
 .offline-bar[hidden] { display: none; }
 #lastBtn { box-shadow: none; }
+
+/* ── v2.0.1 Chat: the bot's conversation as a WhatsApp-style box (app Chat and /wa-sim) ── */
+.wa { --wa-bg: #efeae2; --wa-in: #ffffff; --wa-out: #d9fdd3; --wa-head: #075e54; --wa-ink: #111b21; --wa-sub: #667781; --wa-btn: #027eb5; }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .wa { --wa-bg: #0b141a; --wa-in: #202c33; --wa-out: #005c4b; --wa-head: #202c33; --wa-ink: #e9edef; --wa-sub: #8696a0; --wa-btn: #53bdeb; } }
+:root[data-theme="dark"] .wa { --wa-bg: #0b141a; --wa-in: #202c33; --wa-out: #005c4b; --wa-head: #202c33; --wa-ink: #e9edef; --wa-sub: #8696a0; --wa-btn: #53bdeb; }
+.wa { border-radius: 22px; overflow: hidden; box-shadow: var(--shadow); border: 0.5px solid var(--line); display: flex; flex-direction: column; height: min(78vh, 720px); background: var(--wa-bg); }
+.wa .phead { background: var(--wa-head); color: #fff; padding: 12px 16px; display: flex; align-items: center; gap: 10px; }
+.wa .phead img { width: 34px; height: 34px; border-radius: 50%; background: #fff; }
+.wa .phead b { display: block; font-size: 16px; }
+.wa .phead > div { flex: 1; min-width: 0; }
+.wa .phead span { font-size: 12px; opacity: .8; display: block; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.wa .phead button { flex: none; white-space: nowrap; margin-left: auto; background: none; border: 1px solid rgba(255,255,255,.4); color: #fff; border-radius: 999px; padding: 6px 12px; font: inherit; font-size: 13px; cursor: pointer; }
+.wa .phead .wa-back { margin-left: 0; border: 0; padding: 4px; width: 36px; height: 36px; display: grid; place-items: center; }
+.wa .chat { flex: 1; overflow-y: auto; padding: 14px 12px; display: flex; flex-direction: column; gap: 6px; }
+.wa .msg { max-width: 85%; padding: 7px 10px 8px; border-radius: 10px; font-size: 15px; line-height: 1.42; color: var(--wa-ink); white-space: pre-wrap; overflow-wrap: anywhere; box-shadow: 0 1px .5px rgba(11,20,26,.13); letter-spacing: 0; }
+.wa .msg.in { background: var(--wa-in); align-self: flex-start; border-top-left-radius: 2px; }
+.wa .msg.out { background: var(--wa-out); align-self: flex-end; border-top-right-radius: 2px; }
+.wa .msg a { color: var(--wa-btn); }
+.wa .msg img { max-width: 220px; border-radius: 6px; display: block; }
+.wa .btns { align-self: flex-start; display: grid; gap: 4px; max-width: 85%; min-width: 220px; margin-top: -2px; }
+.wa .btns button { background: var(--wa-in); color: var(--wa-btn); border: 0; border-radius: 8px; padding: 9px 12px; font: inherit; font-size: 15px; font-weight: 500; cursor: pointer; box-shadow: 0 1px .5px rgba(11,20,26,.13); }
+.wa .btns button:disabled { opacity: .5; cursor: default; }
+.wa .typing { align-self: flex-start; color: var(--wa-sub); font-size: 13px; padding: 4px 8px; }
+.wa .typing.err { color: var(--wa-ink); background: var(--wa-in); border-radius: 8px; }
+.wa .bar { display: flex; gap: 8px; padding: 8px; background: var(--wa-bg); border-top: 0.5px solid rgba(0,0,0,.08); }
+.wa .bar input[type=text] { flex: 1; min-width: 0; font: inherit; font-size: 16px; border: 0; border-radius: 999px; padding: 10px 16px; background: var(--wa-in); color: var(--wa-ink); }
+.wa .bar button, .wa .bar label { flex: none; width: 44px; height: 44px; border-radius: 50%; border: 0; background: #00a884; color: #fff; display: grid; place-items: center; cursor: pointer; }
+.wa .bar label input { display: none; }
+/* In the app the chat fills the screen below the header. */
+.chat-view .wa { height: calc(100dvh - 120px); min-height: 420px; }
+.chat-view[hidden] { display: none !important; }
+.wa .msg .time { float: right; margin: 6px 0 -4px 10px; font-size: 11px; line-height: 1; color: var(--wa-sub); }
+.wa .msg.out .time { color: var(--wa-sub); }
+.wa .phead .wa-icon { flex: none; width: 36px; height: 36px; border-radius: 50%; display: grid; place-items: center; color: #fff; }
+.wa .phead .wa-icon[hidden] { display: none; }
+.wa .phead .wa-icon + button { margin-left: 4px; }
+.wa .phead .wa-icon:not([hidden]) { margin-left: auto; }
+/* Suggestion chips above the message box. */
+.wa .chips { display: flex; flex-wrap: nowrap; gap: 6px; overflow-x: auto; padding: 8px 8px 0; background: var(--wa-bg); scrollbar-width: none; }
+.wa .chips::-webkit-scrollbar { display: none; }
+.wa .chips button { flex: none; font: inherit; font-size: 14px; border: 1px solid rgba(0,168,132,.45); background: var(--wa-in); color: var(--wa-ink); border-radius: 999px; padding: 7px 12px; cursor: pointer; white-space: nowrap; }
+/* Floating chat button (bottom right, above the phone's gesture bar). */
+.chat-fab { position: fixed; right: 16px; bottom: max(20px, calc(env(safe-area-inset-bottom) + 12px)); z-index: 40; display: inline-flex; align-items: center; gap: 8px; padding: 0 20px 0 16px; height: 56px; border-radius: 28px; background: #00a884; color: #fff; font-size: 16px; font-weight: 600; text-decoration: none; box-shadow: 0 6px 20px rgba(0,0,0,.22); -webkit-tap-highlight-color: transparent; }
+.chat-fab:active { transform: scale(.97); }
+.chat-fab[hidden] { display: none; }
+html.has-fab .foot { padding-bottom: 88px; }

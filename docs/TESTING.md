@@ -66,7 +66,7 @@ Test site, Android Chrome.
 
 ## End-to-end test: v1.3 registered volunteers
 
-Test site. Staff sign-ins as in the v1.1 test (`test.registrar`, `test.reviewer`).
+Test site only (parked on live: `VOLUNTEER_REGISTRY = "off"`; there the join section and the Volunteers tab do not appear). Staff sign-ins as in the v1.1 test (`test.registrar`, `test.reviewer`).
 
 1. Open `/volunteer` → **Become a registered volunteer**. Read the terms; fill name, mobile, district; **Prepare my request** without ticking the terms: it asks you to agree. Tick, prepare: the request text appears with **Send email** (only when `REGISTRATION_EMAIL` is set; otherwise **Copy the request**). Nothing is saved.
 2. `/kendra` → **Staff login** as `test.registrar` → **Volunteers** → **Register a volunteer**. Choose how the request came, fill the details, choose the **ID seen** (type only), tick both boxes, **Register volunteer**. Note the code (SV-…). A Registrar sees no Approve button.
@@ -77,6 +77,33 @@ Test site. Staff sign-ins as in the v1.1 test (`test.registrar`, `test.reviewer`
 7. Open `/v/SV-ZZZZZ`: the banner says the link is not active yet.
 8. **Modify details** → change the mobile with a reason: the volunteer goes back to Waiting (call the new number). **Remove volunteer** with a reason: the link stops counting. Every step is in the History.
 9. `/impact`: "registered volunteers who helped" counts volunteers, never patients.
+
+## End-to-end test: v2.0 WhatsApp bot (simulator)
+
+Test site: `/?dev=1` → **WhatsApp bot (simulator)** (or open `/wa-sim`). Nothing is sent to WhatsApp; it is test traffic.
+
+1. The chat opens with the welcome and three language buttons.
+2. Type `Dolo 650`: the answer with the Jan Aushadhi generic, PMBJP code, pack and MRP, three lower-priced brands, "Send your 6-digit PIN code", and the data note.
+3. Type `999001`: "PIN 999001 saved" and the test Kendra PMBJK99001, **Registered Kendra · WhatsApp …**.
+4. Type `Dolo 650` again: the Kendra line now has **Order 1 pack for pickup** with a short link `/o/PMBJK99001/511`; tap it: WhatsApp opens to the Kendra's number with the order message.
+5. Type `Thyronorm 50`: the "do not change its brand" warning only: no brands, no generic, no order link.
+6. Tap **ಕನ್ನಡ** (or type `hindi`): replies switch language.
+7. Camera icon: send a strip photo: "I read this from your photo … Is this your medicine?" → **Yes, check it** gives the answer; **No** asks you to type the name.
+8. Type `DELETE`: "erased". **New chat** starts a fresh chat.
+9. Live site: `/wa-sim` says the bot is switched off; `/api/wa/webhook` answers 404.
+
+## End-to-end test: v2.0.1 Chat (floating chat button)
+
+Test site, patient address (no `?dev=1`):
+
+1. A green **Chat** button floats at the bottom right of the home screen and of an answer (as in other apps).
+2. Tap it: the chat opens with the welcome in the app's language, message times, and suggestion chips **Scan strip · Nearest Kendra · Language · Clear chat**.
+3. **Nearest Kendra** with no PIN: the box asks for the 6-digit PIN (number keypad). Type `999001` (also fills the app's PIN box), then `Dolo 650`: answer, test Kendra, order link.
+4. **Language** → tap **हिन्दी**: the whole app switches to Hindi. `Thyronorm 50`: warning only.
+5. **Scan strip** (or the camera icon): a strip photo → "Is this your medicine?" → **Yes**.
+6. Back arrow: back where you were (home or the answer); the Chat button again opens the same conversation, also after a reload (kept for this visit only).
+7. **Clear chat** (or typing `DELETE`): the bot forgets the chat, the app's saved PIN code is cleared too, the screen empties, a fresh chat starts and asks for no Kendra until a new PIN is given. **New chat** does the same without erasing.
+8. WhatsApp icon in the chat header: only once `WA_BOT_NUMBER` is set (with `?dev=1` on the test site it opens the simulator). If only WhatsApp is on, the floating button opens WhatsApp directly. Live site: no Chat button (both switches off).
 
 ## Maintenance (developer)
 
