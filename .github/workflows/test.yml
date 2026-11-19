@@ -1,0 +1,26 @@
+# Runs every test on each push and pull request, so a broken change is seen at once.
+name: Tests
+
+on:
+  push:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24  # node:sqlite (the D1 test shim) needs Node 22.5+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: JavaScript tests
+        run: node --import ./test/register-md.mjs --test test/*.test.mjs
+      - name: Python test (Jan Aushadhi list builder)
+        run: python test/test_build_ja.py

@@ -124,6 +124,15 @@ Test site (`/?test=1` so nothing counts on /impact):
 3. **Add to home screen**: on Android Chrome the bar appears on the home screen; **Add** installs, **Not now** hides it for good on that phone.
 4. **Kendra card**: PIN `560001` shows Kendras with "≈ km" / "under 1 km"; **Use my location** (allow it) lists the nearest by distance and says distances are approximate.
 
+## End-to-end test: v2.0.5 operations and polish
+
+1. **Larger text**: the **A A** button (top right) makes the whole page bigger; it stays after a reload; tap again for normal.
+2. **Impact report**: `/impact` → Period **November 2026** → only that month's figures; **Download CSV** saves `samasalt-mitra-impact-2026-11.csv`; **Print / save as PDF** prints the figures with a report header.
+3. **Kendra hours**: a registered Kendra with hours (staff console) shows "Open: …" in the chat / WhatsApp reply and on the "You are at Kendra …" banner after scanning its QR poster.
+4. **Health**: `/api/health` has `usage` (today's photo reads and the daily cap).
+5. **Backup** (owner, from the project folder): `node tools/backup.mjs --staging` writes `backups/samasalt-mitra-staging-<date>.sql`.
+6. GitHub → **Actions**: "Tests" runs on every push; "Live site check" runs every 3 hours (or **Run workflow**).
+
 ## Maintenance (developer)
 
 ```bash

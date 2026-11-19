@@ -1,27 +1,27 @@
 {
   "summary": {
-    "when": "2026-10-12T00:45:13.117Z",
-    "target": "https://samesalt-agent.samesalt-worker.workers.dev",
+    "when": "2026-11-19T11:48:16.716Z",
+    "target": "https://samasalt-mitra-staging.samasalt-mitra-worker.workers.dev",
     "cases": 23,
-    "passed": 23,
-    "accuracy": 1,
-    "composition_key_accuracy": 1,
+    "passed": 22,
+    "accuracy": 0.957,
+    "composition_key_accuracy": 0.957,
     "photos": {
       "cases": 18,
-      "passed": 18
+      "passed": 17
     },
     "typed": {
       "cases": 5,
       "passed": 5
     },
     "photo_composition_agrees_with_brand": "17/17",
-    "median_ms": 2411
+    "median_ms": 11686
   },
   "results": [
     {
       "id": "img-dolo650",
       "pass": true,
-      "ms": 3309,
+      "ms": 13598,
       "retried": false,
       "error": null,
       "checks": {
@@ -41,7 +41,12 @@
           "brand": "DOLO-650",
           "composition": "Paracetamol (650mg)",
           "form": "tablet",
-          "release": ""
+          "release": "",
+          "confidence": 1,
+          "usage": {
+            "input_tokens": 2599,
+            "output_tokens": 42
+          }
         },
         "composition_agrees": true
       },
@@ -50,7 +55,7 @@
     {
       "id": "img-pan40",
       "pass": true,
-      "ms": 2609,
+      "ms": 10873,
       "retried": false,
       "error": null,
       "checks": {
@@ -70,7 +75,12 @@
           "brand": "PAN-40",
           "composition": "Pantoprazole (40mg)",
           "form": "tablet",
-          "release": ""
+          "release": "",
+          "confidence": 1,
+          "usage": {
+            "input_tokens": 2599,
+            "output_tokens": 43
+          }
         },
         "composition_agrees": true
       },
@@ -79,7 +89,7 @@
     {
       "id": "img-augmentin625",
       "pass": true,
-      "ms": 2741,
+      "ms": 13889,
       "retried": false,
       "error": null,
       "checks": {
@@ -96,10 +106,15 @@
         "via": "brand+composition",
         "read": {
           "model": "@cf/meta/llama-4-scout-17b-16e-instruct",
-          "brand": "AUGMENTIN 625 DUO",
+          "brand": "Augmentin 625 DUO",
           "composition": "Amoxycillin (500mg) + Clavulanic Acid (125mg)",
           "form": "tablet",
-          "release": ""
+          "release": "",
+          "confidence": 1,
+          "usage": {
+            "input_tokens": 2599,
+            "output_tokens": 58
+          }
         },
         "composition_agrees": true
       },
@@ -108,7 +123,7 @@
     {
       "id": "img-telma40",
       "pass": true,
-      "ms": 2868,
+      "ms": 11016,
       "retried": false,
       "error": null,
       "checks": {
@@ -128,7 +143,12 @@
           "brand": "TELMA 40",
           "composition": "Telmisartan (40mg)",
           "form": "tablet",
-          "release": ""
+          "release": "",
+          "confidence": 1,
+          "usage": {
+            "input_tokens": 2599,
+            "output_tokens": 45
+          }
         },
         "composition_agrees": true
       },
@@ -137,7 +157,7 @@
     {
       "id": "img-glycomet-sr",
       "pass": true,
-      "ms": 2459,
+      "ms": 13378,
       "retried": false,
       "error": null,
       "checks": {
@@ -155,9 +175,14 @@
         "read": {
           "model": "@cf/meta/llama-4-scout-17b-16e-instruct",
           "brand": "GLYCOMET-500 SR",
-          "composition": "Metformin Hydrochloride (500mg)",
+          "composition": "Metformin Hydrochloride 500 mg",
           "form": "tablet",
-          "release": "SR"
+          "release": "SR",
+          "confidence": 0.9,
+          "usage": {
+            "input_tokens": 2599,
+            "output_tokens": 52
+          }
         },
         "composition_agrees": true
       },
@@ -166,7 +191,7 @@
     {
       "id": "img-azithral500",
       "pass": true,
-      "ms": 2034,
+      "ms": 12014,
       "retried": false,
       "error": null,
       "checks": {
@@ -186,7 +211,12 @@
           "brand": "AZITHRAL 500",
           "composition": "Azithromycin (500mg)",
           "form": "tablet",
-          "release": ""
+          "release": "",
+          "confidence": 1,
+          "usage": {
+            "input_tokens": 2599,
+            "output_tokens": 44
+          }
         },
         "composition_agrees": true
       },
@@ -195,7 +225,7 @@
     {
       "id": "img-ecosprin75",
       "pass": true,
-      "ms": 2794,
+      "ms": 10168,
       "retried": false,
       "error": null,
       "checks": {
@@ -215,7 +245,12 @@
           "brand": "ECOSPRIN 75",
           "composition": "Aspirin (75mg)",
           "form": "tablet",
-          "release": ""
+          "release": "",
+          "confidence": 1,
+          "usage": {
+            "input_tokens": 2599,
+            "output_tokens": 45
+          }
         },
         "composition_agrees": true
       },
@@ -224,7 +259,7 @@
     {
       "id": "img-amlokind5",
       "pass": true,
-      "ms": 1951,
+      "ms": 14643,
       "retried": false,
       "error": null,
       "checks": {
@@ -242,9 +277,14 @@
         "read": {
           "model": "@cf/meta/llama-4-scout-17b-16e-instruct",
           "brand": "AMLOKIND-5",
-          "composition": "Amlodipine Besilate I.P. eq. to Amlodipine (5 mg)",
+          "composition": "Amlodipine Besilate I.P. eq. to Amlodipine 5 mg",
           "form": "tablet",
-          "release": ""
+          "release": "",
+          "confidence": 1,
+          "usage": {
+            "input_tokens": 2599,
+            "output_tokens": 61
+          }
         },
         "composition_agrees": true
       },
@@ -253,7 +293,7 @@
     {
       "id": "img-montair10",
       "pass": true,
-      "ms": 1885,
+      "ms": 14558,
       "retried": false,
       "error": null,
       "checks": {
@@ -273,7 +313,12 @@
           "brand": "MONTAIR 10",
           "composition": "Montelukast Sodium I.P. eq. to Montelukast 10 mg",
           "form": "tablet",
-          "release": ""
+          "release": "",
+          "confidence": 1,
+          "usage": {
+            "input_tokens": 2599,
+            "output_tokens": 56
+          }
         },
         "composition_agrees": true
       },
@@ -282,7 +327,7 @@
     {
       "id": "img-thyronorm50",
       "pass": true,
-      "ms": 2885,
+      "ms": 14162,
       "retried": false,
       "error": null,
       "checks": {
@@ -300,9 +345,14 @@
         "read": {
           "model": "@cf/meta/llama-4-scout-17b-16e-instruct",
           "brand": "THYRONORM 50 mcg",
-          "composition": "Thyroxine Sodium (50 mcg)",
+          "composition": "Thyroxine Sodium I.P. 50 mcg",
           "form": "tablet",
-          "release": ""
+          "release": "",
+          "confidence": 1,
+          "usage": {
+            "input_tokens": 2599,
+            "output_tokens": 51
+          }
         },
         "composition_agrees": true
       },
@@ -311,8 +361,8 @@
     {
       "id": "img-crocin-pr",
       "pass": true,
-      "ms": 2505,
-      "retried": false,
+      "ms": 32049,
+      "retried": true,
       "error": null,
       "checks": {
         "found": true,
@@ -331,7 +381,12 @@
           "brand": "Crocin Pain Relief",
           "composition": "Paracetamol (650mg) + Caffeine (50mg)",
           "form": "tablet",
-          "release": ""
+          "release": "",
+          "confidence": 1,
+          "usage": {
+            "input_tokens": 2599,
+            "output_tokens": 51
+          }
         },
         "composition_agrees": true
       },
@@ -340,7 +395,7 @@
     {
       "id": "img-atorva20",
       "pass": true,
-      "ms": 3311,
+      "ms": 11686,
       "retried": false,
       "error": null,
       "checks": {
@@ -360,7 +415,12 @@
           "brand": "ATORVA 20",
           "composition": "Atorvastatin (20mg)",
           "form": "tablet",
-          "release": ""
+          "release": "",
+          "confidence": 1,
+          "usage": {
+            "input_tokens": 2599,
+            "output_tokens": 44
+          }
         },
         "composition_agrees": true
       },
@@ -369,7 +429,7 @@
     {
       "id": "img-ecosprin-av",
       "pass": true,
-      "ms": 6398,
+      "ms": 15486,
       "retried": false,
       "error": null,
       "checks": {
@@ -387,9 +447,14 @@
         "read": {
           "model": "@cf/meta/llama-4-scout-17b-16e-instruct",
           "brand": "ECOSPRIN-AV 75/20",
-          "composition": "Aspirin (75mg) + Atorvastatin (20mg)",
+          "composition": "Aspirin I.P. 75 mg + Atorvastatin I.P. 20 mg",
           "form": "capsule",
-          "release": ""
+          "release": "",
+          "confidence": 1,
+          "usage": {
+            "input_tokens": 2599,
+            "output_tokens": 64
+          }
         },
         "composition_agrees": true
       },
@@ -398,7 +463,7 @@
     {
       "id": "img-allegra120",
       "pass": true,
-      "ms": 2411,
+      "ms": 14636,
       "retried": false,
       "error": null,
       "checks": {
@@ -418,7 +483,12 @@
           "brand": "ALLEGRA 120 mg",
           "composition": "Fexofenadine Hydrochloride 120 mg",
           "form": "tablet",
-          "release": ""
+          "release": "",
+          "confidence": 0.9,
+          "usage": {
+            "input_tokens": 2599,
+            "output_tokens": 51
+          }
         },
         "composition_agrees": true
       },
@@ -427,7 +497,7 @@
     {
       "id": "img-rosuvas10",
       "pass": true,
-      "ms": 2157,
+      "ms": 15411,
       "retried": false,
       "error": null,
       "checks": {
@@ -445,9 +515,14 @@
         "read": {
           "model": "@cf/meta/llama-4-scout-17b-16e-instruct",
           "brand": "ROSUVAS 10",
-          "composition": "Rosuvastatin Calcium (10mg)",
+          "composition": "Rosuvastatin Calcium I.P. eq. to Rosuvastatin 10 mg",
           "form": "tablet",
-          "release": ""
+          "release": "",
+          "confidence": 1,
+          "usage": {
+            "input_tokens": 2599,
+            "output_tokens": 56
+          }
         },
         "composition_agrees": true
       },
@@ -455,28 +530,30 @@
     },
     {
       "id": "hard-heavy-blur",
-      "pass": true,
-      "ms": 1771,
+      "pass": false,
+      "ms": 10863,
       "retried": false,
       "error": null,
       "checks": {
-        "found": true,
-        "ckey": true,
-        "name": true,
+        "found": false,
+        "ckey": false,
+        "name": false,
         "nti": true,
         "pin3": null,
-        "safety_line": true
+        "safety_line": false
       },
       "got": {
-        "name": "Telma 40 Tablet",
-        "ckey": "telmisartan:40mg|tablet",
-        "via": "brand+composition",
         "read": {
           "model": "@cf/meta/llama-4-scout-17b-16e-instruct",
           "brand": "TELMA 40",
           "composition": "Telmisartan (40mg)",
           "form": "tablet",
-          "release": ""
+          "release": "",
+          "confidence": 0.4,
+          "usage": {
+            "input_tokens": 2599,
+            "output_tokens": 47
+          }
         },
         "composition_agrees": true
       },
@@ -485,7 +562,7 @@
     {
       "id": "hard-cropped",
       "pass": true,
-      "ms": 1842,
+      "ms": 11008,
       "retried": false,
       "error": null,
       "checks": {
@@ -505,7 +582,12 @@
           "brand": "PAN-40",
           "composition": "Pantoprazole 40 mg",
           "form": "tablet",
-          "release": ""
+          "release": "",
+          "confidence": 1,
+          "usage": {
+            "input_tokens": 2164,
+            "output_tokens": 43
+          }
         },
         "composition_agrees": true
       },
@@ -514,7 +596,7 @@
     {
       "id": "hard-unknown-brand",
       "pass": true,
-      "ms": 2736,
+      "ms": 10312,
       "retried": false,
       "error": null,
       "checks": {
@@ -534,7 +616,12 @@
           "brand": "PYRETOL-650",
           "composition": "Paracetamol (650mg)",
           "form": "tablet",
-          "release": ""
+          "release": "",
+          "confidence": 1,
+          "usage": {
+            "input_tokens": 2599,
+            "output_tokens": 43
+          }
         },
         "composition_agrees": null
       },
@@ -543,7 +630,7 @@
     {
       "id": "txt-dolo-glued",
       "pass": true,
-      "ms": 354,
+      "ms": 534,
       "retried": false,
       "error": null,
       "checks": {
@@ -565,7 +652,7 @@
     {
       "id": "txt-kannada",
       "pass": true,
-      "ms": 898,
+      "ms": 914,
       "retried": false,
       "error": null,
       "checks": {
@@ -587,7 +674,7 @@
     {
       "id": "txt-hindi",
       "pass": true,
-      "ms": 1064,
+      "ms": 1534,
       "retried": false,
       "error": null,
       "checks": {
@@ -609,7 +696,7 @@
     {
       "id": "txt-augmentin",
       "pass": true,
-      "ms": 364,
+      "ms": 553,
       "retried": false,
       "error": null,
       "checks": {
@@ -631,7 +718,7 @@
     {
       "id": "txt-telma-pin",
       "pass": true,
-      "ms": 437,
+      "ms": 982,
       "retried": false,
       "error": null,
       "checks": {

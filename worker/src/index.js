@@ -14,7 +14,7 @@ import { botOn, appChatOn, botNumber, handleWebhook, handleMessage } from './wha
 import { registerVolunteer, listVolunteers, decideVolunteer, updateVolunteer, volunteerHistory, activeVolunteer, volunteerLinkStatus } from './volunteers.js';
 
 // Not exported: a Worker's main module may only export handlers.
-const APP_VERSION = '2.0.4';
+const APP_VERSION = '2.0.5';
 
 const MAX_IMAGE_CHARS = 2_500_000; // ~1.8 MB JPEG as a data URL; the app resizes to ~1 MP first
 
@@ -154,9 +154,12 @@ async function handleFeedback(request, env) {
   return json({ ok: true, updated: r.meta?.changes ?? 0 });
 }
 
-async function handleImpact(env) {
+async function handleImpact(env, url) {
   const q = (sql) => env.DB.prepare(sql).all().then((r) => r.results || []);
-  const real = 'is_test = 0';
+  // v2.0.5 monthly report: ?month=YYYY-MM limits every figure to that month (IST days).
+  const mp = url?.searchParams.get('month') || '';
+  const month = /^20\d{2}-(0[1-9]|1[0-2])$/.test(mp) ? mp : null;
+  const real = month ? `is_test = 0 AND day LIKE '${month}-%'` : 'is_test = 0';
   // Lookups whose photo/scan the person said was the wrong medicine never count as a saving.
   const right = "(switched IS NULL OR switched != 'wrong')";
   const [totals] = await q(`SELECT
@@ -182,13 +185,14 @@ async function handleImpact(env) {
     FROM lookups WHERE ${real}`);
   const [byLang, byDay, byPin, topMeds, testCount] = await Promise.all([
     q(`SELECT lang, COUNT(*) AS n FROM lookups WHERE ${real} GROUP BY lang ORDER BY n DESC`),
-    q(`SELECT day, COUNT(*) AS n, ROUND(SUM(CASE WHEN saving_pack > 0 THEN saving_pack ELSE 0 END), 2) AS saving FROM lookups WHERE ${real} AND day >= date('now', '-60 day') GROUP BY day ORDER BY day`),
+    q(`SELECT day, COUNT(*) AS n, ROUND(SUM(CASE WHEN saving_pack > 0 THEN saving_pack ELSE 0 END), 2) AS saving FROM lookups WHERE ${real}${month ? '' : " AND day >= date('now', '-60 day')"} GROUP BY day ORDER BY day`),
     q(`SELECT pin3, COUNT(*) AS n FROM lookups WHERE ${real} AND pin3 IS NOT NULL GROUP BY pin3 ORDER BY n DESC LIMIT 12`),
     q(`SELECT medicine, COUNT(*) AS n, ROUND(AVG(saving_pack), 2) AS avg_saving FROM lookups WHERE ${real} AND status = 'ok' AND ${right} GROUP BY medicine ORDER BY n DESC LIMIT 10`),
     q(`SELECT COUNT(*) AS n FROM lookups WHERE is_test = 1`),
   ]);
   return json({
     generated_at: new Date().toISOString(),
+    month,
     note: 'Real usage only: test traffic (evals, demo recordings, developer checks) is flagged is_test=1 and excluded from every figure.',
     totals,
     by_language: byLang,
@@ -440,10 +444,14 @@ export default {
       if (url.pathname === '/api/ask' && request.method === 'POST') return await handleAsk(request, env, ctx);
       if (url.pathname === '/api/feedback' && request.method === 'POST') return await handleFeedback(request, env);
       if (url.pathname === '/api/prescription' && request.method === 'POST') return await handlePrescription(request, env);
-      if (url.pathname === '/api/impact') return await handleImpact(env);
+      if (url.pathname === '/api/impact') return await handleImpact(env, url);
       if (url.pathname === '/api/health') {
         const r = await env.DB.prepare('SELECT key, value FROM meta').all();
-        return json({ ok: true, version: APP_VERSION, kendra_registry: env.KENDRA_REGISTRY || 'off', registration_email: env.REGISTRATION_EMAIL || null, order_requests: env.ORDER_REQUESTS || 'off', volunteer_registry: env.VOLUNTEER_REGISTRY === 'on' ? 'on' : 'off', whatsapp_bot: botOn(env) ? 'on' : 'off', canonical_host: String(env.CANONICAL_HOST || '').trim().toLowerCase() || null, wa_bot_number: botNumber(env), app_chat: appChatOn(env) ? 'on' : 'off', meta: Object.fromEntries((r.results || []).map((x) => [x.key, x.value])) });
+        // v2.0.5 monitoring (.github/workflows/monitor.yml): today's photo reads against the daily cap.
+        const day = istDay();
+        const reads = await env.DB.prepare("SELECT (SELECT COUNT(*) FROM lookups WHERE day = ?1 AND input LIKE 'photo%') + COALESCE((SELECT CAST(value AS INTEGER) FROM meta WHERE key = 'rx_reads_' || ?1), 0) AS n").bind(day).first().catch(() => null);
+        const usage = { day, photo_reads: reads?.n ?? null, photo_cap: Number.parseInt(env.DAILY_PHOTO_LIMIT || '', 10) || null };
+        return json({ ok: true, version: APP_VERSION, kendra_registry: env.KENDRA_REGISTRY || 'off', registration_email: env.REGISTRATION_EMAIL || null, order_requests: env.ORDER_REQUESTS || 'off', volunteer_registry: env.VOLUNTEER_REGISTRY === 'on' ? 'on' : 'off', whatsapp_bot: botOn(env) ? 'on' : 'off', canonical_host: String(env.CANONICAL_HOST || '').trim().toLowerCase() || null, usage, wa_bot_number: botNumber(env), app_chat: appChatOn(env) ? 'on' : 'off', meta: Object.fromEntries((r.results || []).filter((x) => !x.key.startsWith('rx_reads_')).map((x) => [x.key, x.value])) });
       }
       // Nearest Kendras for a PIN, for the PIN box in an answer's Kendra card (no lookup is logged).
       if (url.pathname === '/api/kendras') {

@@ -1,0 +1,44 @@
+# Checks the live site every 3 hours. If a check fails, GitHub emails the repository owner
+# (Settings → Notifications → Actions: "Send notifications for failed workflows only").
+#   - the patient app and /api/health answer, with the official lists loaded
+#   - today's photo reads are under 80% of the daily cap (DAILY_PHOTO_LIMIT): an early warning
+#     before patients are asked to type names instead of taking photos
+# Run it by hand any time: Actions → Live site check → Run workflow.
+# Note: GitHub pauses scheduled workflows after 60 days without any commit to the repository.
+name: Live site check
+
+on:
+  schedule:
+    - cron: '17 */3 * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+env:
+  SITE: https://samasalt-mitra.samasalt-mitra-worker.workers.dev
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Patient app answers
+        run: |
+          code=$(curl -s -o /dev/null -w '%{http_code}' --retry 2 --retry-delay 20 "$SITE/")
+          echo "Home page: HTTP $code"
+          test "$code" = "200"
+      - name: Health, data loaded, photo reads under 80% of the daily cap
+        run: |
+          curl -sf --retry 2 --retry-delay 20 "$SITE/api/health" -o health.json
+          node -e '
+            const h = require("./health.json");
+            const fail = [];
+            if (!h.ok) fail.push("health not ok");
+            if (!h.meta?.ja_loaded_at) fail.push("Jan Aushadhi list not loaded");
+            if (!h.meta?.kendras_loaded_at) fail.push("Kendra list not loaded");
+            const u = h.usage || {};
+            if (u.photo_cap && u.photo_reads != null && u.photo_reads >= 0.8 * u.photo_cap) fail.push(`photo reads ${u.photo_reads} of ${u.photo_cap} today (80%+): raise DAILY_PHOTO_LIMIT or check for abuse`);
+            console.log(`version ${h.version} · photo reads today ${u.photo_reads ?? "?"} / ${u.photo_cap ?? "no cap"}`);
+            if (fail.length) { console.error("PROBLEM: " + fail.join("; ")); process.exit(1); }
+          '

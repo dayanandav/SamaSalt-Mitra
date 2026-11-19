@@ -20,3 +20,6 @@ logo/SamaSalt_Mitra_Standard_Logo_1024x1024.png
 
 # Brand medicine list as static files, built by data/build_meds.mjs (not committed)
 public/meds/
+
+# Database backups from tools/backup.mjs (staff names, Kendra numbers): never in git
+backups/

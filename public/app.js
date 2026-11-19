@@ -94,6 +94,15 @@ function setLang(code) {
   }
 }
 
+// ── Larger text (remembered on this phone) ──────────────────────────────────
+function renderTextSize() {
+  const big = store.get('ss_big') === '1';
+  document.documentElement.classList.toggle('big-text', big);
+  $('#textSize').setAttribute('aria-pressed', String(big));
+}
+$('#textSize').onclick = () => { store.set('ss_big', store.get('ss_big') === '1' ? null : '1'); renderTextSize(); };
+renderTextSize();
+
 // ── Inputs ─────────────────────────────────────────────────────────────────
 const pinInput = $('#pinInput');
 pinInput.value = store.get('ss_pin') || '';
@@ -121,6 +130,9 @@ function renderHere() {
   box.querySelector('.kh-title').textContent = t(lang, 'kendraHere', { code: hereKendra.code });
   box.querySelector('.kh-addr').textContent = [hereKendra.address, hereKendra.district].filter(Boolean).join(', ');
   box.querySelector('.kh-close').textContent = t(lang, 'kendraHereClose');
+  const hrs = box.querySelector('.kh-hours');
+  hrs.hidden = !hereKendra.contact?.hours;
+  hrs.textContent = hereKendra.contact?.hours ? t(lang, 'kendraHours', { hours: hereKendra.contact.hours }) : '';
 }
 // PIN box in the answer's Kendra card: fetch the Kendras for that PIN and redraw only that card.
 $('#result').addEventListener('submit', async (e) => {

@@ -43,3 +43,32 @@ test('privacy page: in all three languages, says no dose advice, no photos/numbe
   for (const p of ['public/index.html', 'public/kendra.html', 'public/volunteer.html', 'public/impact.html']) assert.match(read(p), /href="\/privacy"/, p);
   for (const l of Object.keys(STRINGS)) assert.ok(STRINGS[l].privacyLink, l);
 });
+
+test('v2.0.5: monthly impact report (?month=), health usage for the live check, larger text, Kendra hours in the chat', async () => {
+  const { default: worker } = await import('../worker/src/index.js');
+  const db = fixtureDb({ ja: [], kendras: [], meta: { ja_loaded_at: 't', kendras_loaded_at: 't' } });
+  const ins = (day, input, test = 0) => db.prepare("INSERT INTO lookups (id, ts, day, status, input, lang, mode, is_test) VALUES (?1, ?2, ?3, 'ok', ?4, 'en', 'self', ?5)").bind(crypto.randomUUID(), `${day}T10:00:00Z`, day, input, test).run();
+  await ins('2026-10-05', 'text'); await ins('2026-11-02', 'text'); await ins('2026-11-03', 'photo'); await ins('2026-11-03', 'text', 1);
+  const imp = async (q) => (await worker.fetch(new Request(`https://samasalt.example/api/impact${q}`), { DB: db }, { waitUntil() {} })).json();
+  assert.equal((await imp('')).totals.lookups, 3, 'all time, test traffic excluded');
+  const nov = await imp('?month=2026-11');
+  assert.equal(nov.month, '2026-11');
+  assert.equal(nov.totals.lookups, 2);
+  assert.deepEqual(nov.by_day.map((x) => x.day), ['2026-11-02', '2026-11-03']);
+  assert.equal((await imp("?month=2026-11' OR 1=1")).month, null, 'anything else is ignored');
+  const today = new Date(Date.now() + 5.5 * 3600_000).toISOString().slice(0, 10);
+  await ins(today, 'photo');
+  await db.prepare("INSERT INTO meta (key, value) VALUES ('rx_reads_' || ?1, '2')").bind(today).run();
+  const h = await (await worker.fetch(new Request('https://samasalt.example/api/health'), { DB: db, DAILY_PHOTO_LIMIT: '1500' }, { waitUntil() {} })).json();
+  assert.deepEqual(h.usage, { day: today, photo_reads: 3, photo_cap: 1500 });
+  assert.ok(!Object.keys(h.meta).some((k) => k.startsWith('rx_reads_')), 'internal counters not listed');
+  const mon = read('.github/workflows/monitor.yml');
+  assert.match(mon, /0\.8 \* u\.photo_cap/);
+  assert.match(read('.github/workflows/test.yml'), /test\/\*\.test\.mjs/);
+  assert.match(read('.gitignore'), /^backups\/$/m);
+  assert.match(read('public/index.html'), /id="textSize"/);
+  for (const l of Object.keys(STRINGS)) assert.ok(STRINGS[l].textSizeBtn, l);
+  const { kendraLines } = await import('../worker/src/watext.js');
+  const L = kendraLines('en', { items: [{ code: 'PMBJK00964', address: 'A', district: 'D', pin: '580001', contact: { whatsapp: '9876543210', hours: '9 am to 9 pm, Sunday closed' } }] }, '580001');
+  assert.ok(L.some((x) => x.includes('Open: 9 am to 9 pm, Sunday closed')));
+});

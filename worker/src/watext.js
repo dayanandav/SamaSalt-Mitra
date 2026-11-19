@@ -24,6 +24,8 @@ export function kendraLines(lang, kendras, pin, order = null, origin = null) {
     L.push(`${i + 1}. ${one(k.code)}: ${one([k.address, k.district].filter(Boolean).join(', '))} (${one(k.pin)})`);
     if (k.contact?.whatsapp) {
       L.push(`   ${t(lang, 'waRegistered', { mobile: showMobile(k.contact.whatsapp) })}`);
+      // Opening hours given by the Kendra at registration, so nobody walks to a closed shop.
+      if (k.contact.hours) L.push(`   🕘 ${t(lang, 'kendraHours', { hours: one(k.contact.hours) })}`);
       if (k.contact.orders && order?.items?.length) {
         const link = orderLink(lang, k, order, origin);
         if (link) L.push(`   ${t(lang, 'waOrder', { link })}`);

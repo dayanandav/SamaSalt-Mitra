@@ -477,3 +477,12 @@ html.has-fab .foot { padding-bottom: 88px; }
 .actions .share-btn { margin-top: 10px; }
 .k-loc { display: inline-flex; align-items: center; gap: 6px; margin-top: 10px; font-size: 15px; }
 .k-approx { margin: 8px 0 0; font-size: 12px; }
+
+/* Larger text (header A A button): the whole page, one step bigger. */
+.text-size { margin-left: auto; margin-right: 8px; height: 36px; min-width: 44px; padding: 0 10px; border-radius: 999px; border: 0; background: var(--fill); color: var(--text); font: inherit; font-weight: 700; cursor: pointer; display: inline-flex; align-items: baseline; gap: 1px; }
+.text-size span:first-child { font-size: 13px; }
+.text-size span:last-child { font-size: 18px; }
+.text-size[aria-pressed="true"] { background: var(--accent); color: var(--accent-ink); }
+html.big-text main, html.big-text .foot, html.big-text dialog { zoom: 1.18; }
+.kendra-here .kh-hours { display: block; font-size: 14px; margin-top: 2px; }
+.kendra-here .kh-hours[hidden] { display: none; }
