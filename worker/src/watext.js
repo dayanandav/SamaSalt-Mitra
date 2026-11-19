@@ -45,6 +45,7 @@ export function answerText(lang, r, pin, origin = null) {
       L.push('', t(lang, 'waJa', { name: one(p.generic_name), code: one(p.drug_code), size: p.unit_size ? ` · ${one(p.unit_size)}` : '', mrp: rupees(p.mrp) }));
     }
     const per = t(lang, 'perUnit')[unitKind(m.form)];
+    if (r.ceiling?.available) L.push('', t(lang, 'waCeiling', { price: rupees(r.ceiling.unit_price), per }));
     const cheaper = (r.same_salt?.items || []).filter((b) => b.name.toLowerCase() !== m.name.toLowerCase() && b.unit_price != null && (m.unit_price == null || b.unit_price < m.unit_price)).slice(0, 3);
     if (cheaper.length) {
       L.push('', t(lang, 'waBrands'));

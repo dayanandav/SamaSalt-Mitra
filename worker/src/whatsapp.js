@@ -17,6 +17,7 @@ import { nearestKendra } from './tools.js';
 import { kendraContactsVisible } from '../../public/rules.js';
 import { t } from '../../public/strings.js';
 import { answerText, kendraLines, readText } from './watext.js';
+import { photoCapReached } from './limits.js';
 
 const GRAPH = 'https://graph.facebook.com/v21.0';
 const DAY_MS = 24 * 3600_000;
@@ -248,7 +249,9 @@ export async function handleWebhook(request, env, ctx, log) {
   const work = (async () => {
     for (const msg of parseInbound(body)) {
       if (!(await firstTime(env.DB, msg.id, Date.now()))) continue;
-      const replies = await handleMessage(env, msg, { log, origin: url.origin, image: (m) => fetchImage(env, m) });
+      // Past the day's photo cap (limits.js) a photo is not read; the bot asks to try again / type the name.
+      const day = new Date(Date.now() + 5.5 * 3600_000).toISOString().slice(0, 10);
+      const replies = await handleMessage(env, msg, { log, origin: url.origin, image: async (m) => ((await photoCapReached(env, day)) ? null : fetchImage(env, m)) });
       await sendReplies(env, msg.from, replies).catch(() => {});
     }
   })();

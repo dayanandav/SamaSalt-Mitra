@@ -19,6 +19,9 @@ Full design: *SamaSalt-Mitra Design Document* (`docs/SamaSalt-Mitra Design Docum
 | 1.3.0 | 17 Nov 2026 | v1.3 Reach: registered volunteers (Registrar registers, Reviewer approves, personal link `/v/SV-…`, help counted by volunteer code only); weak-network mode: the app opens without internet (service worker), offline notice, a check waits and runs by itself when the internet is back, last answer kept for the visit, smaller photos on 2G/3G or Save-Data |
 | 2.0.0 | 17 Nov 2026 | v2.0 WhatsApp bot (test site): Meta Cloud API webhook, typed name / photo (confirm first) / PIN / language / DELETE, templated answers, short order link `/o/…`, chat simulator `/wa-sim`; number never stored (HMAC chat key, 24-hour memory); `WHATSAPP_BOT` off on live. Registered volunteers parked on live |
 | 2.0.1 | 18 Nov 2026 | Chat in the app, the way other apps do it: floating **Chat** button (home and answers) → the bot's conversation inside the app (`/api/chat`, `APP_CHAT`: off on live, on on the test site; counted as mode `chat`), suggestion chips (Scan strip, Nearest Kendra, Language, Clear chat), message times, conversation kept for the visit; **Continue on WhatsApp** in the chat header once `WA_BOT_NUMBER` is set and the bot is on. Shared chat box `public/chat.js`. Clear chat / DELETE also forget the app's saved PIN. **Approved by the owner 19 Nov 2026** (test site) |
+| 2.0.2 | 19 Nov 2026 | Hardening (test site): abuse protection (per-address limits on checks and staff sign-in, daily photo cap), Privacy and disclaimer page (en/kn/hi, linked from every page), own-domain switch ready (`CANONICAL_HOST`, docs/DOMAIN.md; **parked by the owner 19 Nov 2026, open enhancement**). |
+| 2.0.3 | 19 Nov 2026 | NPPA ceiling prices (owner chose option A): developer import of the NPPA list (CSV) on the same composition keys, "Government maximum price (NPPA): ₹X per tablet + GST" under the answer and in the chat/bot (never for never-switch medicines). Brand prices stay as dated; no "overpriced" flags on stale MRPs. Test site: table ready, no list loaded yet |
+| 2.0.4 | 19 Nov 2026 | Patient features (test site): share the answer, "Add to home screen" prompt, scan a prescription (names only, each checked when tapped), Kendras by distance (India Post PIN code centres; "Use my location"; ≈ km). Privacy page updated. Voice input and "Not in stock here?" reports were built, then removed by the owner (19 Nov 2026) |
 
 ## Overview
 
@@ -30,7 +33,7 @@ Full design: *SamaSalt-Mitra Design Document* (`docs/SamaSalt-Mitra Design Docum
 | 2 | v1.2 Order requests | Patient sends a medicine list with pack quantities to a registered Kendra by WhatsApp/SMS link; pickup only | **Done (approved 17 Nov 2026): public on the test site, pilot on live until PMBI confirms** | PMBI confirms reserve-and-collect fits PMBJP rules |
 | 3 | v1.3 Reach | More languages, weak-network mode, volunteer helpers | **Done (approved 17 Nov 2026), live**: weak-network mode live for everyone. Registered volunteers **parked** (`VOLUNTEER_REGISTRY = "off"` on live, on the test site only). More languages: later (owner) | Inform PMBI |
 | 4 | v2.0 WhatsApp bot | Check a medicine and send order requests inside WhatsApp | **Built: on the test site (simulator), off on live. Waiting for owner review, then the Meta WhatsApp account** | PMBI approves message templates; DPDP legal review |
-| 5 | v2.1 Doctor network | PMBJP-recommended volunteer doctors, registered and verified like Kendras | Not started | PMBI provides or endorses the doctor list |
+| 5 | v2.1 Doctor network | PMBJP-recommended volunteer doctors, registered and verified like Kendras | **Parked by the owner 19 Nov 2026 (future work)** | PMBI provides or endorses the doctor list |
 | 6 | v2.2 Request doctor review | Patient asks an approved doctor to review a switch to the Jan Aushadhi generic | Not started | PMBI agrees; Telemedicine Practice Guidelines and DPDP review |
 | 7 | v3.0 One journey | Scan → doctor-reviewed switch → order request → pickup, as one flow | Not started | PMBI agrees how pharmacists treat a reviewed request |
 
@@ -125,7 +128,7 @@ More Indian languages (after native review), weak-network mode (smaller pages, o
 
 ## Stage 4: v2.0 WhatsApp bot (built, waiting for review)
 
-Check a medicine and send an order request inside WhatsApp. Needs DPDP Act legal review: consent, what is kept, for how long.
+Check a medicine and send an order request inside WhatsApp. Needs DPDP Act legal review: consent, what is kept, for how long. **DPDP review parked by the owner on 19 Nov 2026, to be revisited later** (before the WhatsApp bot or registered volunteers go public).
 
 **Analysis**
 - Channel: **Meta WhatsApp Cloud API** straight to the Worker (no paid middleman). The patient always writes first, so every reply is inside WhatsApp's 24-hour service window: free-form replies and reply buttons, **no pre-approved templates and no per-message charge** for these replies. Templates (and PMBI approval of them) are needed only if we ever message people first (for example reminders); v2.0 does not.
@@ -144,10 +147,12 @@ Check a medicine and send an order request inside WhatsApp. Needs DPDP Act legal
 **To go live (owner)**
 1. Meta Business account (business verification), a WhatsApp Business phone number not used in the WhatsApp app, a Meta app with the WhatsApp product.
 2. Secrets on the live Worker: `WA_TOKEN` (permanent system-user token), `WA_PHONE_ID`, `WA_APP_SECRET`, `WA_VERIFY_TOKEN`, `WA_HASH_KEY`. Webhook URL `https://<live site>/api/wa/webhook`, subscribe to `messages`.
-3. DPDP review (the welcome message is the notice; DELETE and 24-hour expiry are the erasure); native-speaker check of the Kannada/Hindi bot text.
+3. DPDP review (parked 19 Nov 2026, revisit before go-live; the welcome message is the notice; DELETE and 24-hour expiry are the erasure); native-speaker check of the Kannada/Hindi bot text.
 4. Apply migration 0007 on the live database, set `WHATSAPP_BOT = "on"`, deploy. Tell PMBI.
 
 ## Stage 5: v2.1 Doctor network
+
+**Parked by the owner on 19 Nov 2026: future work, not now.** Stages 6 and 7 build on it, so they wait too.
 
 Volunteer doctors **recommended or endorsed by PMBJP** register (registration number verified with the medical council); same registrar → reviewer → admin process as Kendras; doctors can be removed at any time.
 

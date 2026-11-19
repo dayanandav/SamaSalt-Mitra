@@ -105,6 +105,25 @@ Test site, patient address (no `?dev=1`):
 7. **Clear chat** (or typing `DELETE`): the bot forgets the chat, the app's saved PIN code is cleared too, the screen empties, a fresh chat starts and asks for no Kendra until a new PIN is given. **New chat** does the same without erasing.
 8. WhatsApp icon in the chat header: only once `WA_BOT_NUMBER` is set (with `?dev=1` on the test site it opens the simulator). If only WhatsApp is on, the floating button opens WhatsApp directly. Live site: no Chat button (both switches off).
 
+## End-to-end test: v2.0.3 NPPA ceiling prices
+
+Test site, developer mode (`/dev`, system owner's setup key):
+
+1. **NPPA ceiling prices** card: choose a CSV with columns Medicine, Dosage form and strength, Unit, Ceiling Price, S.O. No., S.O. Date (from NPPA's Compendium of prices); set the list date; **Preview**: rows matched, no brand equivalent, left out, new / changed / removed.
+2. **Apply ceiling prices**: "Done. N NPPA ceiling prices are live".
+3. Check `Dolo 650`: a card **Government maximum price (NPPA)** with ₹ per tablet + GST, the note to check the strip's MRP and the S.O. number and date. The chat shows the same as one ⚖️ line.
+4. `Thyronorm 50`: no maximum price card or line (never-switch medicine).
+5. Before any list is loaded: no card at all.
+
+## End-to-end test: v2.0.4 patient features
+
+Test site (`/?test=1` so nothing counts on /impact):
+
+1. **Scan a prescription** (home): choose a clear photo of a printed prescription. A list of the medicines read appears (names only, no patient or doctor details, no doses); names not in the list say so. Tap one: its full answer; **Back to the prescription** returns to the list.
+2. **Share** (under an answer): the phone's share sheet with the answer, the Jan Aushadhi generic and the link. For Thyronorm: the warning only.
+3. **Add to home screen**: on Android Chrome the bar appears on the home screen; **Add** installs, **Not now** hides it for good on that phone.
+4. **Kendra card**: PIN `560001` shows Kendras with "≈ km" / "under 1 km"; **Use my location** (allow it) lists the nearest by distance and says distances are approximate.
+
 ## Maintenance (developer)
 
 ```bash

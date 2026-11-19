@@ -455,3 +455,25 @@ dialog.order .secondary { width: 100%; }
 .chat-fab:active { transform: scale(.97); }
 .chat-fab[hidden] { display: none; }
 html.has-fab .foot { padding-bottom: 88px; }
+
+/* NPPA ceiling price card */
+.ceil-price { font-size: 22px; font-weight: 700; letter-spacing: -0.01em; margin: 2px 0 6px; font-variant-numeric: tabular-nums; }
+
+/* v2.0.4: prescription, install, share */
+.rx-btn { display: flex; align-items: center; justify-content: center; gap: 8px; width: 100%; margin-top: 10px; background: var(--card); box-shadow: var(--shadow); }
+.rx-btn[hidden] { display: none; }
+.install-bar { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin-top: 16px; padding: 12px 14px; border-radius: 16px; background: var(--card); box-shadow: var(--shadow); }
+.install-bar[hidden] { display: none; }
+.install-bar img { border-radius: 10px; }
+.install-bar div { flex: 1; min-width: 150px; }
+.install-bar b { display: block; font-size: 15px; }
+.install-bar span { font-size: 13px; color: var(--muted); }
+.install-bar .primary { width: auto; min-height: 40px; padding: 8px 18px; font-size: 15px; }
+.rx-list { list-style: none; padding: 0; margin: 0; display: grid; gap: 8px; }
+.rx-list button { width: 100%; text-align: left; display: grid; gap: 2px; padding: 12px 14px; border-radius: 14px; border: 0.5px solid var(--line); background: var(--card); color: var(--text); font: inherit; cursor: pointer; }
+.rx-list button b { font-size: 17px; }
+.rx-list button span { font-size: 13px; color: var(--muted); }
+.rx-list .rx-miss { padding: 10px 14px; border-radius: 14px; background: var(--fill); font-size: 14px; color: var(--muted); }
+.actions .share-btn { margin-top: 10px; }
+.k-loc { display: inline-flex; align-items: center; gap: 6px; margin-top: 10px; font-size: 15px; }
+.k-approx { margin: 8px 0 0; font-size: 12px; }

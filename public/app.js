@@ -1,6 +1,6 @@
 import { LANGS, STRINGS, t, rupees, unitKind } from '/strings.js';
 import { createChat, newChatId } from '/chat.js';
-import { pharmacistEntry, mergeMedList, asksToSwitch, shouldAddToList, listenAllowed, pickVoice, isPhoneBrowser, freshMedList, kendraCode, showMobile, orderItems, orderQty, orderMessage, waLink, smsLink, ORDER_MAX_PACKS, photoSendSize, askTimeoutMs, savableAnswer, volunteerCode } from '/rules.js';
+import { pharmacistEntry, mergeMedList, asksToSwitch, shouldAddToList, listenAllowed, pickVoice, isPhoneBrowser, freshMedList, kendraCode, showMobile, orderItems, orderQty, orderMessage, waLink, smsLink, ORDER_MAX_PACKS, photoSendSize, askTimeoutMs, savableAnswer, volunteerCode, shareText } from '/rules.js';
 
 const $ = (s) => document.querySelector(s);
 const store = {
@@ -139,6 +139,32 @@ $('#result').addEventListener('submit', async (e) => {
       $('#kendraBody').innerHTML = kendraInner(last);
     }
   } catch {} finally { btn.disabled = false; }
+});
+// v2.0.4 Kendras by distance. Kendra points are the centre of their PIN code, so "≈ X km".
+function kmText(x) {
+  return x.km < 1 ? t(lang, 'kmUnder1') : t(lang, 'kmAbout', { km: x.km < 10 ? x.km : Math.round(x.km) });
+}
+const locIcon = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3"/><circle cx="12" cy="12" r="7"/></svg>';
+// "Use my location": asked only when tapped, rounded to ~1 km, used once to find Kendras, never stored.
+document.addEventListener('click', (e) => {
+  const b = e.target.closest('#kLoc');
+  if (!b || !last) return;
+  b.disabled = true;
+  b.querySelector('span').textContent = t(lang, 'locating');
+  navigator.geolocation.getCurrentPosition(async (pos) => {
+    try {
+      const la = pos.coords.latitude.toFixed(2);
+      const lo = pos.coords.longitude.toFixed(2);
+      const res = await fetch(`/api/kendras?lat=${la}&lng=${lo}`, { headers: isTest ? { 'x-samasalt-mitra-test': '1' } : {} });
+      if (res.ok) { last.kendras = await res.json(); $('#kendraBody').innerHTML = kendraInner(last); return; }
+    } catch {}
+    b.disabled = false;
+    b.querySelector('span').textContent = t(lang, 'useLocation');
+  }, () => {
+    b.disabled = false;
+    b.querySelector('span').textContent = t(lang, 'useLocation');
+    toast('locationDenied');
+  }, { enableHighAccuracy: false, timeout: 15000, maximumAge: 600000 });
 });
 $('#kendraHere .kh-close').onclick = () => { hereKendra = null; sess.set('ss_kendra', null); renderHere(); };
 async function openFromQr(code) {
@@ -557,7 +583,7 @@ $('#cropCancel').onclick = () => { photo = null; show('home'); };
 // ── Agent call ─────────────────────────────────────────────────────────────
 function show(section) {
   if (section !== 'camera') stopCamera();
-  for (const id of ['home', 'camera', 'crop', 'busy', 'result', 'chatView']) $('#' + id).hidden = id !== section;
+  for (const id of ['home', 'camera', 'crop', 'busy', 'result', 'chatView', 'rx']) $('#' + id).hidden = id !== section;
   renderFab(section);
   window.scrollTo({ top: 0, behavior: 'instant' in window ? 'instant' : 'auto' });
 }
@@ -593,11 +619,11 @@ async function ask({ text, image, ocr, relog = true }) {
     } finally {
       clearTimeout(timer);
     }
-    if (r.status === 'offline' || r.status === 'slow') break; // a retry now would only wait again
+    if (r.status === 'offline' || r.status === 'slow' || r.status === 'busy') break; // a retry now would only wait again
     if (r.status !== 'error' && !r.error) break;
     await new Promise((ok) => setTimeout(ok, 2000)); // one quiet retry on a network/server hiccup
   }
-  if (r.status === 'offline' || r.status === 'slow') {
+  if (r.status === 'offline' || r.status === 'slow' || r.status === 'busy') {
     // A language change on a saved answer: keep showing it; it changes when the internet is back.
     if (!relog && last?.status === 'ok') { render(last); toast('offlineLang'); return; }
     pending = { text, image, ocr, relog };
@@ -727,7 +753,7 @@ function renderOrder() {
   const order = orderItems(list);
   const addr = esc([k.address, k.district].filter(Boolean).join(', '));
   $('#orderKendra').innerHTML = `<div class="order-k">${ks.length > 1
-    ? `<label class="cap" for="orderKSel">${esc(t(lang, 'orderKendra'))}</label><select id="orderKSel">${ks.map((x) => `<option value="${esc(x.code)}"${x.code === k.code ? ' selected' : ''}>${esc(t(lang, 'orderAt', { code: x.code }))}${x.km != null ? ` · ${x.km} km` : ''}</option>`).join('')}</select><span>${addr}</span>`
+    ? `<label class="cap" for="orderKSel">${esc(t(lang, 'orderKendra'))}</label><select id="orderKSel">${ks.map((x) => `<option value="${esc(x.code)}"${x.code === k.code ? ' selected' : ''}>${esc(t(lang, 'orderAt', { code: x.code }))}${x.km != null ? ` · ${kmText(x)}` : ''}</option>`).join('')}</select><span>${addr}</span>`
     : `<b>${esc(t(lang, 'orderAt', { code: k.code }))}</b><span>${addr}</span>`}
     ${k.contact.hours ? `<span style="display:block">${esc(t(lang, 'kendraHours', { hours: k.contact.hours }))}</span>` : ''}</div>`;
   $('#orderList').innerHTML = order.items.map((i) => `
@@ -845,7 +871,7 @@ function kendraInner(r) {
         <div class="m">${esc([x.address, x.district].filter(Boolean).join(', '))}</div>
         ${x.contact?.hours ? `<div class="m">${esc(t(lang, 'kendraHours', { hours: x.contact.hours }))}</div>` : ''}
         ${x.contact ? `<div class="k-actions"><a href="tel:+91${esc(x.contact.sms || x.contact.whatsapp)}">${esc(t(lang, 'call'))} ${esc(showMobile(x.contact.sms || x.contact.whatsapp))}</a>${x.contact.orders && x.contact.whatsapp && orderItems(medList()).items.length ? `<button class="k-order" type="button" data-code="${esc(x.code)}">${esc(t(lang, 'orderBtn'))}</button>` : ''}</div>` : x.phone ? `<div class="k-actions"><a href="tel:${esc(x.phone)}">${esc(t(lang, 'call'))}</a></div>` : ''}</div>
-        <div class="p">${x.km != null ? `<b>${x.km} km</b>` : `<b>${esc(x.pin)}</b><span>PIN</span>`}
+        <div class="p">${x.km != null ? `<b>${esc(kmText(x))}</b><span>${esc(x.pin)}</span>` : `<b>${esc(x.pin)}</b><span>PIN</span>`}
           <a class="dir-btn" target="_blank" rel="noopener" href="https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(x.lat && x.lng ? `${x.lat},${x.lng}` : kQuery(x))}">${dirIcon}<span>${esc(t(lang, 'directions'))}</span></a></div></li>`).join('')}</ul>`
     : `<p class="muted" style="margin:0">${esc(t(lang, k.pending ? 'kendraPending' : pinInput.value.length === 6 ? 'kendraNone' : 'kendraNeedPin'))}</p>`;
   const pinNow = (k.pin || pinInput.value || '').slice(0, 6);
@@ -854,7 +880,9 @@ function kendraInner(r) {
         <label class="cap" for="kPin">${esc(t(lang, 'pinShort'))}</label>
         <input id="kPin" type="text" inputmode="numeric" pattern="[0-9]{6}" maxlength="6" placeholder="580020" value="${esc(pinNow)}" autocomplete="postal-code">
         <button class="secondary" type="submit">${esc(t(lang, 'kendraPinShow'))}</button>
-      </form>`;
+      </form>
+      ${'geolocation' in navigator ? `<button class="link k-loc" id="kLoc" type="button">${locIcon}<span>${esc(t(lang, 'useLocation'))}</span></button>` : ''}
+      ${k.by === 'location' || k.items?.some((x) => x.km != null) ? `<p class="med-meta k-approx">${esc(t(lang, 'kmApprox'))}</p>` : ''}`;
 }
 
 function render(r) {
@@ -862,7 +890,7 @@ function render(r) {
   applyStrings();
   if (r.status !== 'ok') {
     // Say what actually went wrong: not in the database, photo unreadable, or the check failed.
-    const why = r.status === 'not_found' ? 'notFound' : r.status === 'unreadable' ? 'photoUnreadable' : r.status === 'vision_down' ? 'visionDown' : r.status === 'offline' ? 'offlineWait' : r.status === 'slow' ? 'slowNet' : 'checkFailed';
+    const why = r.status === 'not_found' ? 'notFound' : r.status === 'unreadable' ? 'photoUnreadable' : r.status === 'vision_down' ? 'visionDown' : r.status === 'offline' ? 'offlineWait' : r.status === 'slow' ? 'slowNet' : r.status === 'busy' ? 'tooMany' : 'checkFailed';
     // Read check failed: say why, show what was read, and offer a retake or typing.
     const whyRead = { no_composition: 'readNoComposition', brand_mismatch: 'readMismatch', low_confidence: 'readBlurry' }[r.reason];
     const readText = [r.read?.brand, r.read?.composition].filter(Boolean).join(' · ');
@@ -870,7 +898,7 @@ function render(r) {
       <div class="card"><p class="med-name" style="font-size:22px;line-height:1.35">${esc(t(lang, why))}</p>
       ${r.status === 'unreadable' && whyRead ? `<p class="read-why">${esc(t(lang, whyRead))}</p>` : ''}
       ${readText ? `<p class="med-meta">${esc(t(lang, 'readOnStrip', { text: readText }))}</p>` : ''}
-      ${(r.status === 'offline' || r.status === 'slow') && pending ? `<div class="crop-actions" style="margin-top:14px"><button class="primary" id="retryBtn" type="button">${esc(t(lang, 'tryAgain'))}</button></div>${r.status === 'offline' ? `<p class="med-meta">${esc(t(lang, 'offlineAuto'))}</p>` : ''}` : ''}
+      ${(r.status === 'offline' || r.status === 'slow' || r.status === 'busy') && pending ? `<div class="crop-actions" style="margin-top:14px"><button class="primary" id="retryBtn" type="button">${esc(t(lang, 'tryAgain'))}</button></div>${r.status === 'offline' ? `<p class="med-meta">${esc(t(lang, 'offlineAuto'))}</p>` : ''}` : ''}
       ${r.status === 'unreadable' ? `<div class="crop-actions" style="margin-top:14px"><button class="primary" id="retakeBtn" type="button">${esc(t(lang, 'retakePhoto'))}</button><button class="secondary" id="typeBtn" type="button">${esc(t(lang, 'confirmType'))}</button></div>` : ''}
       ${devMode ? `<p class="source">developer: status=${esc(r.status || '-')}${r.read_score != null ? ` · read score=${r.read_score}/100 (pass 70)${r.reason ? ` · ${esc(r.reason)}` : ''}` : ''}${r.error ? ` · error=${esc(r.error)}` : ''}${r.detail ? ` · ${esc(r.detail)}` : ''}${r.trace?.length ? ` · steps=${esc(r.trace.map((s) => s.tool + (s.error ? '!' : '') + (s.output?.failed ? `(${[].concat(s.output.failed).join('; ')})` : '')).join(' > '))}` : ''}</p>` : ''}</div>
       <button class="secondary" id="againBtn">${esc(t(lang, 'another'))}</button>`;
@@ -949,6 +977,13 @@ function render(r) {
       ${jaHtml}
     </div>
 
+    ${!m.nti && r.ceiling?.available ? `<div class="card ceiling">
+      <p class="eyebrow">${esc(t(lang, 'ceilingTitle'))}</p>
+      <p class="ceil-price">${esc(t(lang, 'ceilingPrice', { price: rupees(r.ceiling.unit_price), per }))}</p>
+      <p class="med-meta">${esc(t(lang, 'ceilingNote'))}</p>
+      <p class="med-meta">${esc(t(lang, 'ceilingSource', { so: r.ceiling.notification ? ` ${r.ceiling.notification}` : '', date: r.ceiling.notified_on ? ` · ${fmtDate(r.ceiling.notified_on)}` : '' }))}</p>
+    </div>` : ''}
+
     <div class="card" id="kendraCard">
       <p class="eyebrow">${esc(t(lang, 'kendraTitle'))}</p>
       <div id="kendraBody">${kHtml}</div>
@@ -958,6 +993,8 @@ function render(r) {
 
     <div class="actions">
       <button class="primary" id="phBtn">${esc(t(lang, 'pharmacistBtn'))}</button>
+      <button class="secondary share-btn" id="shareBtn" type="button">${esc(t(lang, 'share'))}</button>
+      ${rxList ? `<button class="secondary share-btn" id="rxBackBtn" type="button">${esc(t(lang, 'rxBack'))}</button>` : ''}
     </div>
 
     ${hasOption ? `<div class="card feedback" id="fb">
@@ -977,6 +1014,8 @@ function render(r) {
   // Shows the list as it is: after "Clear list" nothing is put back (the button is hidden until
   // the next medicine is checked).
   $('#phBtn').onclick = showPharmacist;
+  $('#shareBtn').onclick = () => shareAnswer(r);
+  if ($('#rxBackBtn')) $('#rxBackBtn').onclick = renderRx;
   updatePhBtn();
   for (const b of out.querySelectorAll('.chip')) {
     b.onclick = async () => {
@@ -986,7 +1025,7 @@ function render(r) {
       }
     };
   }
-  $('#againBtn').onclick = () => { show('home'); };
+  $('#againBtn').onclick = () => { rxList = null; show('home'); };
   setupListen(r.answer, r.lang || lang);
   show('result');
 }
@@ -999,6 +1038,7 @@ function summarizeStep(st) {
     case 'identify_medicine': return o.found === false ? 'not found' : `${o.name} (${o.via})`;
     case 'understand_text': return o.failed ? 'no medicine found' : `"${o.brand}"`;
     case 'find_same_salt': return `${o.count} brands with key ${st.input?.ckey}`;
+    case 'ceiling_price': return o.available === false ? 'no NPPA ceiling price for this key' : `₹${o.unit_price}/unit · ${o.notified_on || ''}`;
     case 'jan_aushadhi_match': return o.skipped ? o.skipped : o.available === false ? 'no PMBJP product with this key' : `${o.name} · ₹${o.mrp}`;
     case 'nearest_kendra': return o.skipped ? o.skipped : `${o.found} found (${o.by})`;
     case 'parse_ocr_text': return `text read on the phone → ${(o.brand_candidates || []).slice(0, 3).join(', ')}${o.composition ? ` · ${o.composition}` : ''}`;
@@ -1144,6 +1184,11 @@ $('#chatChips').addEventListener('click', (e) => {
   }
 });
 fetch('/api/health').then((r) => r.json()).then((h) => {
+  // Own domain: on the old workers.dev address, move to it (same page, same ?k= / ?volunteer= etc.).
+  if (h.canonical_host && location.hostname !== h.canonical_host && location.hostname.endsWith('.workers.dev')) {
+    location.replace(`https://${h.canonical_host}${location.pathname}${location.search}${location.hash}`);
+    return;
+  }
   chatOn = h.app_chat === 'on';
   // WhatsApp: the bot's number once it is set; on the test site, developer mode opens the simulator.
   waHref = h.wa_bot_number ? `https://wa.me/${h.wa_bot_number}?text=${encodeURIComponent('Hi')}` : devMode && h.whatsapp_bot === 'on' ? '/wa-sim?dev=1' : null;
@@ -1154,6 +1199,89 @@ fetch('/api/health').then((r) => r.json()).then((h) => {
   if (!chatOn && waHref) { fab.href = waHref; fab.target = '_blank'; fab.rel = 'noopener'; fab.querySelector('span').dataset.t = 'askWhatsapp'; applyStrings(); }
   renderFab([...['home', 'result']].find((id) => !$('#' + id).hidden) || 'none');
 }).catch(() => {});
+
+// ── v2.0.4 Share the answer ─────────────────────────────────────────────────
+// The phone's share sheet (WhatsApp, SMS, any app); where there is none, WhatsApp; else copy.
+async function shareAnswer(r) {
+  const text = shareText(r, (k, v) => t(lang, k, v), rupees, t(lang, 'perUnit')[unitKind(r.medicine?.form)], location.origin);
+  if (!text) return;
+  if (navigator.share) {
+    try { await navigator.share({ text }); return; } catch (e) { if (e?.name === 'AbortError') return; }
+  }
+  if (onPhone) { window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, '_blank', 'noopener'); return; }
+  try { await navigator.clipboard.writeText(text); toast('shareCopied'); } catch {}
+}
+
+// ── v2.0.4 Add to home screen (Android Chrome offers it; "Not now" is remembered) ─
+let installEvt = null;
+window.addEventListener('beforeinstallprompt', (e) => {
+  e.preventDefault();
+  installEvt = e;
+  if (store.get('ss_install_no') !== '1') $('#installBar').hidden = false;
+});
+window.addEventListener('appinstalled', () => { $('#installBar').hidden = true; installEvt = null; });
+$('#installBtn').onclick = async () => {
+  $('#installBar').hidden = true;
+  if (!installEvt) return;
+  installEvt.prompt();
+  try { await installEvt.userChoice; } catch {}
+  installEvt = null;
+};
+$('#installNo').onclick = () => { $('#installBar').hidden = true; store.set('ss_install_no', '1'); };
+
+// ── v2.0.4 Scan a prescription ──────────────────────────────────────────────
+// The names on it (no patient or doctor details, no doses); each is checked only when tapped.
+var rxList = null; // var: render() may run before this line
+$('#rxBtn').onclick = () => $('#rxPhoto').click();
+$('#rxPhoto').addEventListener('change', async (e) => {
+  const file = e.target.files?.[0];
+  e.target.value = '';
+  if (!file) return;
+  let image;
+  try {
+    const img = await createImageBitmap(file);
+    const k = Math.min(1, 1600 / Math.max(img.width, img.height)); // a prescription needs more detail than a strip
+    const c = document.createElement('canvas');
+    c.width = Math.round(img.width * k);
+    c.height = Math.round(img.height * k);
+    c.getContext('2d').drawImage(img, 0, 0, c.width, c.height);
+    image = c.toDataURL('image/jpeg', 0.85);
+  } catch { return; }
+  $('#busyText').textContent = t(lang, 'rxReading');
+  $('#thumb').hidden = false;
+  $('#thumb').src = image;
+  show('busy');
+  let r;
+  try {
+    const res = await fetch('/api/prescription', { method: 'POST', headers: { 'content-type': 'application/json', ...(isTest ? { 'x-samasalt-mitra-test': '1' } : {}) }, body: JSON.stringify({ image, lang, test: isTest ? true : undefined }) });
+    r = await res.json();
+  } catch {
+    r = { status: navigator.onLine ? 'error' : 'offline' };
+  }
+  if (r.status === 'ok') { rxList = r.items; renderRx(); return; }
+  rxList = null;
+  const key = r.status === 'unreadable' ? 'rxNone' : r.status === 'vision_unavailable' ? 'visionDown' : r.status === 'busy' ? 'tooMany' : r.status === 'offline' ? 'offlineWait' : 'checkFailed';
+  last = { status: 'rx_failed' };
+  $('#result').innerHTML = `<div class="card"><p class="med-name" style="font-size:22px;line-height:1.35">${esc(t(lang, key))}</p></div><button class="secondary" id="againBtn">${esc(t(lang, 'another'))}</button>`;
+  $('#againBtn').onclick = () => show('home');
+  show('result');
+});
+function renderRx() {
+  if (!rxList) return show('home');
+  const box = $('#rx');
+  box.innerHTML = `
+    <div class="card">
+      <p class="eyebrow">${esc(t(lang, 'rxTitle'))}</p>
+      <p class="med-meta" style="margin:0 0 12px">${esc(t(lang, 'rxNote'))}</p>
+      <ul class="rx-list">${rxList.map((it, i) => it.found
+        ? `<li><button type="button" data-i="${i}"><b>${esc(it.name)}</b><span>${esc(it.composition)}</span></button></li>`
+        : `<li class="rx-miss">${esc(t(lang, 'rxNotFound', { text: it.read }))}</li>`).join('')}</ul>
+    </div>
+    <button class="secondary" id="rxHome" type="button">${esc(t(lang, 'another'))}</button>`;
+  box.querySelectorAll('button[data-i]').forEach((b) => { b.onclick = () => ask({ text: rxList[Number(b.dataset.i)].name }); });
+  $('#rxHome').onclick = () => { rxList = null; show('home'); };
+  show('rx');
+}
 
 // v1.3: is this volunteer's link approved? (Only yes/no comes back; checks still work either way.)
 if (volCode) fetch(`/api/volunteer/${volCode}`).then((r) => r.json()).then((r) => { volActive = !!r.active; applyStrings(); }).catch(() => {});

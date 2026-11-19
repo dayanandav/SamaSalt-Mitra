@@ -1,6 +1,7 @@
 // SamaSalt-Mitra agent — Cloudflare Worker: JSON API + static web app (public/).
-import { runAgent, resetMetaCache } from './agent.js';
+import { runAgent, resetMetaCache, readPrescriptionAgent } from './agent.js';
 import { validateProducts, insertStatements } from '../../public/pmbi.js';
+import { validateCeilings, ceilingInserts } from '../../public/ceiling.js';
 import { assetMeds, d1Meds } from './medstore.js';
 import { lookupKendra, staffRegisterKendra, attachContacts, adminListKendras, adminDecideKendra, adminUpdateKendra, adminKendraHistory } from './kendra.js';
 import { whoIs, csrfOk, login, logout, listAdmins, createAdmin, updateAdmin, can, permissions } from './admin.js';
@@ -8,11 +9,12 @@ import { kendraContactsVisible, orderItems, orderMessage, waLink } from '../../p
 import { t, rupees } from '../../public/strings.js';
 import { ntiFromKey } from './normalize.js';
 import { nearestKendra } from './tools.js';
+import { overLimit, photoCapReached, countPrescriptionRead } from './limits.js';
 import { botOn, appChatOn, botNumber, handleWebhook, handleMessage } from './whatsapp.js';
 import { registerVolunteer, listVolunteers, decideVolunteer, updateVolunteer, volunteerHistory, activeVolunteer, volunteerLinkStatus } from './volunteers.js';
 
 // Not exported: a Worker's main module may only export handlers.
-const APP_VERSION = '2.0.1';
+const APP_VERSION = '2.0.4';
 
 const MAX_IMAGE_CHARS = 2_500_000; // ~1.8 MB JPEG as a data URL; the app resizes to ~1 MP first
 
@@ -84,6 +86,8 @@ async function handleAsk(request, env, ctx) {
     return json({ error: 'nothing_to_check' }, 400);
   }
   const isTest = isTestRequest(request, body);
+  // Abuse protection: past the day's photo cap, ask for the name instead (the app's existing message).
+  if (body.image && (await photoCapReached(env, istDay()))) return json({ status: 'vision_unavailable', reason: 'daily_photo_limit' });
   const result = await runAgent(env, body);
   // v1.1: registered Kendra numbers, only where KENDRA_REGISTRY allows (pilot: test traffic only).
   if (result.kendras?.items?.length && kendraContactsVisible(env.KENDRA_REGISTRY, isTest)) {
@@ -101,6 +105,37 @@ async function handleAsk(request, env, ctx) {
   }
   result.test = isTest;
   return json(result);
+}
+
+/** The same address on CANONICAL_HOST, for a GET on the old *.workers.dev host (not /api); else null. */
+export function canonicalRedirect(env, url, method = 'GET') {
+  const host = String(env.CANONICAL_HOST || '').trim().toLowerCase();
+  if (!host || !/^[a-z0-9.-]+\.[a-z]{2,}$/.test(host) || url.hostname === host) return null;
+  if (!url.hostname.endsWith('.workers.dev') || (method !== 'GET' && method !== 'HEAD') || url.pathname.startsWith('/api/')) return null;
+  return `https://${host}${url.pathname}${url.search}`;
+}
+
+// Requests that run a check (or record feedback) count towards the per-address limit.
+const CHECK_PATHS = new Set(['/api/ask', '/api/feedback', '/api/chat', '/api/wa/simulate', '/api/prescription']);
+// Over the limit: a calm "wait a minute" in the patient's language. The app shows it as an answer
+// (status "busy"); the chat boxes show it as a bot message.
+async function tooMany(request, url) {
+  const b = await request.clone().json().catch(() => ({}));
+  const lang = ['en', 'kn', 'hi'].includes(b.lang) ? b.lang : 'en';
+  const body = url.pathname === '/api/chat' || url.pathname === '/api/wa/simulate'
+    ? { replies: [{ kind: 'text', body: t(lang, 'tooMany') }] }
+    : { status: 'busy', error: 'too_many' };
+  return new Response(JSON.stringify(body), { status: 429, headers: { 'content-type': 'application/json; charset=utf-8', 'retry-after': '60' } });
+}
+
+// v2.0.4 Scan a prescription: the names on it, matched to the medicine list. Nothing is stored.
+async function handlePrescription(request, env) {
+  const b = await request.json().catch(() => null);
+  if (!b || typeof b.image !== 'string' || !b.image.startsWith('data:image/') || b.image.length > MAX_IMAGE_CHARS) return json({ error: 'image_too_large_or_invalid' }, 413);
+  const day = istDay();
+  if (await photoCapReached(env, day)) return json({ status: 'vision_unavailable', reason: 'daily_photo_limit' });
+  await countPrescriptionRead(env, day);
+  return json(await readPrescriptionAgent(env, { image: b.image }));
 }
 
 async function handleFeedback(request, env) {
@@ -254,6 +289,8 @@ async function handleAdmin(request, env, url) {
   if (path === '/status') return await handleAdminStatus(env);
   if (path === '/pmbi/context') return await handlePmbiContext(env);
   if (path === '/pmbi/apply' && post) return await handlePmbiApply(request, env);
+  if (path === '/ceiling/current') return json({ current: (await env.DB.prepare('SELECT ckey, name, unit, price, unit_price, notification, notified_on FROM ceiling_prices').all().catch(() => ({ results: [] }))).results || [] });
+  if (path === '/ceiling/apply' && post) return await handleCeilingApply(request, env);
   return json({ error: 'not_found' }, 404);
 }
 
@@ -333,6 +370,27 @@ async function handlePmbiApply(request, env) {
   return json({ ok: true, applied: true, previous_count: current, new_count: items.length, list_date: body.list_date });
 }
 
+// NPPA ceiling prices (public/ceiling.js parses in the browser; this only checks and writes).
+async function handleCeilingApply(request, env) {
+  if (Number(request.headers.get('content-length') || 0) > MAX_IMPORT_CHARS) return json({ error: 'too_large' }, 413);
+  const body = await request.json().catch(() => null);
+  if (!body) return json({ error: 'bad_json' }, 400);
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(body.list_date || '')) return json({ error: 'bad_import', detail: 'List date must be YYYY-MM-DD.' }, 400);
+  const bad = validateCeilings(body.items);
+  if (bad) return json({ error: 'bad_import', detail: bad }, 400);
+  const current = (await env.DB.prepare('SELECT COUNT(*) AS n FROM ceiling_prices').first())?.n ?? 0;
+  if (current > 0 && body.items.length < current * 0.5 && body.force !== true) {
+    return json({ error: 'too_few_rows', detail: `The file has ${body.items.length} usable rows, under half of the ${current} loaded now. Check the file, or apply with force.` }, 409);
+  }
+  const stmts = [env.DB.prepare('DELETE FROM ceiling_prices'), ...ceilingInserts(body.items).map((sql) => env.DB.prepare(sql))];
+  for (const [k, v] of Object.entries({ ceiling_list_date: body.list_date, ceiling_imported_at: new Date().toISOString(), ceiling_count: String(body.items.length) })) {
+    stmts.push(env.DB.prepare('INSERT OR REPLACE INTO meta (key, value) VALUES (?1, ?2)').bind(k, v));
+  }
+  await env.DB.batch(stmts); // all or nothing
+  resetMetaCache();
+  return json({ ok: true, applied: true, previous_count: current, new_count: body.items.length, list_date: body.list_date });
+}
+
 async function orderRedirect(env, code, drugCode, l) {
   if (env.ORDER_REQUESTS !== 'public' || !kendraContactsVisible(env.KENDRA_REGISTRY, false)) return null;
   const lang = ['en', 'kn', 'hi'].includes(l) ? l : 'en';
@@ -348,6 +406,11 @@ async function orderRedirect(env, code, drugCode, l) {
 export default {
   async fetch(request, env, ctx) {
     const url = new URL(request.url);
+    // Own domain: once CANONICAL_HOST is set, links that reach the Worker on the old workers.dev
+    // address (QR posters /k/…, volunteer /v/…, order /o/…) move to it. /api is never redirected
+    // (old app copies and the WhatsApp webhook keep working). Pages are moved by app.js.
+    const canon = canonicalRedirect(env, url, request.method);
+    if (canon) return Response.redirect(canon, 301);
     const qr = url.pathname.match(/^\/k\/([A-Za-z0-9]{6,12})\/?$/);
     if (qr) return Response.redirect(`${url.origin}/?k=${encodeURIComponent(qr[1].toUpperCase())}`, 302);
     // v2.0: short order link from the WhatsApp bot (/o/PMBJK00964/511?l=kn) → the patient's WhatsApp
@@ -366,17 +429,29 @@ export default {
     const vl = url.pathname.match(/^\/v\/(SV-?[A-Za-z0-9]{5})\/?$/i);
     if (vl) return Response.redirect(`${url.origin}/?volunteer=${encodeURIComponent(vl[1].toUpperCase())}`, 302);
     try {
+      // Abuse protection: per-address limits on checks and on staff sign-in (worker/src/limits.js).
+      if (request.method === 'POST' && CHECK_PATHS.has(url.pathname) && (await overLimit(env, request, 'check'))) {
+        return await tooMany(request, url);
+      }
+      if (url.pathname === '/api/admin/login' && request.method === 'POST' && (await overLimit(env, request, 'login'))) {
+        return json({ error: 'locked', detail: 'Too many sign-in attempts from this connection. Wait a minute and try again.' }, 429);
+      }
       if (url.pathname.startsWith('/api/admin/')) return await handleAdmin(request, env, url);
       if (url.pathname === '/api/ask' && request.method === 'POST') return await handleAsk(request, env, ctx);
       if (url.pathname === '/api/feedback' && request.method === 'POST') return await handleFeedback(request, env);
+      if (url.pathname === '/api/prescription' && request.method === 'POST') return await handlePrescription(request, env);
       if (url.pathname === '/api/impact') return await handleImpact(env);
       if (url.pathname === '/api/health') {
         const r = await env.DB.prepare('SELECT key, value FROM meta').all();
-        return json({ ok: true, version: APP_VERSION, kendra_registry: env.KENDRA_REGISTRY || 'off', registration_email: env.REGISTRATION_EMAIL || null, order_requests: env.ORDER_REQUESTS || 'off', volunteer_registry: env.VOLUNTEER_REGISTRY === 'on' ? 'on' : 'off', whatsapp_bot: botOn(env) ? 'on' : 'off', wa_bot_number: botNumber(env), app_chat: appChatOn(env) ? 'on' : 'off', meta: Object.fromEntries((r.results || []).map((x) => [x.key, x.value])) });
+        return json({ ok: true, version: APP_VERSION, kendra_registry: env.KENDRA_REGISTRY || 'off', registration_email: env.REGISTRATION_EMAIL || null, order_requests: env.ORDER_REQUESTS || 'off', volunteer_registry: env.VOLUNTEER_REGISTRY === 'on' ? 'on' : 'off', whatsapp_bot: botOn(env) ? 'on' : 'off', canonical_host: String(env.CANONICAL_HOST || '').trim().toLowerCase() || null, wa_bot_number: botNumber(env), app_chat: appChatOn(env) ? 'on' : 'off', meta: Object.fromEntries((r.results || []).map((x) => [x.key, x.value])) });
       }
       // Nearest Kendras for a PIN, for the PIN box in an answer's Kendra card (no lookup is logged).
       if (url.pathname === '/api/kendras') {
-        const r = await nearestKendra(env.DB, { pin: url.searchParams.get('pin') || '' });
+        // v2.0.4 "Use my location": rounded to ~1 km here, used once, never stored.
+        const la = Number.parseFloat(url.searchParams.get('lat'));
+        const lo = Number.parseFloat(url.searchParams.get('lng'));
+        const point = Number.isFinite(la) && Number.isFinite(lo) && la > 5 && la < 38 && lo > 67 && lo < 98 ? { lat: Math.round(la * 100) / 100, lng: Math.round(lo * 100) / 100 } : {};
+        const r = await nearestKendra(env.DB, { pin: url.searchParams.get('pin') || '', ...point });
         if (r.items?.length && kendraContactsVisible(env.KENDRA_REGISTRY, isTestRequest(request, null))) {
           try { await attachContacts(env.DB, r.items); markOrders(r.items, env, isTestRequest(request, null)); } catch {}
         }
@@ -418,6 +493,7 @@ export default {
         const isTest = isTestRequest(request, b);
         const from = `app-${id}`;
         const image = typeof b.image === 'string' && b.image.startsWith('data:image/') && b.image.length <= MAX_IMAGE_CHARS ? b.image : null;
+        if (image && (await photoCapReached(env, istDay()))) return json({ replies: [{ kind: 'text', body: t(['en', 'kn', 'hi'].includes(b.lang) ? b.lang : 'en', 'visionDown') }] });
         const msg = b.button ? { kind: 'button', from, button: String(b.button) } : image ? { kind: 'image', from } : { kind: 'text', from, text: String(b.text || '') };
         const device = typeof b.device === 'string' ? b.device : undefined;
         const replies = await handleMessage(env, msg, {

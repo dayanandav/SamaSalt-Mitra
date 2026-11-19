@@ -6,11 +6,33 @@
 //
 // Every step is recorded in `trace` (tool, input, short output, ms) and returned to the UI,
 // and the eval runner writes the same trace as AgentFoundry run JSONL (.codenow/runs/).
-import { readStrip, understandText } from './vision.js';
-import { identifyMedicine, findSameSalt, janAushadhiMatch, nearestKendra, computeSaving, compositionFromText, brandCandidatesFromText } from './tools.js';
+import { readStrip, understandText, readPrescription } from './vision.js';
+import { identifyMedicine, findSameSalt, janAushadhiMatch, ceilingPrice, nearestKendra, computeSaving, compositionFromText, brandCandidatesFromText } from './tools.js';
 import { describeKey, extractDosageForm, ntiFromKey, parseSaltComposition } from './normalize.js';
 import { assetMeds, d1Meds } from './medstore.js';
 import { composeAnswer } from '../../public/strings.js';
+
+/**
+ * v2.0.4 Scan a prescription: read the medicine names (read_prescription), then match each one to
+ * the medicine list (identify_medicine, by name). Nothing is priced here: the patient picks each
+ * medicine, and only then is it checked like a typed name (the pick is the confirmation).
+ */
+export async function readPrescriptionAgent(env, { image }) {
+  const files = env.ASSETS ? await assetMeds(env.ASSETS) : null;
+  const ctx = { db: env.DB, meds: files || d1Meds(env.DB) };
+  const read = await readPrescription(env, image);
+  if (!read.ok) return { status: read.unreadable ? 'unreadable' : 'vision_unavailable' };
+  const items = [];
+  for (const it of read.items) {
+    const brand = [it.name, it.strength && !it.name.includes(it.strength.replace(/\s+/g, '')) ? it.strength : ''].filter(Boolean).join(' ');
+    let id = { found: false };
+    try { id = await identifyMedicine(ctx, { brand, composition: '', form: it.form || '' }); } catch {}
+    items.push(id.found
+      ? { read: brand, found: true, name: id.medicine.name, composition: describeKey(id.medicine.ckey), nti: !!id.medicine.nti || ntiFromKey(id.medicine.ckey) }
+      : { read: brand, found: false });
+  }
+  return { status: items.length ? 'ok' : 'unreadable', items, model: read.model };
+}
 
 const NON_LATIN = /[^\u0000-ɏ\s\d.,()+\-/]/;
 
@@ -122,6 +144,11 @@ export async function runAgent(env, input) {
   if (ntiMed) ja.nti = true;
   if (!meta.ja_loaded_at) trace.push({ tool: 'jan_aushadhi_match', input: { ckey: med.ckey }, output: { skipped: 'PMBJP product list not loaded' }, ms: 0 });
 
+  // NPPA ceiling price: the legal maximum per unit. Never for a never-switch medicine (no price talk).
+  const ceiling = meta.ceiling_list_date && !ntiMed
+    ? await step('ceiling_price', { ckey: med.ckey }, () => ceilingPrice(ctx, med.ckey), (r) => (r.available ? { unit_price: r.unit_price, notified_on: r.notified_on } : { available: false }))
+    : { available: false };
+
   const wantsKendra = pin.length === 6 || (input.lat != null && input.lng != null);
   let kendras = { by: null, items: [], pending: !meta.kendras_loaded_at };
   if (wantsKendra && meta.kendras_loaded_at) {
@@ -167,11 +194,12 @@ export async function runAgent(env, input) {
     medicine: { name: med.name, manufacturer: med.manufacturer, composition: describeKey(med.ckey), ckey: med.ckey, price: med.price, pack: med.pack, unit_price: med.unit_price, form: med.form, nti, via: id.via, alternatives: id.alternatives },
     same_salt: nti ? { count: same.count, items: [], cheapest_unit: null } : same,
     jan_aushadhi: ja,
+    ceiling,
     kendras,
     saving,
     answer,
     pin3: pin.length === 6 ? pin.slice(0, 3) : null,
-    data: { brand_prices: (await ctx.meds.meta())?.dataset_date || meta.medicines_dataset_date || 'November 2022', brands_loaded: brandsLoaded, ja_list_date: meta.ja_list_date || null, kendra_list_date: meta.kendra_list_date || null },
+    data: { brand_prices: (await ctx.meds.meta())?.dataset_date || meta.medicines_dataset_date || 'November 2022', brands_loaded: brandsLoaded, ja_list_date: meta.ja_list_date || null, kendra_list_date: meta.kendra_list_date || null, ceiling_list_date: meta.ceiling_list_date || null },
     trace,
   };
 }

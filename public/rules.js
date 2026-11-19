@@ -348,3 +348,21 @@ export function volunteerWelcome(v, origin) {
     'Remember: never advise on doses, never suggest switching a medicine marked "same brand only", ' +
     'and always ask the patient to check with their doctor or pharmacist before switching. Thank you!';
 }
+
+/**
+ * v2.0.4 Share the answer (to family, on WhatsApp or any app). Only the templated answer and
+ * official prices: the same facts as on screen. A never-switch (NTI) medicine shares its warning
+ * only (no generic, no price). Keys: shareJa, waCeiling, shareFooter.
+ */
+export function shareText(r, tr, money, per, link) {
+  const m = r?.medicine;
+  if (!m || r.status !== 'ok') return '';
+  const L = [`${msgClean(m.name)} (${msgClean(m.composition)})`, '', String(r.answer || '').trim()];
+  if (!m.nti) {
+    const p = r.jan_aushadhi?.available && r.jan_aushadhi.product;
+    if (p) L.push('', tr('shareJa', { name: msgClean(p.generic_name), code: msgClean(p.drug_code), size: p.unit_size ? ` · ${msgClean(p.unit_size)}` : '', mrp: money(p.mrp) }));
+    if (r.ceiling?.available) L.push(tr('waCeiling', { price: money(r.ceiling.unit_price), per }));
+  }
+  L.push('', tr('shareFooter', { link }));
+  return L.join('\n');
+}

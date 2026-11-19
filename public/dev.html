@@ -120,6 +120,36 @@
       <p class="msg" id="applyMsg" hidden></p>
     </section>
 
+    <section class="card" id="ceilCard">
+      <p class="step">NPPA ceiling prices</p>
+      <h2>Government maximum prices (NPPA)</h2>
+      <p class="muted" style="margin:6px 0 0;font-size:15px">The legal maximum price per tablet, capsule or ml (before GST) for the scheduled formulations under DPCO 2013. Shown under the answer as "Government maximum price". Brand and Jan Aushadhi data are not touched.</p>
+      <ol class="how">
+        <li>Open NPPA's <a href="https://www.nppa.gov.in/en/compendiumofprice" target="_blank" rel="noopener">Compendium of prices</a> (the latest, e.g. "Compendium of Prices 2026") and export or copy the table.</li>
+        <li>Save it as a CSV with these columns (header names may vary a little): <b>Medicine</b>, <b>Dosage form and strength</b>, <b>Unit</b>, <b>Ceiling Price</b>, <b>S.O. No.</b>, <b>S.O. Date</b>. Example row: <code>Paracetamol, Tablet 650 mg, 1 Tablet, 2.04, S.O. 1234(E), 25-03-2026</code>.</li>
+        <li>Choose the file and the list date below, preview, then apply.</li>
+      </ol>
+      <div class="form">
+        <label>NPPA ceiling price file (.csv)
+          <input type="file" id="ceilFile" accept=".csv,text/csv">
+        </label>
+        <label>List date (date of the NPPA list)
+          <input type="date" id="ceilDate">
+        </label>
+        <div class="row-btns"><button class="primary" id="ceilPreviewBtn" type="button">Preview</button></div>
+      </div>
+      <p class="msg" id="ceilPreviewMsg" hidden></p>
+      <div id="ceilPreview" hidden>
+        <div class="tiles" id="ceilTiles"></div>
+        <div id="ceilTables"></div>
+      </div>
+      <div class="form">
+        <label id="ceilForceWrap" class="force" hidden><input type="checkbox" id="ceilForce"> Apply anyway, although the new list is much shorter</label>
+        <div class="row-btns"><button class="primary" id="ceilApplyBtn" type="button" disabled>Apply ceiling prices</button></div>
+      </div>
+      <p class="msg" id="ceilApplyMsg" hidden></p>
+    </section>
+
     <section class="card" id="krCard">
       <p class="step">v1.1 Kendra registry</p>
       <h2>Kendra registrations</h2>

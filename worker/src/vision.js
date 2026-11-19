@@ -12,10 +12,12 @@ export const TEXT_MODEL = '@cf/meta/llama-3.3-70b-instruct-fp8-fast';
 // evaluated across models in AF's Evals tab) and are bundled into the Worker as text modules.
 import READ_STRIP_MD from '../../.codenow/agent-studio/prompts/read_strip.md';
 import UNDERSTAND_TEXT_MD from '../../.codenow/agent-studio/prompts/understand_text.md';
+import READ_PRESCRIPTION_MD from '../../.codenow/agent-studio/prompts/read_prescription.md';
 
 export const stripFrontmatter = (md) => String(md).replace(/^---[\s\S]*?---\s*/, '').trim();
 const SYSTEM = stripFrontmatter(READ_STRIP_MD);
 const UNDERSTAND = stripFrontmatter(UNDERSTAND_TEXT_MD);
+const PRESCRIPTION = stripFrontmatter(READ_PRESCRIPTION_MD);
 
 export function parseJsonLoose(x) {
   if (x && typeof x === 'object') return x;
@@ -66,6 +68,48 @@ export async function readStrip(env, imageDataUrl) {
   // `unreadable`: a model looked at the photo and found no medicine text (blurry, cropped, wrong
   // side). That is a photo problem, not an outage: the app asks for a better photo instead of
   // falling back to the much weaker on-phone OCR, which is kept for real outages (quota, errors).
+  return { ok: false, unreadable: answered, errors };
+}
+
+/**
+ * Tool: read_prescription. The medicine names on a prescription photo (at most 10), nothing else:
+ * no patient or doctor details, no dose instructions. The patient picks each name before it is checked.
+ */
+export async function readPrescription(env, imageDataUrl) {
+  const errors = [];
+  let answered = false;
+  for (const model of VISION_MODELS) {
+    const t0 = Date.now();
+    try {
+      const out = await env.AI.run(model, {
+        messages: [
+          { role: 'system', content: PRESCRIPTION },
+          { role: 'user', content: [{ type: 'text', text: 'List the medicines on this prescription. JSON only.' }, { type: 'image_url', image_url: { url: imageDataUrl } }] },
+        ],
+        max_tokens: 500,
+        temperature: 0,
+      });
+      const parsed = parseJsonLoose(out?.response ?? out?.result?.response ?? out);
+      const list = Array.isArray(parsed?.medicines) ? parsed.medicines : null;
+      if (list) {
+        const clean = (s, n) => String(s ?? '').replace(/[\r\n]+/g, ' ').replace(/\s+/g, ' ').trim().slice(0, n);
+        const seen = new Set();
+        const items = [];
+        for (const m of list) {
+          const name = clean(typeof m === 'string' ? m : m?.name, 80);
+          if (!name || !/[a-z]/i.test(name) || seen.has(name.toLowerCase())) continue;
+          seen.add(name.toLowerCase());
+          items.push({ name, strength: clean(m?.strength, 30), form: clean(m?.form, 20).toLowerCase() });
+          if (items.length >= 10) break;
+        }
+        return { ok: true, model, ms: Date.now() - t0, usage: tokenUsage(out), items };
+      }
+      errors.push(`${model}: unreadable`);
+      answered = true;
+    } catch (e) {
+      errors.push(`${model}: ${String(e?.message || e).slice(0, 120)}`);
+    }
+  }
   return { ok: false, unreadable: answered, errors };
 }
 

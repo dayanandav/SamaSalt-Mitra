@@ -60,6 +60,9 @@
           <span data-t="useInAppCam">Use in-app camera</span>
         </button>
       </div>
+      <!-- v2.0.4: several medicines at once: the names on a prescription, each checked when tapped. -->
+      <button class="secondary rx-btn" id="rxBtn" type="button"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 3h9l3 3v15H6z"/><path d="M9 9h6M9 13h6M9 17h3"/></svg><span data-t="rxBtn">Scan a prescription</span></button>
+      <input id="rxPhoto" type="file" accept="image/*" hidden>
       <input id="photo" type="file" accept="image/*" capture="environment" hidden>
       <input id="gallery" type="file" accept="image/*" hidden>
       <p class="cam-note" id="camLost" hidden data-t="camLost"></p>
@@ -86,6 +89,14 @@
       <p class="field-note" data-t="pinHint"></p>
 
       <div class="volunteer-banner" id="volBanner" hidden data-t="volunteerOn"></div>
+
+      <!-- v2.0.4: offered once the phone allows it (Android Chrome), never again after "Not now". -->
+      <div class="install-bar" id="installBar" hidden>
+        <img src="/icon-128.png" width="40" height="40" alt="">
+        <div><b data-t="installTitle"></b><span data-t="installBody"></span></div>
+        <button class="primary" id="installBtn" type="button" data-t="installBtn">Add</button>
+        <button class="link" id="installNo" type="button" data-t="installLater">Not now</button>
+      </div>
     </section>
 
     <!-- In-app camera: the page stays open (Android may close a tab while its separate camera app runs). -->
@@ -137,6 +148,9 @@
 
     <section id="result" class="result" hidden aria-live="polite"></section>
 
+    <!-- v2.0.4 Scan a prescription: the medicine names read from the photo; each is checked when tapped. -->
+    <section id="rx" class="result" hidden aria-live="polite"></section>
+
     <!-- v2.0.1 Chat in the app: the WhatsApp bot's conversation (/api/chat), same templated answers. -->
     <section id="chatView" class="chat-view" hidden>
       <div class="wa">
@@ -166,6 +180,7 @@
 
   <footer class="foot">
     <p data-t="privacy"></p>
+    <p class="foot-privacy"><a href="/privacy" data-t="privacyLink">Privacy and disclaimer</a></p>
     <!-- Developer mode only (only while the address has ?dev=1; the plain address is the patient app); hidden for patients and volunteers. -->
     <p class="foot-links" id="devLinks" hidden>
       <a href="/impact" data-t="impactLink">See the impact</a>

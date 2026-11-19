@@ -2,6 +2,7 @@
 // (public/pmbi.js, the same code the tests check against build_ja.py), then sends the parsed
 // products to /api/admin/pmbi/apply with the admin token.
 import { Vocab, readTable, buildProducts, diffProducts, summarize } from '/pmbi.js';
+import { buildCeilings, diffCeilings } from '/ceiling.js';
 
 const $ = (s) => document.querySelector(s);
 const ss = {
@@ -169,3 +170,66 @@ $('#applyBtn').onclick = async () => {
   }
 };
 
+
+// ── NPPA ceiling prices ──────────────────────────────────────────────────────
+let ceilPreviewed = null;
+$('#ceilDate').value = new Date(Date.now() + 5.5 * 3600_000).toISOString().slice(0, 10);
+$('#ceilFile').onchange = $('#ceilDate').onchange = () => { ceilPreviewed = null; $('#ceilApplyBtn').disabled = true; };
+const perUnit = (v) => (v == null ? '' : `₹${Number(v).toFixed(4).replace(/0{1,2}$/, '')}`);
+
+$('#ceilPreviewBtn').onclick = async () => {
+  msg($('#ceilApplyMsg'), 'ok', '');
+  const f = $('#ceilFile').files[0];
+  if (!f) return msg($('#ceilPreviewMsg'), 'err', 'Choose the NPPA ceiling price file first.');
+  const list_date = $('#ceilDate').value;
+  if (!list_date) return msg($('#ceilPreviewMsg'), 'err', 'Set the list date.');
+  if (/\.(xlsx?|pdf)$/i.test(f.name)) return msg($('#ceilPreviewMsg'), 'err', 'Save the table as CSV first (Excel and PDF are not read here).');
+  msg($('#ceilPreviewMsg'), 'info', `Reading ${f.name}…`);
+  $('#ceilPreviewBtn').disabled = true;
+  try {
+    const [text, ctx, cur] = await Promise.all([f.text(), api('/api/admin/pmbi/context'), api('/api/admin/ceiling/current')]);
+    const built = buildCeilings(readTable(text), new Vocab(ctx.brand_keys));
+    if (!built.items.length) throw new Error('No ceiling prices found. Columns needed: Medicine, Dosage form and strength, Unit, Ceiling Price.');
+    const d = diffCeilings(cur.current, built.items);
+    const st = built.stats;
+    $('#ceilTiles').innerHTML = [
+      ['Rows in file', st.rows], ['Matched a brand', st.ok], ['No brand equivalent', st.no_equivalent], ['Left out (unclear)', st.unparsed, 'warn'],
+      ['New', d.added.length], ['Price changed', d.changed.length, 'up'], ['Removed', d.removed.length, d.removed.length ? 'warn' : ''], ['Unchanged', d.unchanged],
+    ].map(([k, v, cls]) => `<div class="tile ${cls || ''}"><b>${n(v)}</b><span>${esc(k)}</span></div>`).join('');
+    const first = (a) => a.slice(0, 300);
+    $('#ceilTables').innerHTML = [
+      table('Ceiling prices (matched to the medicine database)', true, [
+        ['Formulation', (c) => esc(c.name) + (c.matched ? '' : ' <span class="tag grey">no brand equivalent</span>')], ['Unit', (c) => esc(c.unit || '')],
+        ['Ceiling', (c) => inr(c.price), 'num'], ['Per unit', (c) => perUnit(c.unit_price), 'num'], ['S.O.', (c) => esc([c.notification, c.notified_on].filter(Boolean).join(' · '))],
+      ], first(built.items), built.items.length),
+      table('Price changes', false, [['Formulation', (c) => esc(c.name)], ['Old per unit', (c) => perUnit(c.old_unit_price), 'num'], ['New per unit', (c) => perUnit(c.unit_price), 'num']], first(d.changed), d.changed.length),
+      table('Left out: name could not be parsed with confidence', false, [['Formulation', (c) => esc(c.name)], ['Reason', (c) => esc(c.reason)], ['Ceiling', (c) => inr(c.price), 'num']], first(built.unparsed), built.unparsed.length),
+    ].join('');
+    $('#ceilPreview').hidden = false;
+    ceilPreviewed = { items: built.items.map(({ matched, ...p }) => p), list_date };
+    $('#ceilApplyBtn').disabled = false;
+    msg($('#ceilPreviewMsg'), 'ok', `${n(built.items.length)} ceiling prices ready (list date ${list_date}). Nothing is saved until you apply.`);
+  } catch (e) {
+    $('#ceilPreview').hidden = true;
+    msg($('#ceilPreviewMsg'), 'err', e.status === 401 ? 'Wrong admin token.' : e.message);
+  } finally {
+    $('#ceilPreviewBtn').disabled = false;
+  }
+};
+
+$('#ceilApplyBtn').onclick = async () => {
+  if (!ceilPreviewed) return;
+  if (!confirm(`Replace the NPPA ceiling prices with this file (list date ${ceilPreviewed.list_date})?`)) return;
+  $('#ceilApplyBtn').disabled = true;
+  msg($('#ceilApplyMsg'), 'info', 'Applying…');
+  try {
+    const r = await api('/api/admin/ceiling/apply', { ...ceilPreviewed, force: $('#ceilForce').checked || undefined });
+    msg($('#ceilApplyMsg'), 'ok', `Done. ${n(r.new_count)} NPPA ceiling prices are live, list date ${ceilPreviewed.list_date}.`);
+    $('#ceilForceWrap').hidden = true;
+    ceilPreviewed = null;
+  } catch (e) {
+    if (e.data?.error === 'too_few_rows') $('#ceilForceWrap').hidden = false;
+    msg($('#ceilApplyMsg'), 'err', e.message);
+    $('#ceilApplyBtn').disabled = false;
+  }
+};

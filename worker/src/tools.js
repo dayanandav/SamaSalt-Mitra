@@ -167,6 +167,14 @@ export async function janAushadhiMatch(ctx, ckey) {
   return { available: true, product: rows[0], others: rows.slice(1) };
 }
 
+/** Tool: ceiling_price. NPPA's legal maximum per unit (before GST) for this composition, if notified. */
+export async function ceilingPrice(ctx, ckey) {
+  const { db } = ctxOf(ctx);
+  if (!ckey) return { available: false };
+  const row = await db.prepare('SELECT name, unit, price, unit_price, notification, notified_on FROM ceiling_prices WHERE ckey = ?1').bind(ckey).first().catch(() => null);
+  return row ? { available: true, ...row } : { available: false };
+}
+
 const R = 6371;
 function haversine(a, b) {
   const toRad = (d) => (d * Math.PI) / 180;
@@ -180,20 +188,36 @@ function haversine(a, b) {
 export async function nearestKendra(ctx, { pin = '', lat = null, lng = null, limit = 3 } = {}) {
   const { db } = ctxOf(ctx);
   const cols = 'code, name, address, district, state, pin, lat, lng, phone';
-  if (lat != null && lng != null && Number.isFinite(+lat) && Number.isFinite(+lng)) {
-    const d = 0.25; // ~25 km box, widened once if empty
-    for (const box of [d, d * 4]) {
+  // Kendra coordinates are the centre of their PIN code (data/build_pins.mjs): distances are approximate.
+  const byPoint = async (la, lo) => {
+    const d = 0.25; // ~25 km box, widened until it holds `limit` Kendras (or ~300 km)
+    let found = [];
+    for (const box of [d, d * 4, d * 12]) {
       const res = await db
         .prepare(`SELECT ${cols} FROM kendras WHERE lat BETWEEN ?1 AND ?2 AND lng BETWEEN ?3 AND ?4 LIMIT 400`)
-        .bind(+lat - box, +lat + box, +lng - box, +lng + box)
+        .bind(la - box, la + box, lo - box, lo + box)
         .all();
       const rows = (res.results || [])
-        .map((k) => ({ ...k, km: Math.round(haversine({ lat: +lat, lng: +lng }, k) * 10) / 10 }))
+        .map((k) => ({ ...k, km: Math.round(haversine({ lat: la, lng: lo }, k) * 10) / 10, approx: true }))
         .sort((a, b) => a.km - b.km);
-      if (rows.length) return { by: 'location', items: rows.slice(0, limit) };
+      found = rows;
+      if (rows.length >= limit) break;
     }
+    return found.slice(0, limit);
+  };
+  if (lat != null && lng != null && Number.isFinite(+lat) && Number.isFinite(+lng)) {
+    const rows = await byPoint(+lat, +lng);
+    if (rows.length) return { by: 'location', items: rows };
   }
   const p = String(pin || '').replace(/\D/g, '');
+  // v2.0.4: a PIN code with a known location: the nearest Kendras by distance from its centre.
+  if (p.length === 6) {
+    const c = await db.prepare('SELECT lat, lng FROM pin_locations WHERE pin = ?1').bind(p).first().catch(() => null);
+    if (c) {
+      const rows = await byPoint(c.lat, c.lng);
+      if (rows.length) return { by: rows[0].pin === p ? 'pin' : 'nearby-pin', items: rows };
+    }
+  }
   if (p.length === 6) {
     for (const n of [6, 5, 4, 3]) {
       const prefix = p.slice(0, n);
