@@ -158,8 +158,12 @@ export async function runAgent(env, input) {
     // "Did you mean…?": close brand names for a typed name (a typo, "65O" for 650). Only shown
     // for the person to tap; nothing is assumed, and a typed strength is never changed.
     const choices = source === 'text' ? id.choices || firstChoices || [] : [];
-    if (choices.length) return { status: 'not_found', lang, read, trace, source, choices };
-    const suggestions = source === 'text' && text ? await suggestNames(ctx, text).catch(() => []) : [];
+    const suggestions = source === 'text' && text && !hasIndic(text) ? await suggestNames(ctx, text).catch(() => []) : [];
+    // Choices (brands that partly fit) and "Did you mean" (a typo: "Dolp 500" -> Dolo 500) can both apply.
+    if (choices.length) {
+      const more = suggestions.filter((n) => !choices.some((c) => c.name === n));
+      return { status: 'not_found', lang, read, trace, source, choices, ...(more.length ? { suggestions: more } : {}) };
+    }
     return { status: 'not_found', lang, read, trace, source, ...(suggestions.length ? { suggestions } : {}) };
   }
 

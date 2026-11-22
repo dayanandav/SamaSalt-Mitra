@@ -1,0 +1,83 @@
+{
+  "name": "search-test-set",
+  "description": "Roadmap S3.9: realistic typed searches with their correct result. expect = answer (must be answered with exactly this composition), choice (answered with it, or offered among the choices), none (must not be answered). The composition key of each case comes from the brand database by `brand` (exact name) or from the Jan Aushadhi list by `ja` (drug code), never written by hand. Built by evals/build_search_cases.mjs into evals/search_cases.json.",
+  "cases": [
+    { "id": "exact-dolo650", "text": "Dolo 650", "expect": "answer", "brand": "Dolo 650 Tablet" },
+    { "id": "exact-dolo650-lower", "text": "dolo 650", "expect": "answer", "brand": "Dolo 650 Tablet" },
+    { "id": "exact-dolo650-glued", "text": "dolo650", "expect": "answer", "brand": "Dolo 650 Tablet" },
+    { "id": "exact-dolo650-tablet", "text": "Dolo 650 tablet", "expect": "answer", "brand": "Dolo 650 Tablet" },
+    { "id": "exact-pan40", "text": "Pan 40", "expect": "answer", "brand": "PAN 40 Tablet" },
+    { "id": "exact-telma40", "text": "Telma 40", "expect": "answer", "brand": "Telma 40 Tablet" },
+    { "id": "exact-thyronorm50", "text": "Thyronorm 50", "expect": "answer", "brand": "Thyronorm 50mcg Tablet" },
+    { "id": "exact-ecosprin75", "text": "Ecosprin 75", "expect": "answer", "brand": "Ecosprin 75 Tablet" },
+    { "id": "exact-atorva10", "text": "Atorva 10", "expect": "answer", "brand": "Atorva Tablet" },
+    { "id": "exact-atorva20", "text": "Atorva 20", "expect": "answer", "brand": "Atorva 20 Tablet" },
+    { "id": "exact-calpol500", "text": "Calpol 500", "expect": "answer", "brand": "Calpol 500mg Tablet" },
+    { "id": "exact-pcm650", "text": "PCM 650", "expect": "answer", "brand": "PCM 650mg Tablet" },
+    { "id": "exact-hcq200", "text": "HCQ 200", "expect": "answer", "brand": "HCQ 200mg Tablet" },
+    { "id": "exact-glycomet500sr", "text": "Glycomet 500 SR", "expect": "answer", "brand": "Glycomet 500 SR Tablet" },
+    { "id": "exact-crocin-advance", "text": "Crocin Advance", "expect": "answer", "brand": "Crocin Advance Tablet" },
+    { "id": "exact-pand", "text": "Pan-D capsule", "expect": "choice", "brand": "Pan-D Capsule PR" },
+    { "id": "exact-amlokind5", "text": "Amlokind 5", "expect": "answer", "brand": "Amlokind 5 Tablet" },
+    { "id": "exact-shelcal", "text": "Shelcal 500", "expect": "none", "note": "not in the 2022 brand list" },
+
+    { "id": "nostrength-atorva", "text": "Atorva", "expect": "choice", "brand": "Atorva Tablet" },
+    { "id": "nostrength-telma", "text": "Telma", "expect": "choice", "brand": "Telma 40 Tablet" },
+    { "id": "nostrength-dolo", "text": "Dolo", "expect": "choice", "brand": "Dolo 650 Tablet" },
+    { "id": "nostrength-thyronorm", "text": "Thyronorm", "expect": "choice", "brand": "Thyronorm 50mcg Tablet" },
+    { "id": "nostrength-crocin", "text": "Crocin", "expect": "choice", "brand": "Crocin Advance Tablet" },
+
+    { "id": "variant-telmah", "text": "Telma H", "expect": "choice", "brand": "Telma H Tablet", "note": "Telma H and Telma 80-H both fit: ask" },
+    { "id": "variant-augmentin625", "text": "Augmentin 625", "expect": "choice", "brand": "Augmentin 625 Duo Tablet" },
+    { "id": "variant-azithro500", "text": "Azithro 500", "expect": "choice", "brand": "Azithro Max 500mg Tablet" },
+    { "id": "variant-atorva-e", "text": "Atorva E", "expect": "choice", "brand": "Atorva E 10mg/10mg Tablet" },
+    { "id": "variant-calpol-syp", "text": "Calpol syp", "expect": "none", "note": "only Calpol T (tramadol tablet) is near: must never be answered" },
+
+    { "id": "typo-dolo-o-for-zero", "text": "Dolo 65O", "expect": "choice", "brand": "Dolo 650 Tablet" },
+    { "id": "typo-augmentn", "text": "Augmentn 625", "expect": "choice", "brand": "Augmentin 625 Duo Tablet" },
+    { "id": "typo-dolp", "text": "Dolp 500", "expect": "choice", "brand": "Dolo 500 Tablet" },
+    { "id": "typo-crocn", "text": "Crocn advance", "expect": "choice", "brand": "Crocin Advance Tablet" },
+    { "id": "typo-thyronrm", "text": "Thyronrm 50", "expect": "choice", "brand": "Thyronorm 50mcg Tablet" },
+
+    { "id": "short-pcm500", "text": "pcm 500", "expect": "answer", "brand": "PCM Tablet" },
+    { "id": "short-pcm250-susp", "text": "pcm 250 susp", "expect": "answer", "brand": "PCM 250mg Oral Suspension" },
+
+    { "id": "ja-name-para650", "text": "Paracetamol Tablets IP 650 mg", "expect": "answer", "ja": "511" },
+    { "id": "ja-short-para650", "text": "Paracetamol 650", "expect": "answer", "ja": "511" },
+    { "id": "ja-name-panto40", "text": "Pantoprazole Gastro Resistant Tablets IP 40 mg", "expect": "answer", "ja": "212" },
+    { "id": "ja-short-telmi40", "text": "Telmisartan 40", "expect": "answer", "ja": "300" },
+    { "id": "ja-short-metformin500", "text": "Metformin 500", "expect": "answer", "ja": "145" },
+    { "id": "ja-chlorthalidone", "text": "Chlorthalidone 12.5", "expect": "answer", "ja": "832" },
+    { "id": "ja-torsemide20", "text": "Torsemide 20", "expect": "answer", "ja": "457" },
+    { "id": "ja-pand-pr", "text": "Pantoprazole 40mg (Gastro-resistant) and Domperidone 30mg (Prolonged Release) Capsules IP", "expect": "answer", "ja": "465" },
+
+    { "id": "sr-pand", "text": "Pan D", "expect": "choice", "brand": "Pan-D Capsule PR" },
+    { "id": "sr-pantocid-dsr", "text": "Pantocid DSR", "expect": "answer", "brand": "Pantocid DSR Capsule" },
+    { "id": "sr-glycomet-gp1", "text": "Glycomet GP 1", "expect": "choice", "brand": "Glycomet-GP 1 Tablet PR" },
+
+    { "id": "liquid-scan-para250", "text": "Each 5 ml contains Paracetamol IP 250 mg Oral Suspension", "expect": "answer", "ja": "712" },
+    { "id": "liquid-scan-amoxclav", "text": "Each 5 ml of reconstituted suspension contains Amoxycillin IP 400 mg and Clavulanic Acid 57 mg", "expect": "answer", "brand": "Augmentin DDS Suspension" },
+    { "id": "scan-tablet-amoxclav", "text": "Each film coated tablet contains Amoxycillin 500 mg Clavulanic acid 125 mg", "expect": "answer", "brand": "Augmentin 625 Duo Tablet" },
+
+    { "id": "kn-dolo650", "text": "ಡೋಲೋ 650", "lang": "kn", "expect": "answer", "brand": "Dolo 650 Tablet" },
+    { "id": "hi-dolo650", "text": "डोलो 650", "lang": "hi", "expect": "answer", "brand": "Dolo 650 Tablet" },
+    { "id": "hi-telma40", "text": "टेल्मा 40", "lang": "hi", "expect": "choice", "brand": "Telma 40 Tablet" },
+    { "id": "hi-atorva10", "text": "एटोर्वा 10", "lang": "hi", "expect": "choice", "brand": "Atorva Tablet" },
+    { "id": "kn-thyronorm50", "text": "ಥೈರೋನಾರ್ಮ್ 50", "lang": "kn", "expect": "choice", "brand": "Thyronorm 50mcg Tablet" },
+    { "id": "hi-pan40", "text": "पैन 40 टैबलेट", "lang": "hi", "expect": "choice", "brand": "PAN 40 Tablet" },
+    { "id": "hi-metformin500", "text": "मेटफॉर्मिन 500", "lang": "hi", "expect": "choice", "ja": "145" },
+    { "id": "hi-amox500", "text": "अमोक्सीसिलिन 500", "lang": "hi", "expect": "choice", "ja": "45" },
+    { "id": "hi-para650", "text": "पैरासिटामोल 650", "lang": "hi", "expect": "choice", "ja": "511" },
+    { "id": "kn-amlodipine5", "text": "ಅಮ್ಲೋಡಿಪಿನ್ 5", "lang": "kn", "expect": "choice", "ja": "264" },
+    { "id": "hi-panto40", "text": "पैंटोप्राजोल 40", "lang": "hi", "expect": "choice", "ja": "212" },
+    { "id": "kn-cetirizine10", "text": "ಸಿಟಿರಿಜಿನ್ 10", "lang": "kn", "expect": "choice", "ja": "240" },
+
+    { "id": "nti-brivapride25", "text": "Brivapride 25", "expect": "answer", "brand": "Brivapride 25mg Tablet" },
+    { "id": "nti-thyronorm100", "text": "Thyronorm 100", "expect": "answer", "brand": "Thyronorm 100mcg Tablet" },
+
+    { "id": "none-gaviscon", "text": "Gaviscon oral syrup", "expect": "none", "note": "not in the 2022 brand list" },
+    { "id": "none-junk", "text": "Zzqxw 999", "expect": "none" },
+    { "id": "none-dolo999", "text": "Dolo 999", "expect": "none", "note": "no such strength" },
+    { "id": "none-sentence", "text": "which tablet is good for fever", "expect": "none" }
+  ]
+}

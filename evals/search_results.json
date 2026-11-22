@@ -1,0 +1,686 @@
+{
+  "summary": {
+    "when": "2026-11-22T19:01:13.727Z",
+    "target": "https://samasalt-mitra-staging.samasalt-mitra-worker.workers.dev",
+    "cases": 67,
+    "passed": 67,
+    "right": 41,
+    "offered": 26,
+    "missed": 0,
+    "wrong": 0,
+    "errors": 0,
+    "median_ms": 667
+  },
+  "results": [
+    {
+      "id": "exact-dolo650",
+      "text": "Dolo 650",
+      "expect": "answer",
+      "want": "Paracetamol 650 mg · tablet",
+      "outcome": "right",
+      "pass": true,
+      "got": "Dolo 650 Tablet [Paracetamol 650 mg · tablet]",
+      "ms": 1230
+    },
+    {
+      "id": "exact-dolo650-lower",
+      "text": "dolo 650",
+      "expect": "answer",
+      "want": "Paracetamol 650 mg · tablet",
+      "outcome": "right",
+      "pass": true,
+      "got": "Dolo 650 Tablet [Paracetamol 650 mg · tablet]",
+      "ms": 692
+    },
+    {
+      "id": "exact-dolo650-glued",
+      "text": "dolo650",
+      "expect": "answer",
+      "want": "Paracetamol 650 mg · tablet",
+      "outcome": "right",
+      "pass": true,
+      "got": "Dolo 650 Tablet [Paracetamol 650 mg · tablet]",
+      "ms": 617
+    },
+    {
+      "id": "exact-dolo650-tablet",
+      "text": "Dolo 650 tablet",
+      "expect": "answer",
+      "want": "Paracetamol 650 mg · tablet",
+      "outcome": "right",
+      "pass": true,
+      "got": "Dolo 650 Tablet [Paracetamol 650 mg · tablet]",
+      "ms": 641
+    },
+    {
+      "id": "exact-pan40",
+      "text": "Pan 40",
+      "expect": "answer",
+      "want": "Pantoprazole 40 mg · tablet",
+      "outcome": "right",
+      "pass": true,
+      "got": "PAN 40 Tablet [Pantoprazole 40 mg · tablet]",
+      "ms": 833
+    },
+    {
+      "id": "exact-telma40",
+      "text": "Telma 40",
+      "expect": "answer",
+      "want": "Telmisartan 40 mg · tablet",
+      "outcome": "right",
+      "pass": true,
+      "got": "Telma 40 Tablet [Telmisartan 40 mg · tablet]",
+      "ms": 652
+    },
+    {
+      "id": "exact-thyronorm50",
+      "text": "Thyronorm 50",
+      "expect": "answer",
+      "want": "Thyroxine 50 mcg · tablet",
+      "outcome": "right",
+      "pass": true,
+      "got": "Thyronorm 50mcg Tablet [Thyroxine 50 mcg · tablet]",
+      "ms": 610
+    },
+    {
+      "id": "exact-ecosprin75",
+      "text": "Ecosprin 75",
+      "expect": "answer",
+      "want": "Aspirin 75 mg · tablet",
+      "outcome": "right",
+      "pass": true,
+      "got": "Ecosprin 75 Tablet [Aspirin 75 mg · tablet]",
+      "ms": 665
+    },
+    {
+      "id": "exact-atorva10",
+      "text": "Atorva 10",
+      "expect": "answer",
+      "want": "Atorvastatin 10 mg · tablet",
+      "outcome": "right",
+      "pass": true,
+      "got": "Atorva Tablet [Atorvastatin 10 mg · tablet]",
+      "ms": 685
+    },
+    {
+      "id": "exact-atorva20",
+      "text": "Atorva 20",
+      "expect": "answer",
+      "want": "Atorvastatin 20 mg · tablet",
+      "outcome": "right",
+      "pass": true,
+      "got": "Atorva 20 Tablet [Atorvastatin 20 mg · tablet]",
+      "ms": 613
+    },
+    {
+      "id": "exact-calpol500",
+      "text": "Calpol 500",
+      "expect": "answer",
+      "want": "Paracetamol 500 mg · tablet",
+      "outcome": "right",
+      "pass": true,
+      "got": "Calpol 500mg Tablet [Paracetamol 500 mg · tablet]",
+      "ms": 649
+    },
+    {
+      "id": "exact-pcm650",
+      "text": "PCM 650",
+      "expect": "answer",
+      "want": "Paracetamol 650 mg · tablet",
+      "outcome": "right",
+      "pass": true,
+      "got": "PCM 650mg Tablet [Paracetamol 650 mg · tablet]",
+      "ms": 706
+    },
+    {
+      "id": "exact-hcq200",
+      "text": "HCQ 200",
+      "expect": "answer",
+      "want": "Hydroxychloroquine 200 mg · tablet",
+      "outcome": "right",
+      "pass": true,
+      "got": "HCQ 200mg Tablet [Hydroxychloroquine 200 mg · tablet]",
+      "ms": 607
+    },
+    {
+      "id": "exact-glycomet500sr",
+      "text": "Glycomet 500 SR",
+      "expect": "answer",
+      "want": "Metformin 500 mg · tablet · SR",
+      "outcome": "right",
+      "pass": true,
+      "got": "Glycomet 500 SR Tablet [Metformin 500 mg · tablet · SR]",
+      "ms": 681
+    },
+    {
+      "id": "exact-crocin-advance",
+      "text": "Crocin Advance",
+      "expect": "answer",
+      "want": "Paracetamol 500 mg · tablet",
+      "outcome": "right",
+      "pass": true,
+      "got": "Crocin Advance Tablet [Paracetamol 500 mg · tablet]",
+      "ms": 649
+    },
+    {
+      "id": "exact-pand",
+      "text": "Pan-D capsule",
+      "expect": "choice",
+      "want": "Domperidone 30 mg + Pantoprazole 40 mg · capsule · SR",
+      "outcome": "offered",
+      "pass": true,
+      "got": "choices: Pan-D Capsule PR; Panci D Tablet; Panel D Tablet; Pango D Tablet; Pandot D Tablet",
+      "ms": 497
+    },
+    {
+      "id": "exact-amlokind5",
+      "text": "Amlokind 5",
+      "expect": "answer",
+      "want": "Amlodipine 5 mg · tablet",
+      "outcome": "right",
+      "pass": true,
+      "got": "Amlokind 5 Tablet [Amlodipine 5 mg · tablet]",
+      "ms": 641
+    },
+    {
+      "id": "exact-shelcal",
+      "text": "Shelcal 500",
+      "expect": "none",
+      "want": null,
+      "outcome": "right",
+      "pass": true,
+      "got": "not_found",
+      "ms": 1106
+    },
+    {
+      "id": "nostrength-atorva",
+      "text": "Atorva",
+      "expect": "choice",
+      "want": "Atorvastatin 10 mg · tablet",
+      "outcome": "offered",
+      "pass": true,
+      "got": "choices: Atorva Tablet; Atorva 5 Tablet; Atorva 20 Tablet; Atorva 40 Tablet; Atorva 80 Tablet",
+      "ms": 473
+    },
+    {
+      "id": "nostrength-telma",
+      "text": "Telma",
+      "expect": "choice",
+      "want": "Telmisartan 40 mg · tablet",
+      "outcome": "offered",
+      "pass": true,
+      "got": "choices: Telma 20 Tablet; Telma 40 Tablet; Telma 80 Tablet; Telma H Tablet; Telma-AM Tablet",
+      "ms": 457
+    },
+    {
+      "id": "nostrength-dolo",
+      "text": "Dolo",
+      "expect": "choice",
+      "want": "Paracetamol 650 mg · tablet",
+      "outcome": "offered",
+      "pass": true,
+      "got": "choices: Dolo Drops; Dolo 500 Tablet; Dolo 650 Tablet; Dolo 1000mg Tablet; Dolo 120 Suspension",
+      "ms": 458
+    },
+    {
+      "id": "nostrength-thyronorm",
+      "text": "Thyronorm",
+      "expect": "choice",
+      "want": "Thyroxine 50 mcg · tablet",
+      "outcome": "offered",
+      "pass": true,
+      "got": "choices: Thyronorm 25mcg Tablet; Thyronorm 50mcg Tablet; Thyronorm 75mcg Tablet; Thyronorm 88mcg Tablet; Thyronorm 100mcg Tablet",
+      "ms": 510
+    },
+    {
+      "id": "nostrength-crocin",
+      "text": "Crocin",
+      "expect": "choice",
+      "want": "Paracetamol 500 mg · tablet",
+      "outcome": "offered",
+      "pass": true,
+      "got": "choices: Crocin 1000mg Tablet; Crocin Advance Tablet; Crocin Pain Relief Tablet",
+      "ms": 450
+    },
+    {
+      "id": "variant-telmah",
+      "text": "Telma H",
+      "expect": "choice",
+      "want": "Hydrochlorothiazide 12.5 mg + Telmisartan 40 mg · tablet",
+      "outcome": "offered",
+      "pass": true,
+      "got": "choices: Telma H Tablet; Telma 80-H Tablet",
+      "ms": 522
+    },
+    {
+      "id": "variant-augmentin625",
+      "text": "Augmentin 625",
+      "expect": "choice",
+      "want": "Amoxicillin 500 mg + Clavulanic Acid 125 mg · tablet",
+      "outcome": "offered",
+      "pass": true,
+      "got": "choices: Augmentin 625 Duo Tablet",
+      "ms": 700
+    },
+    {
+      "id": "variant-azithro500",
+      "text": "Azithro 500",
+      "expect": "choice",
+      "want": "Azithromycin 500 mg · tablet",
+      "outcome": "offered",
+      "pass": true,
+      "got": "choices: Azithro Max 500mg Tablet; Azithrov 500 Tablet; Azithromat 500 Tablet; Azithron 500mg Tablet; Azithropen 500 Tablet",
+      "ms": 643
+    },
+    {
+      "id": "variant-atorva-e",
+      "text": "Atorva E",
+      "expect": "choice",
+      "want": "Atorvastatin 10 mg + Ezetimibe 10 mg · tablet",
+      "outcome": "offered",
+      "pass": true,
+      "got": "choices: Atorva E 40 Tablet; Atorva E 10mg/10mg Tablet; Atorva Tablet",
+      "ms": 497
+    },
+    {
+      "id": "variant-calpol-syp",
+      "text": "Calpol syp",
+      "expect": "none",
+      "want": null,
+      "outcome": "right",
+      "pass": true,
+      "got": "choices: Calpol T  Tablet",
+      "ms": 639
+    },
+    {
+      "id": "typo-dolo-o-for-zero",
+      "text": "Dolo 65O",
+      "expect": "choice",
+      "want": "Paracetamol 650 mg · tablet",
+      "outcome": "offered",
+      "pass": true,
+      "got": "did you mean: Dolo 650 Tablet; Dolopar 650 Tablet; Dololife 650 Tablet; Dolomed 650mg Tablet; Doloxer 650mg Tablet",
+      "ms": 666
+    },
+    {
+      "id": "typo-augmentn",
+      "text": "Augmentn 625",
+      "expect": "choice",
+      "want": "Amoxicillin 500 mg + Clavulanic Acid 125 mg · tablet",
+      "outcome": "offered",
+      "pass": true,
+      "got": "did you mean: Augmentin 625 Duo Tablet",
+      "ms": 667
+    },
+    {
+      "id": "typo-dolp",
+      "text": "Dolp 500",
+      "expect": "choice",
+      "want": "Paracetamol 500 mg · tablet",
+      "outcome": "offered",
+      "pass": true,
+      "got": "choices: Dolpi 100mg/500mg Tablet; Dolpip TZ 4000mg/500mg Injection",
+      "ms": 621
+    },
+    {
+      "id": "typo-crocn",
+      "text": "Crocn advance",
+      "expect": "choice",
+      "want": "Paracetamol 500 mg · tablet",
+      "outcome": "offered",
+      "pass": true,
+      "got": "did you mean: Crocin Advance Tablet; Cron-P Tablet; Crocs 100mg Capsule; Crocin 1000mg Tablet; Crocon 200mg Capsule",
+      "ms": 494
+    },
+    {
+      "id": "typo-thyronrm",
+      "text": "Thyronrm 50",
+      "expect": "choice",
+      "want": "Thyroxine 50 mcg · tablet",
+      "outcome": "offered",
+      "pass": true,
+      "got": "did you mean: Thyronorm 50mcg Tablet; Thyronex 50 Tablet; Thyronic 50mcg Tablet",
+      "ms": 629
+    },
+    {
+      "id": "short-pcm500",
+      "text": "pcm 500",
+      "expect": "answer",
+      "want": "Paracetamol 500 mg · tablet",
+      "outcome": "right",
+      "pass": true,
+      "got": "PCM Tablet [Paracetamol 500 mg · tablet]",
+      "ms": 769
+    },
+    {
+      "id": "short-pcm250-susp",
+      "text": "pcm 250 susp",
+      "expect": "answer",
+      "want": "Paracetamol 250mg/5 ml · liquid",
+      "outcome": "right",
+      "pass": true,
+      "got": "PCM 250mg Oral Suspension [Paracetamol 250mg/5 ml · liquid]",
+      "ms": 620
+    },
+    {
+      "id": "ja-name-para650",
+      "text": "Paracetamol Tablets IP 650 mg",
+      "expect": "answer",
+      "want": "Paracetamol 650 mg · tablet",
+      "outcome": "right",
+      "pass": true,
+      "got": "Paracetamol Tablets IP 650 mg [Paracetamol 650 mg · tablet]",
+      "ms": 827
+    },
+    {
+      "id": "ja-short-para650",
+      "text": "Paracetamol 650",
+      "expect": "answer",
+      "want": "Paracetamol 650 mg · tablet",
+      "outcome": "right",
+      "pass": true,
+      "got": "Paracetamol Tablets IP 650 mg [Paracetamol 650 mg · tablet]",
+      "ms": 749
+    },
+    {
+      "id": "ja-name-panto40",
+      "text": "Pantoprazole Gastro Resistant Tablets IP 40 mg",
+      "expect": "answer",
+      "want": "Pantoprazole 40 mg · tablet",
+      "outcome": "right",
+      "pass": true,
+      "got": "Pantoprazole Gastro Resistant Tablets IP 40 mg [Pantoprazole 40 mg · tablet]",
+      "ms": 971
+    },
+    {
+      "id": "ja-short-telmi40",
+      "text": "Telmisartan 40",
+      "expect": "answer",
+      "want": "Telmisartan 40 mg · tablet",
+      "outcome": "right",
+      "pass": true,
+      "got": "Telmisartan Tablets IP 40mg [Telmisartan 40 mg · tablet]",
+      "ms": 790
+    },
+    {
+      "id": "ja-short-metformin500",
+      "text": "Metformin 500",
+      "expect": "answer",
+      "want": "Metformin 500 mg · tablet",
+      "outcome": "right",
+      "pass": true,
+      "got": "Metformin Hydrochloride Tablets IP 500mg [Metformin 500 mg · tablet]",
+      "ms": 796
+    },
+    {
+      "id": "ja-chlorthalidone",
+      "text": "Chlorthalidone 12.5",
+      "expect": "answer",
+      "want": "Chlortalidone 12.5 mg · tablet",
+      "outcome": "right",
+      "pass": true,
+      "got": "Chlorthalidone Tablets IP 12.5mg [Chlortalidone 12.5 mg · tablet]",
+      "ms": 796
+    },
+    {
+      "id": "ja-torsemide20",
+      "text": "Torsemide 20",
+      "expect": "answer",
+      "want": "Torasemide 20 mg · tablet",
+      "outcome": "right",
+      "pass": true,
+      "got": "Torsemide Tablets IP 20 mg [Torasemide 20 mg · tablet]",
+      "ms": 837
+    },
+    {
+      "id": "ja-pand-pr",
+      "text": "Pantoprazole 40mg (Gastro-resistant) and Domperidone 30mg (Prolonged Release) Capsules IP",
+      "expect": "answer",
+      "want": "Domperidone 30 mg + Pantoprazole 40 mg · capsule · SR",
+      "outcome": "right",
+      "pass": true,
+      "got": "Pantoprazole 40mg (Gastro-resistant) and Domperidone 30mg (Prolonged Release) Capsules IP [Domperidone 30 mg + Pantoprazole 40 mg · capsule · SR]",
+      "ms": 900
+    },
+    {
+      "id": "sr-pand",
+      "text": "Pan D",
+      "expect": "choice",
+      "want": "Domperidone 30 mg + Pantoprazole 40 mg · capsule · SR",
+      "outcome": "offered",
+      "pass": true,
+      "got": "choices: Pan-D Capsule PR; Panci D Tablet; Panel D Tablet; Pango D Tablet; Pandot D Tablet",
+      "ms": 484
+    },
+    {
+      "id": "sr-pantocid-dsr",
+      "text": "Pantocid DSR",
+      "expect": "answer",
+      "want": "Domperidone 30 mg + Pantoprazole 40 mg · capsule · SR",
+      "outcome": "right",
+      "pass": true,
+      "got": "Pantocid DSR Capsule [Domperidone 30 mg + Pantoprazole 40 mg · capsule · SR]",
+      "ms": 604
+    },
+    {
+      "id": "sr-glycomet-gp1",
+      "text": "Glycomet GP 1",
+      "expect": "choice",
+      "want": "Glimepiride 1 mg + Metformin 500 mg · tablet · SR",
+      "outcome": "offered",
+      "pass": true,
+      "got": "choices: Glycomet-GP 1 Tablet PR; Glycomet-GP 1 Forte Tablet SR; Glycomet-GP 1/850 Tablet SR; Glycomet Trio 1 Tablet SR; Glycomet Trio Forte 1 Tablet SR",
+      "ms": 666
+    },
+    {
+      "id": "liquid-scan-para250",
+      "text": "Each 5 ml contains Paracetamol IP 250 mg Oral Suspension",
+      "expect": "answer",
+      "want": "Paracetamol 250mg/5 ml · liquid",
+      "outcome": "right",
+      "pass": true,
+      "got": "Paracetamol 250mg/5 ml [Paracetamol 250mg/5 ml · liquid]",
+      "ms": 931
+    },
+    {
+      "id": "liquid-scan-amoxclav",
+      "text": "Each 5 ml of reconstituted suspension contains Amoxycillin IP 400 mg and Clavulanic Acid 57 mg",
+      "expect": "answer",
+      "want": "Amoxicillin 400mg/5 ml + Clavulanic Acid 57mg/5 ml · liquid",
+      "outcome": "right",
+      "pass": true,
+      "got": "Amoxicillin 400mg/5 ml + Clavulanic Acid 57mg/5 ml [Amoxicillin 400mg/5 ml + Clavulanic Acid 57mg/5 ml · liquid]",
+      "ms": 1184
+    },
+    {
+      "id": "scan-tablet-amoxclav",
+      "text": "Each film coated tablet contains Amoxycillin 500 mg Clavulanic acid 125 mg",
+      "expect": "answer",
+      "want": "Amoxicillin 500 mg + Clavulanic Acid 125 mg · tablet",
+      "outcome": "right",
+      "pass": true,
+      "got": "Amoxicillin 500 mg + Clavulanic Acid 125 mg [Amoxicillin 500 mg + Clavulanic Acid 125 mg · tablet]",
+      "ms": 910
+    },
+    {
+      "id": "kn-dolo650",
+      "text": "ಡೋಲೋ 650",
+      "expect": "answer",
+      "want": "Paracetamol 650 mg · tablet",
+      "outcome": "right",
+      "pass": true,
+      "got": "Dolo 650 Tablet [Paracetamol 650 mg · tablet]",
+      "ms": 757
+    },
+    {
+      "id": "hi-dolo650",
+      "text": "डोलो 650",
+      "expect": "answer",
+      "want": "Paracetamol 650 mg · tablet",
+      "outcome": "right",
+      "pass": true,
+      "got": "Dolo 650 Tablet [Paracetamol 650 mg · tablet]",
+      "ms": 767
+    },
+    {
+      "id": "hi-telma40",
+      "text": "टेल्मा 40",
+      "expect": "choice",
+      "want": "Telmisartan 40 mg · tablet",
+      "outcome": "offered",
+      "pass": true,
+      "got": "choices: Telma 40 Tablet; Telma H Tablet; Telma-AM Tablet; Telma-NB Tablet; Telma-LNC Tablet",
+      "ms": 3431
+    },
+    {
+      "id": "hi-atorva10",
+      "text": "एटोर्वा 10",
+      "expect": "choice",
+      "want": "Atorvastatin 10 mg · tablet",
+      "outcome": "offered",
+      "pass": true,
+      "got": "choices: Atorva Tablet; Atoriv 10mg Tablet; Etorvas 10mg Tablet; Atorva E 40 Tablet; Atorva E 10mg/10mg Tablet",
+      "ms": 2775
+    },
+    {
+      "id": "kn-thyronorm50",
+      "text": "ಥೈರೋನಾರ್ಮ್ 50",
+      "expect": "choice",
+      "want": "Thyroxine 50 mcg · tablet",
+      "outcome": "offered",
+      "pass": true,
+      "got": "choices: Thyronorm 50mcg Tablet",
+      "ms": 1858
+    },
+    {
+      "id": "hi-pan40",
+      "text": "पैन 40 टैबलेट",
+      "expect": "choice",
+      "want": "Pantoprazole 40 mg · tablet",
+      "outcome": "right",
+      "pass": true,
+      "got": "PAN 40 Tablet [Pantoprazole 40 mg · tablet]",
+      "ms": 2212
+    },
+    {
+      "id": "hi-metformin500",
+      "text": "मेटफॉर्मिन 500",
+      "expect": "choice",
+      "want": "Metformin 500 mg · tablet",
+      "outcome": "offered",
+      "pass": true,
+      "got": "choices: Metformin Hydrochloride Tablets IP 500mg; Metformin Hydrochloride Prolonged release Tablets IP 500 mg; Metformin Hydrochloride 500mg and Voglibose 0.3mg Tablets; Metform 500mg Tablet; Metfocin 500 Tablet PR",
+      "ms": 1872
+    },
+    {
+      "id": "hi-amox500",
+      "text": "अमोक्सीसिलिन 500",
+      "expect": "choice",
+      "want": "Amoxicillin 500 mg · capsule",
+      "outcome": "offered",
+      "pass": true,
+      "got": "choices: Amoxycillin Capsules IP 500mg; Amoxycillin 500mg and Potassium Clavulanate 125mg Tablets IP; Amoxycillin 500mg and Potassium Clavulanate 100mg Injection IP; Amoxilin CV 500mg/125mg Tablet; Amoxyllin CV 500mg/125mg Tablet",
+      "ms": 4186
+    },
+    {
+      "id": "hi-para650",
+      "text": "पैरासिटामोल 650",
+      "expect": "choice",
+      "want": "Paracetamol 650 mg · tablet",
+      "outcome": "offered",
+      "pass": true,
+      "got": "choices: Paracetamol Tablets IP 650 mg; Paracetamol 650mg and Caffeine 50mg Tablets IP",
+      "ms": 1523
+    },
+    {
+      "id": "kn-amlodipine5",
+      "text": "ಅಮ್ಲೋಡಿಪಿನ್ 5",
+      "expect": "choice",
+      "want": "Amlodipine 5 mg · tablet",
+      "outcome": "offered",
+      "pass": true,
+      "got": "choices: Amlodipine Tablets IP 5mg; Amlodipine + Enalapril Tablet (5/5 Mg); Amlodipine + Indapamide Tablet (5/1.5 Mg); Amlopin 5 Tablet; Amlodip 5mg Tablet",
+      "ms": 2009
+    },
+    {
+      "id": "hi-panto40",
+      "text": "पैंटोप्राजोल 40",
+      "expect": "choice",
+      "want": "Pantoprazole 40 mg · tablet",
+      "outcome": "offered",
+      "pass": true,
+      "got": "choices: Pantoprazole Gastro Resistant Tablets IP 40 mg; Pantoprazole Injection 40mg; Pantoprazole 40mg and Domperidone 10mg Capsules",
+      "ms": 1466
+    },
+    {
+      "id": "kn-cetirizine10",
+      "text": "ಸಿಟಿರಿಜಿನ್ 10",
+      "expect": "choice",
+      "want": "Cetirizine 10 mg · tablet",
+      "outcome": "offered",
+      "pass": true,
+      "got": "choices: Cetrizine Hydrochloride Tablets IP 10mg; Cetrizine Tablet; Sitrizin 10mg Tablet; Citrazan 10mg Tablet; Citrimin 10mg Tablet",
+      "ms": 1647
+    },
+    {
+      "id": "nti-brivapride25",
+      "text": "Brivapride 25",
+      "expect": "answer",
+      "want": "Brivaracetam 25 mg · tablet",
+      "outcome": "right",
+      "pass": true,
+      "got": "Brivapride 25mg Tablet [Brivaracetam 25 mg · tablet]",
+      "ms": 657
+    },
+    {
+      "id": "nti-thyronorm100",
+      "text": "Thyronorm 100",
+      "expect": "answer",
+      "want": "Thyroxine 100 mcg · tablet",
+      "outcome": "right",
+      "pass": true,
+      "got": "Thyronorm 100mcg Tablet [Thyroxine 100 mcg · tablet]",
+      "ms": 632
+    },
+    {
+      "id": "none-gaviscon",
+      "text": "Gaviscon oral syrup",
+      "expect": "none",
+      "want": null,
+      "outcome": "right",
+      "pass": true,
+      "got": "not_found",
+      "ms": 487
+    },
+    {
+      "id": "none-junk",
+      "text": "Zzqxw 999",
+      "expect": "none",
+      "want": null,
+      "outcome": "right",
+      "pass": true,
+      "got": "not_found",
+      "ms": 649
+    },
+    {
+      "id": "none-dolo999",
+      "text": "Dolo 999",
+      "expect": "none",
+      "want": null,
+      "outcome": "right",
+      "pass": true,
+      "got": "not_found",
+      "ms": 633
+    },
+    {
+      "id": "none-sentence",
+      "text": "which tablet is good for fever",
+      "expect": "none",
+      "want": null,
+      "outcome": "right",
+      "pass": true,
+      "got": "not_found",
+      "ms": 751
+    }
+  ]
+}

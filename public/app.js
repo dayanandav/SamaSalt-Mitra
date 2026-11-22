@@ -949,7 +949,7 @@ function notFoundHelp(r) {
   return `
       ${choices.length ? `<ul class="rx-list nf-choices">${choices.map((c) => `<li><button type="button" class="nf-sugg" data-name="${esc(c.name)}"><b>${esc(c.name)}</b><span>${esc(c.composition)}</span></button></li>`).join('')}</ul>
       <p class="med-meta">${esc(t(lang, 'chooseCheck'))}</p>` : ''}
-      ${!choices.length && sugg.length ? `<p class="nf-title">${esc(t(lang, 'didYouMean'))}</p><div class="nf-suggs">${sugg.map((n) => `<button class="secondary nf-sugg" type="button" data-name="${esc(n)}">${esc(n)}</button>`).join('')}</div>` : ''}
+      ${sugg.length ? `<p class="nf-title">${esc(t(lang, 'didYouMean'))}</p><div class="nf-suggs">${sugg.map((n) => `<button class="secondary nf-sugg" type="button" data-name="${esc(n)}">${esc(n)}</button>`).join('')}</div>` : ''}
       <p class="nf-title">${esc(t(lang, 'nfHow'))}</p>
       <div class="crop-actions"><button class="primary" id="nfScan" type="button">${esc(t(lang, 'nfScanBack'))}</button></div>
       <p class="med-meta">${esc(t(lang, 'nfScanBackWhy'))}</p>

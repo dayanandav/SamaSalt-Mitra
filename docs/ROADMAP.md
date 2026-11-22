@@ -186,6 +186,8 @@ Research for 6 (23 Nov 2026), from CDSCO's FAQ on G.S.R. 823(E) (21 Jul 2023): t
 8. **Newer brand data**: PMBI / NPPA data requests (drafted 22 Nov 2026). With every new list, rerun the Jan Aushadhi ↔ brand match check before it goes live.
 9. **Real-search test set**: 200–300 anonymised real queries (typos, Kannada/Hindi, strip photos, syrups, SR brands) with their correct answers, run on every change (`evals/`): more correct answers each version, and **zero wrong matches** (another strength, form or release) as a hard rule.
 
+Status of 9 (23 Nov 2026): first set of 67 searches built (`evals/search_cases.src.json`: exact names, no strength, combination letters, typos, short forms, Jan Aushadhi names, SR/PR, liquids and strip text, Kannada/Hindi brands and salts, never-switch, not-in-list and junk). Each expected composition is taken from the data (`node evals/build_search_cases.mjs --db ../samesalt/assets/samesalt.db`), never written by hand. `node evals/run_search_evals.mjs` (test site; `SAMASALT_MITRA_URL=…` for live) scores right / offered / missed / **WRONG** and exits with an error on any wrong match; results in `evals/SEARCH_RESULTS.md`. Test site 23 Nov 2026: **67/67, 0 wrong** (41 answered, 26 offered among choices or "Did you mean"). It found one gap, now fixed: a typo whose start is also a real brand ("Dolp 500") now gets "Did you mean: Dolo 500" next to the choices. To grow: add real searches from the missing-medicines list and the impact numbers.
+
 ## Stage 5: v2.1 Doctor network
 
 **Parked by the owner on 19 Nov 2026: future work, not now.** Stages 6 and 7 build on it, so they wait too.
