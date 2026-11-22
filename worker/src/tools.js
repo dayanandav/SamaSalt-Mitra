@@ -168,6 +168,16 @@ export async function suggestNames(ctx, text, { limit = 5 } = {}) {
   return [...seen.values()].sort((a, b) => a.d - b.d || b.hits - a.hits || a.extra - b.extra || a.len - b.len).slice(0, limit).map((x) => x.name);
 }
 
+/** Approved staff-added brands (added_medicines) whose name starts with `token`, as brand rows (no price). */
+export async function addedByNamePrefix(db, token) {
+  try {
+    const res = await db.prepare("SELECT id, name, manufacturer, ckey, form, rel, nti FROM added_medicines WHERE status = 'approved' AND lower(name) LIKE ?1 LIMIT 50").bind(`${String(token).toLowerCase()}%`).all();
+    return (res.results || []).map((r) => ({ id: `A${r.id}`, name: r.name, manufacturer: r.manufacturer, salt: null, ckey: r.ckey, price: null, pack: null, unit_price: null, form: r.form, rel: r.rel, nti: r.nti, incomplete: 0, added: true }));
+  } catch {
+    return []; // table not there yet (migration 0012 not applied): brands from the list only
+  }
+}
+
 function jaNameResult(ja) {
   const [, form = null, rel = null] = ja.ckey.split('|');
   return {
@@ -212,7 +222,8 @@ export async function identifyMedicine(ctx, { brand = '', composition = '', form
   let rows = [];
   let candidates = [];
   if (q.length) {
-    rows = await meds.byNamePrefix(q[0]);
+    // v2.0.7 (roadmap S1.2): brands added by staff from the strip and approved by a Reviewer count as brands too.
+    rows = [...(await meds.byNamePrefix(q[0])), ...(await addedByNamePrefix(ctxOf(ctx).db, q[0]))];
     candidates = rows.map((r) => ({ ...r, score: nameScore(brand, r.name) })).filter((r) => r.score > 0.45);
   }
 

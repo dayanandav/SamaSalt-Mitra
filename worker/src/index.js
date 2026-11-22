@@ -11,6 +11,7 @@ import { ntiFromKey } from './normalize.js';
 import { nearestKendra } from './tools.js';
 import { overLimit, photoCapReached, countPrescriptionRead } from './limits.js';
 import { botOn, appChatOn, botNumber, handleWebhook, handleMessage } from './whatsapp.js';
+import { recordMissing, listMissing, previewAdded, addMedicine, decideMedicine, ignoreMissing } from './missing.js';
 import { registerVolunteer, listVolunteers, decideVolunteer, updateVolunteer, volunteerHistory, activeVolunteer, volunteerLinkStatus } from './volunteers.js';
 
 // Not exported: a Worker's main module may only export handlers.
@@ -73,6 +74,11 @@ async function logLookup(env, body, result, isTest) {
       searchVia(body)
     )
     .run();
+  // v2.0.7 (roadmap S1.2): a typed name not found (and not a choice between brands) is counted for
+  // the staff's missing-medicines list. Real traffic only; only text that looks like a medicine name.
+  if (!isTest && result.status === 'not_found' && result.source === 'text' && !result.choices?.length && typeof body.text === 'string') {
+    await recordMissing(env.DB, body.text, istDay()).catch(() => {});
+  }
   return id;
 }
 
@@ -285,6 +291,26 @@ async function handleAdmin(request, env, url) {
   if ((path === '/volunteer/decide' || path === '/volunteer/update') && post) {
     if (!can(who, 'review')) return json({ error: 'forbidden', detail: 'Only a Reviewer or Admin can approve, remove or modify volunteers.' }, 403);
     const r = path === '/volunteer/decide' ? await decideVolunteer(env.DB, await readJson(), who) : await updateVolunteer(env.DB, await readJson(), who);
+    return json(r.body, r.status);
+  }
+
+  // v2.0.7 missing medicines (roadmap S1.2): every staff role sees the list; a Registrar adds a
+  // brand from the strip; a Reviewer approves (another person), rejects, removes or ignores a name.
+  if (path === '/missing/list') return json(await listMissing(env.DB));
+  if ((path === '/missing/preview' || path === '/missing/add') && post) {
+    if (!can(who, 'register')) return json({ error: 'forbidden', detail: 'Only a Registrar or Admin can add a medicine.' }, 403);
+    const body = await readJson();
+    if (path === '/missing/preview') {
+      const files = env.ASSETS ? await assetMeds(env.ASSETS).catch(() => null) : null;
+      const r = await previewAdded({ db: env.DB, meds: files || d1Meds(env.DB) }, body);
+      return json(r.body, r.status);
+    }
+    const r = await addMedicine(env.DB, body, who);
+    return json(r.body, r.status);
+  }
+  if ((path === '/missing/decide' || path === '/missing/ignore') && post) {
+    if (!can(who, 'review')) return json({ error: 'forbidden', detail: 'Only a Reviewer or Admin can approve, reject, remove or ignore.' }, 403);
+    const r = path === '/missing/decide' ? await decideMedicine(env.DB, await readJson(), who) : await ignoreMissing(env.DB, await readJson());
     return json(r.body, r.status);
   }
 

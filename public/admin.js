@@ -8,6 +8,7 @@
 // The session is an HttpOnly cookie set by /api/admin/login; this page never sees it.
 import { showMobile, kendraCode } from '/rules.js';
 import { startVolunteers } from '/vol-admin.js';
+import { startMissing } from '/missing-admin.js';
 
 const $ = (s) => document.querySelector(s);
 const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
@@ -84,6 +85,8 @@ function showApp(who) {
   showTab(who.role === 'registrar' ? 'newTab' : 'regsTab');
   loadRegs();
   if (can('staff')) loadUsers();
+  // v2.0.7 missing medicines (roadmap S1.2): every staff role sees the list.
+  startMissing({ api, msg, esc, can });
   // v1.3 registered volunteers: only while VOLUNTEER_REGISTRY = "on" (parked on live).
   const volTab = document.querySelector('.tabs [data-tab=volTab]');
   volTab.hidden = true;

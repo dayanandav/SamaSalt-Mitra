@@ -1,6 +1,6 @@
 {
   "note": "Fingerprints of the owner-approved tests. Written only by `node tools/test-lock.mjs approve --yes`, run by the owner.",
-  "approved_at": "2026-11-22T18:03:46.787Z",
+  "approved_at": "2026-11-22T18:17:33.294Z",
   "files": {
     "test/admin.test.mjs": "e05dd44ef3382da2c7d122e94aea823f3930b03b6297a4ce424db789f271a8d3",
     "test/askdontguess.test.mjs": "ed74a9374f1afdfa3e9fc041165503272826a0bdc9492553923d9d393f4c9a04",
@@ -17,6 +17,7 @@
     "test/liquid.test.mjs": "5692a583dbfb9689aa90d1b230da9724e06a7c40ae897ae7837b073f9236365f",
     "test/md-hooks.mjs": "88693e6623de441de270ae5dc7e38ca2fb9a99dc851e096734b98be9a9364553",
     "test/medstore.test.mjs": "77fa02fb2d0d4bfd91f9b9f24530f9f8b7d3ca451cf1ebcad5d4299d1caaff44",
+    "test/missing.test.mjs": "5637e5e4ed7a25f99d22b5f0c3b7b55537b2ab9a52a2caf3344ec60fba19ff89",
     "test/normalize.test.mjs": "74ac6211d3dc4cbb808dd11340e5d244759167b196ff74f0f293f62ceef542a2",
     "test/notfound.test.mjs": "bd91739042340bc35538b1cf393908a6a63ba726067c3def5599d89e9e849209",
     "test/offline.test.mjs": "84ab21425544a576970c6ec986ccb022d9775dcce6eeb150f3789c5cfcd87c1f",

@@ -117,6 +117,13 @@
     .amsg { margin: 10px 0 0; padding: 10px 12px; border-radius: 12px; font-size: 14px; line-height: 1.45; }
     .amsg.ok { background: var(--accent-soft); color: var(--accent); }
     .amsg.err { background: var(--danger-soft); color: var(--danger); }
+    /* v2.0.7 missing medicines tab */
+    .mtable { width: 100%; border-collapse: collapse; font-size: 14px; }
+    .mtable th, .mtable td { text-align: left; vertical-align: top; padding: 8px 6px; border-bottom: 1px solid var(--line); }
+    .mtable .mbtns { white-space: nowrap; }
+    .mtable .mbtns button { margin: 0 6px 6px 0; }
+    .mconfirm td { background: var(--fill, #f5f5f5); }
+    .mconfirm label { display: block; margin: 6px 0; }
     .amsg.info { background: var(--fill); color: var(--muted); }
     .amsg.warn { background: var(--warn-soft); color: var(--warn); }
     details.ownerkey summary { cursor: pointer; color: var(--accent); font-size: 14px; margin-top: 14px; }
@@ -389,6 +396,7 @@
           <button type="button" role="tab" data-tab="regsTab" aria-selected="true">Kendras</button>
           <button type="button" role="tab" data-tab="newTab" aria-selected="false" hidden>New Kendra</button>
           <button type="button" role="tab" data-tab="volTab" aria-selected="false" hidden>Volunteers</button>
+          <button type="button" role="tab" data-tab="missTab" aria-selected="false">Missing medicines</button>
           <button type="button" role="tab" data-tab="staffTab" aria-selected="false" hidden>Staff accounts</button>
         </nav>
 
@@ -496,6 +504,45 @@
           </div>
           <p class="amsg info" id="vListMsg" hidden></p>
           <div id="vols"></div>
+        </section>
+
+        <!-- v2.0.7 missing medicines (roadmap S1.2): Registrar adds from the strip, Reviewer approves -->
+        <section class="card tab" id="missTab" role="tabpanel" hidden>
+          <h2>Missing medicines</h2>
+          <p class="muted-sm" style="margin:0" id="mHint"></p>
+          <form class="af" id="mForm" hidden autocomplete="off" novalidate>
+            <h2 style="font-size:16px;margin:0">Add a brand from the strip</h2>
+            <p class="muted-sm" style="margin:0">Copy everything from the strip or pack (in your hand or a clear photo): the brand name, and every salt with its strength. No price is kept: patients check the MRP on the strip.</p>
+            <label>Brand name, as printed<input type="text" id="mName" maxlength="80" placeholder="e.g. Gaviscon Liquid"></label>
+            <label>Manufacturer (optional)<input type="text" id="mMaker" maxlength="80"></label>
+            <label>Salts and strengths, as printed<textarea id="mComp" maxlength="300" rows="3" placeholder="e.g. Sodium alginate 250 mg + Sodium bicarbonate 133.5 mg + Calcium carbonate 80 mg per 5 ml"></textarea></label>
+            <label>Form<select id="mFormSel">
+              <option value="">Choose…</option>
+              <option value="tablet">Tablet</option><option value="capsule">Capsule</option><option value="liquid">Syrup / suspension / oral solution</option>
+              <option value="drops">Drops</option><option value="injection">Injection</option><option value="topical">Cream / ointment / gel / lotion</option>
+              <option value="inhaler">Inhaler</option><option value="respule">Respules</option><option value="powder">Powder / sachet</option>
+              <option value="spray">Spray</option><option value="suppository">Suppository</option><option value="mouthwash">Mouthwash</option>
+              <option value="chewable">Chewable tablet</option><option value="effervescent">Effervescent tablet</option><option value="dry_syrup">Dry syrup</option>
+            </select></label>
+            <label>Release (only if printed on the strip)<select id="mRel">
+              <option value="">Normal (nothing printed)</option>
+              <option value="SR">SR / sustained / prolonged release (PR, DSR)</option><option value="XR">XR / ER / extended release</option>
+              <option value="CR">CR / controlled release</option><option value="MR">MR / modified release</option>
+              <option value="DR">DR / delayed release / enteric coated</option><option value="XL">XL</option><option value="LA">LA / long acting</option>
+            </select></label>
+            <div class="btns"><button class="secondary" type="button" id="mPreviewBtn">Check how the app reads it</button></div>
+            <div id="mPreview" class="amsg info" hidden></div>
+            <fieldset class="checks">
+              <legend>Before adding, confirm:</legend>
+              <label><input type="checkbox" id="mChecked"> I read the name, every salt and strength, the form and the release from the strip or pack myself.</label>
+            </fieldset>
+            <div class="btns"><button class="primary" type="submit" id="mSubmit" disabled>Add for review</button><button class="secondary" type="button" id="mCancel">Cancel</button></div>
+          </form>
+          <p class="amsg" id="mMsg" hidden></p>
+          <h3 style="margin:18px 0 6px;font-size:15px">Searched by patients, not found</h3>
+          <div id="mNames"></div>
+          <h3 style="margin:18px 0 6px;font-size:15px">Added brands</h3>
+          <div id="mAdded"></div>
         </section>
 
         <!-- Staff accounts: Admin (Reviewers, Registrars); system owner (also Admins) -->
