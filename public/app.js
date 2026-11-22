@@ -205,7 +205,7 @@ $('#typeForm').addEventListener('submit', (e) => {
   e.preventDefault();
   hideNameSugg();
   const q = $('#nameInput').value.trim();
-  if (q) ask({ text: q });
+  if (q) ask({ text: q, via: 'typed' });
 });
 
 // ── Suggestions while typing (roadmap S1.1) ─────────────────────────────────
@@ -239,7 +239,7 @@ $('#nameInput').addEventListener('input', () => {
       b.addEventListener('click', () => {
         $('#nameInput').value = b.dataset.name;
         hideNameSugg();
-        ask({ text: b.dataset.name });
+        ask({ text: b.dataset.name, via: 'suggest' });
       });
     }
   }, 150);
@@ -641,14 +641,14 @@ function show(section) {
   window.scrollTo({ top: 0, behavior: 'instant' in window ? 'instant' : 'auto' });
 }
 
-async function ask({ text, image, ocr, relog = true }) {
+async function ask({ text, image, ocr, via, relog = true }) {
   $('#busyText').textContent = image ? t(lang, 'reading') : t(lang, 'checking');
   const thumb = $('#thumb');
   thumb.hidden = !image;
   if (image) thumb.src = image;
   show('busy');
   const body = {
-    text, image, ocr, lang,
+    text, image, ocr, lang, via,
     pin: pinInput.value.length === 6 ? pinInput.value : undefined,
     lat: coords?.lat, lng: coords?.lng,
     mode: volunteer ? 'volunteer' : 'self',
@@ -680,7 +680,7 @@ async function ask({ text, image, ocr, relog = true }) {
   if (r.status === 'offline' || r.status === 'slow' || r.status === 'busy') {
     // A language change on a saved answer: keep showing it; it changes when the internet is back.
     if (!relog && last?.status === 'ok') { render(last); toast('offlineLang'); return; }
-    pending = { text, image, ocr, relog };
+    pending = { text, image, ocr, via, relog };
   }
   // Photo reading is down (quota used up or model error). The on-phone OCR fallback was removed:
   // on real strips it read junk and matched wrong medicines. Ask for typing / keyboard scan.
@@ -975,7 +975,7 @@ function render(r) {
     if ($('#retakeBtn')) $('#retakeBtn').onclick = () => $('#scanBtn').click();
     if ($('#typeBtn')) $('#typeBtn').onclick = () => { show('home'); $('#nameInput').focus(); };
     if ($('#retryBtn')) $('#retryBtn').onclick = () => pending && ask(pending);
-    for (const b of out.querySelectorAll('.nf-sugg')) b.onclick = () => { $('#nameInput').value = b.dataset.name; ask({ text: b.dataset.name }); };
+    for (const b of out.querySelectorAll('.nf-sugg')) b.onclick = () => { $('#nameInput').value = b.dataset.name; ask({ text: b.dataset.name, via: 'didyoumean' }); };
     if ($('#nfScan')) $('#nfScan').onclick = () => $('#scanBtn').click();
     if ($('#nfAdd')) $('#nfAdd').onclick = () => {
       const e = unlistedEntry(r.typed);
@@ -1357,7 +1357,7 @@ function renderRx() {
         : `<li class="rx-miss">${esc(t(lang, 'rxNotFound', { text: it.read }))}</li>`).join('')}</ul>
     </div>
     <button class="secondary" id="rxHome" type="button">${esc(t(lang, 'another'))}</button>`;
-  box.querySelectorAll('button[data-i]').forEach((b) => { b.onclick = () => ask({ text: rxList[Number(b.dataset.i)].name }); });
+  box.querySelectorAll('button[data-i]').forEach((b) => { b.onclick = () => ask({ text: rxList[Number(b.dataset.i)].name, via: 'rx' }); });
   $('#rxHome').onclick = () => { rxList = null; show('home'); };
   show('rx');
 }

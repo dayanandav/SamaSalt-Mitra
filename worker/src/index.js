@@ -36,6 +36,10 @@ function istDay(d = new Date()) {
   return new Date(d.getTime() + 5.5 * 3600_000).toISOString().slice(0, 10);
 }
 
+// v2.0.7 (roadmap S1.4): how a typed name was chosen. Only these words are ever stored, never text.
+const SEARCH_VIA = new Set(['typed', 'suggest', 'didyoumean', 'rx']);
+const searchVia = (body) => (body && typeof body.text === 'string' && body.text && !body.image && !body.ocr && SEARCH_VIA.has(body.via) ? body.via : null);
+
 async function logLookup(env, body, result, isTest) {
   const id = crypto.randomUUID();
   const s = result.saving || {};
@@ -43,8 +47,8 @@ async function logLookup(env, body, result, isTest) {
   // v1.3: an approved volunteer's code (from their personal link), never anything about the patient.
   const volunteer = body.mode === 'volunteer' && body.volunteer ? await activeVolunteer(env.DB, body.volunteer).catch(() => null) : null;
   await env.DB.prepare(
-    `INSERT INTO lookups (id, ts, day, status, input, medicine, ckey, pack, scanned_unit, cheapest_unit, ja_unit, saving_pack, equivalents, lang, pin3, mode, device, is_test, volunteer)
-     VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?10, ?11, ?12, ?13, ?14, ?15, ?16, ?17, ?18, ?19)`
+    `INSERT INTO lookups (id, ts, day, status, input, medicine, ckey, pack, scanned_unit, cheapest_unit, ja_unit, saving_pack, equivalents, lang, pin3, mode, device, is_test, volunteer, via)
+     VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?10, ?11, ?12, ?13, ?14, ?15, ?16, ?17, ?18, ?19, ?20)`
   )
     .bind(
       id,
@@ -65,7 +69,8 @@ async function logLookup(env, body, result, isTest) {
       body.mode === 'volunteer' ? 'volunteer' : body.mode === 'whatsapp' ? 'whatsapp' : body.mode === 'chat' ? 'chat' : 'self',
       device,
       isTest ? 1 : 0,
-      volunteer
+      volunteer,
+      searchVia(body)
     )
     .run();
   return id;
@@ -183,6 +188,14 @@ async function handleImpact(env, url) {
       MIN(ts) AS first_ts,
       MAX(ts) AS last_ts
     FROM lookups WHERE ${real}`);
+  // v2.0.7 search quality (roadmap S1.4): found / not found by way in, by how a typed name was
+  // chosen, and by language. "Found" = a medicine was identified (status ok).
+  const found = "SUM(status = 'ok') AS found, SUM(status = 'not_found') AS not_found, SUM(status = 'unreadable') AS unreadable";
+  const [byInput, byVia, byLangFound] = await Promise.all([
+    q(`SELECT CASE WHEN mode IN ('chat', 'whatsapp') THEN mode WHEN input LIKE 'photo%' THEN 'photo' WHEN input = 'text-scan' THEN 'text-scan' ELSE 'typed' END AS way, COUNT(*) AS n, ${found} FROM lookups WHERE ${real} GROUP BY way ORDER BY n DESC`),
+    q(`SELECT via, COUNT(*) AS n, ${found} FROM lookups WHERE ${real} AND via IS NOT NULL GROUP BY via ORDER BY n DESC`),
+    q(`SELECT lang, COUNT(*) AS n, ${found} FROM lookups WHERE ${real} GROUP BY lang ORDER BY n DESC`),
+  ]);
   const [byLang, byDay, byPin, topMeds, testCount] = await Promise.all([
     q(`SELECT lang, COUNT(*) AS n FROM lookups WHERE ${real} GROUP BY lang ORDER BY n DESC`),
     q(`SELECT day, COUNT(*) AS n, ROUND(SUM(CASE WHEN saving_pack > 0 THEN saving_pack ELSE 0 END), 2) AS saving FROM lookups WHERE ${real}${month ? '' : " AND day >= date('now', '-60 day')"} GROUP BY day ORDER BY day`),
@@ -199,6 +212,7 @@ async function handleImpact(env, url) {
     by_day: byDay,
     by_pin_prefix: byPin,
     top_medicines: topMeds,
+    search: { by_way: byInput, by_via: byVia, by_language: byLangFound },
     excluded_test_lookups: testCount[0]?.n ?? 0,
   }, 200, { 'cache-control': 'public, max-age=30' });
 }

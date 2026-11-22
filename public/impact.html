@@ -98,6 +98,15 @@
         <div class="card"><h2>Where (PIN prefix)</h2><div id="pins"></div></div>
       </div>
       <div class="card"><h2>Most-checked medicines</h2><div id="meds"></div></div>
+      <div class="card">
+        <h2>Finding the medicine</h2>
+        <p class="empty" style="text-align:left;margin:0 0 10px">Found = the medicine was identified. Not found = no brand or Jan Aushadhi product with that name in our list. Unreadable = the photo or scan could not be read.</p>
+        <div id="searchWay"></div>
+        <h3 style="margin:16px 0 6px;font-size:15px">Typed names: how the name was chosen</h3>
+        <div id="searchVia"></div>
+        <h3 style="margin:16px 0 6px;font-size:15px">By language</h3>
+        <div id="searchLang"></div>
+      </div>
     </div>
 
     <p class="section-title">Data behind every answer</p>
@@ -210,6 +219,15 @@
       : '<p class="empty">No data yet.</p>';
     $('#langs').innerHTML = table(d.by_language || [], [{ h: 'Language', f: (r) => LANG[r.lang] || r.lang }, { h: 'Lookups', num: 1, f: (r) => num(r.n) }]);
     $('#pins').innerHTML = table(d.by_pin_prefix || [], [{ h: 'PIN', f: (r) => `${r.pin3}xxx` }, { h: 'Lookups', num: 1, f: (r) => num(r.n) }]);
+    // v2.0.7 search quality (roadmap S1.4)
+    const WAY = { typed: 'Typed name', photo: 'Photo of the strip', 'text-scan': 'Keyboard "Scan text"', chat: 'Chat in the app', whatsapp: 'WhatsApp' };
+    const VIA = { typed: 'Typed in full', suggest: 'Tapped a suggestion while typing', didyoumean: 'Tapped "Did you mean…?"', rx: 'From a prescription photo' };
+    const S = d.search || {};
+    const pct = (r) => (r.n ? `${Math.round((100 * (r.found || 0)) / r.n)}%` : '—');
+    const qcols = (label) => [label, { h: 'Lookups', num: 1, f: (r) => num(r.n) }, { h: 'Found', num: 1, f: (r) => num(r.found || 0) }, { h: 'Not found', num: 1, f: (r) => num(r.not_found || 0) }, { h: 'Unreadable', num: 1, f: (r) => num(r.unreadable || 0) }, { h: 'Found %', num: 1, f: pct }];
+    $('#searchWay').innerHTML = table(S.by_way || [], qcols({ h: 'Way in', f: (r) => WAY[r.way] || r.way }));
+    $('#searchVia').innerHTML = table(S.by_via || [], qcols({ h: 'Name chosen by', f: (r) => VIA[r.via] || r.via }));
+    $('#searchLang').innerHTML = table(S.by_language || [], qcols({ h: 'Language', f: (r) => LANG[r.lang] || r.lang }));
     // ── Report: header for print, CSV of every figure on the page ──
     const period = month ? monthName(month) : 'All time';
     $('#printHead').textContent = `SamaSalt-Mitra impact report · ${period} · generated ${new Date(d.generated_at).toLocaleString('en-IN', { timeZone: 'Asia/Kolkata' })} (IST) · real lookups only, test traffic excluded`;
@@ -221,7 +239,10 @@
         ['Day', 'Lookups', 'Saving found (Rs)'], ...(d.by_day || []).map((x) => [x.day, x.n, x.saving]), [],
         ['Language', 'Lookups'], ...(d.by_language || []).map((x) => [x.lang, x.n]), [],
         ['PIN prefix', 'Lookups'], ...(d.by_pin_prefix || []).map((x) => [`${x.pin3}xxx`, x.n]), [],
-        ['Medicine', 'Lookups', 'Avg saving per pack (Rs)'], ...(d.top_medicines || []).map((x) => [x.medicine, x.n, x.avg_saving])];
+        ['Medicine', 'Lookups', 'Avg saving per pack (Rs)'], ...(d.top_medicines || []).map((x) => [x.medicine, x.n, x.avg_saving]), [],
+        ['Way in', 'Lookups', 'Found', 'Not found', 'Unreadable'], ...(S.by_way || []).map((x) => [WAY[x.way] || x.way, x.n, x.found, x.not_found, x.unreadable]), [],
+        ['Typed name chosen by', 'Lookups', 'Found', 'Not found', 'Unreadable'], ...(S.by_via || []).map((x) => [VIA[x.via] || x.via, x.n, x.found, x.not_found, x.unreadable]), [],
+        ['Language', 'Lookups', 'Found', 'Not found', 'Unreadable'], ...(S.by_language || []).map((x) => [x.lang, x.n, x.found, x.not_found, x.unreadable])];
       const blob = new Blob(['\ufeff' + rows.map((r) => r.map(q).join(',')).join('\r\n')], { type: 'text/csv;charset=utf-8' });
       const a = document.createElement('a');
       a.href = URL.createObjectURL(blob);

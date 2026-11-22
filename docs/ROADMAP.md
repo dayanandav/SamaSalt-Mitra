@@ -167,6 +167,8 @@ Goal: fewer "not found", never a wrong match. One rule holds throughout: fuzzy m
 3. **Short forms**: a small reviewed list ("PCM" → paracetamol, "Amox-clav", "Tab", "Syp"), reviewed like `public/ja-synonyms.js`; patients' spelling variants use the same reviewed lists.
 4. **Search quality numbers** on the impact page: found, not found, found through a suggestion, by language and by way of searching (no personal data).
 
+Status: 1 **live in 2.0.6** (22 Nov 2026). 4 **live** (22 Nov 2026): "Finding the medicine" card on `/impact` (+ CSV); each lookup records `via` = typed / suggest / didyoumean / rx (fixed words only, never text; migration `0011_search_via.sql`, which must be applied to the live database **before** that deploy). Next: 3, then 2.
+
 **S2: v2.0.8 Search for everyone (planned)**
 5. **Kannada and Hindi names without the AI model**: a fixed letter-by-letter conversion ("ಡೋಲೋ 650", "डोलो 650" → "dolo 650") plus "sounds-like" matching (Pantop / Pantap); faster, free and predictable.
 6. **QR code on strips**: India's top 300 brands carry a QR code with brand, generic name, manufacturer and batch (Schedule H2, 2023). First check which brands carry it and what it holds; then read it as an exact lookup.
