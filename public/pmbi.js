@@ -12,6 +12,8 @@
 // (https://janaushadhi.gov.in/product-portfolio/product-mrp-list), columns
 // "Sr No, Drug Code, Generic Name, Unit Size, MRP, Group Name", or the same table as JSON.
 
+import { JA_SYNONYMS, JA_ROUTE_WORDS } from './ja-synonyms.js';
+
 const FORM_WORDS = [
   [/dispersible tablets?|chewable tablets?|tablets?|tab\b/, 'tablet'],
   [/capsules?|cap\b/, 'capsule'],
@@ -32,6 +34,7 @@ const RELEASE_WORDS = [
   [/extended[- ]release|\ber\b|\bxr\b/, 'XR'],
   [/controlled[- ]release|\bcr\b/, 'CR'],
   [/modified[- ]release|\bmr\b/, 'MR'],
+  [/delayed[- ]release/, 'DR'],
 ];
 const SALT_SUFFIXES = new Set([
   'hydrochloride', 'hcl', 'sodium', 'potassium', 'calcium', 'magnesium', 'besilate', 'besylate',
@@ -53,7 +56,10 @@ const SYNONYMS = {
   frusemide: 'furosemide',
   lignocaine: 'lidocaine',
   'lignocaine hydrochloride': 'lidocaine',
+  ...JA_SYNONYMS, // the reviewed list of spelling variants: public/ja-synonyms.js
 };
+// "Olopatadine Ophthalmic", "Clotrimazole Vaginal": a word for where it is used is not part of the salt.
+const ROUTE_TAIL = new RegExp(`\\s+(?:${JA_ROUTE_WORDS.join('|')})$`);
 const STRENGTH = String.raw`(\d+(?:\.\d+)?)\s*(mg|mcg|µg|ug|gm|g|iu|%\s*w/[wv]|%|ml)(?![a-z])`;
 const MULTI_STRENGTH = String.raw`(\d+(?:\.\d+)?(?:\s*/\s*\d+(?:\.\d+)?)+)\s*(mg|mcg|µg|ug|gm|g|iu)(?![a-z])`;
 const UNIT_TO_MG = { g: 1000, gm: 1000, mg: 1, mcg: 0.001, 'µg': 0.001, ug: 0.001 };
@@ -92,6 +98,7 @@ export class Vocab {
 
   map(name) {
     let n = strip(name.toLowerCase().replace(/\s+/g, ' '), ' ,.-');
+    n = n.replace(ROUTE_TAIL, '');
     n = SYNONYMS[n] ?? n;
     if (!this.names.size || this.names.has(n)) return n;
     let base = n.split(' ').filter((w) => !SALT_SUFFIXES.has(w)).join(' ');
@@ -106,7 +113,8 @@ export class Vocab {
 
 /** PMBJP generic name -> { key: canonical key | null, reason }. Mirrors parse_generic() in data/build_ja.py. */
 export function parseGeneric(name, vocab) {
-  const s = name.replace(/\s+/g, ' ').trim();
+  // "15,00,000 IU" (Indian digit grouping) is one number.
+  const s = name.replace(/\s+/g, ' ').trim().replace(/(?<=\d),(?=\d{2,3}\b)/g, '');
   const low = s.toLowerCase();
   let form = null;
   let formAt = low.length;
@@ -127,7 +135,7 @@ export function parseGeneric(name, vocab) {
   }
   let saltText = s.slice(0, formAt);
   saltText = saltText.replace(/\((?:sr|er|xr|cr|mr|pr)\)/gi, ' ');
-  saltText = saltText.replace(/\b(sustained|prolonged|extended|controlled|modified)[- ]release\b/gi, ' ');
+  saltText = saltText.replace(/\b(sustained|prolonged|extended|controlled|modified|delayed)[- ]release\b/gi, ' ');
   saltText = saltText.replace(/\b(gastro[- ]resistant|enteric[- ]coated|film[- ]coated|uncoated|orally disintegrating|dispersible|chewable)\b/gi, ' ');
   const chunks = saltText.split(/\s*(?:,|&|\+|\band\b|\bwith\b)\s*/i).map((x) => x.trim()).filter(Boolean);
   const inline = chunks.map((c) => c.match(new RegExp(STRENGTH, 'i')));
@@ -158,13 +166,17 @@ export function parseGeneric(name, vocab) {
   strengths = strengths.slice(0, salts.length);
   const names = salts.map((n) => vocab.map(n));
   const per5 = form === 'liquid' && /\bper\s*5\s*ml\b|\/\s*5\s*ml\b/.test(low);
+  // Not "per ml": names give a total and a concentration ("500 mg (100mg per ml)"), and the brand
+  // list writes injections and drops as plain mg, so a /ml suffix would give wrong keys.
   const keys = [];
   for (const f of [form, ...(ALT_FORMS[form] || [])]) {
-    for (const barePct of [false, true]) {
+    // A bare "5%" is also tried as "5% w/w" (creams, gels) or "5% w/v" (liquids), as brands write it.
+    for (const pct of ['as', 'bare', 'qual']) {
       for (const per of per5 ? [true, false] : [false]) {
         const sts = strengths.map(([v, u]) => {
           let st = stdStrength(v, u);
-          if (barePct) st = st.split(' ')[0];
+          if (pct === 'bare') st = st.split(' ')[0];
+          if (pct === 'qual' && /^[\d.]+%$/.test(st)) st += f === 'topical' ? ' w/w' : ' w/v';
           if (per && st.endsWith('mg')) st += '/5ml';
           return st;
         });

@@ -118,6 +118,56 @@ export async function janAushadhiByName(ctx, text) {
   return { product: fits[0], ckey: keys[0] };
 }
 
+// Edit distance (insert, delete, change one letter), stopping early above `max`.
+function editDistance(a, b, max = 2) {
+  if (Math.abs(a.length - b.length) > max) return max + 1;
+  let prev = Array.from({ length: b.length + 1 }, (_, i) => i);
+  for (let i = 1; i <= a.length; i++) {
+    const cur = [i];
+    let best = i;
+    for (let j = 1; j <= b.length; j++) {
+      cur[j] = Math.min(prev[j] + 1, cur[j - 1] + 1, prev[j - 1] + (a[i - 1] === b[j - 1] ? 0 : 1));
+      best = Math.min(best, cur[j]);
+    }
+    if (best > max) return max + 1;
+    prev = cur;
+  }
+  return prev[b.length];
+}
+
+/**
+ * "Did you mean…?" for a typed name that was not found: up to `limit` brand names whose first word
+ * is the typed word with a small typo (or starts with it). A typed number ("65O" read as 650) must
+ * be in the name: a different strength is never offered. Names only: the person taps one to check it.
+ */
+export async function suggestNames(ctx, text, { limit = 5 } = {}) {
+  const { meds } = ctxOf(ctx);
+  // Letter O / l typed inside a number ("65O", "5OO", "1O") is a zero / one.
+  const fixed = String(text || '').replace(/\b\d+[oOlI\d]*\b/g, (m) => m.replace(/[oO]/g, '0').replace(/[lI]/g, '1'));
+  const q = tokens(fixed);
+  const word = q.find((t) => /^[a-z]/.test(t));
+  if (!word || word.length < 3) return [];
+  const nums = q.filter((t) => /^\d/.test(t));
+  // A form typed with the name ("syrup", "tablet") must be the brand's form: never an injection for a syrup.
+  const form = extractDosageForm(fixed);
+  const max = word.length <= 4 ? 1 : 2;
+  const seen = new Map();
+  for (const p of [...new Set([word, word.slice(0, 4), word.slice(0, 3)])].filter((p) => p.length >= 3)) {
+    for (const r of await meds.byNamePrefix(p)) {
+      const n = tokens(r.name);
+      if (!n.length || seen.has(r.name.toLowerCase())) continue;
+      const d = n[0].startsWith(word) ? 0 : editDistance(word, n[0], max);
+      if (d > max) continue;
+      if (!nums.every((x) => n.includes(x))) continue;
+      if (form && r.form !== form) continue;
+      const hits = q.filter((t) => t !== word && n.some((x) => x === t || (t.length >= 3 && x.startsWith(t)))).length;
+      seen.set(r.name.toLowerCase(), { name: r.name, d, hits, extra: n.length - q.length, len: r.name.length });
+    }
+    if (seen.size >= limit * 3) break;
+  }
+  return [...seen.values()].sort((a, b) => a.d - b.d || b.hits - a.hits || a.extra - b.extra || a.len - b.len).slice(0, limit).map((x) => x.name);
+}
+
 /** Tool: identify_medicine. Resolve a brand name (and optional composition read off the strip) to one DB row. */
 export async function identifyMedicine(ctx, { brand = '', composition = '', form = '' } = {}) {
   const { meds } = ctxOf(ctx);
@@ -307,12 +357,19 @@ export function compositionFromText(text) {
   const src = String(text || '').replace(/\b(?:I\.\s?P|B\.\s?P|U\.\s?S\.\s?P)\.?(?=\s|$|\d)/gi, ' IP ');
   const found = [];
   const seen = new Set();
-  const re = /([A-Za-z][A-Za-z\- ]{2,40}?)\s*(?:\b(?:IP|BP|USP)\b)?\s*[:\-]?\s*(\d+(?:\.\d+)?)\s*(mg|mcg|g|gm|iu)\b/gi;
+  // Liquids give the strength per volume: "Each 5 ml contains Paracetamol IP 120 mg" is 120mg/5ml
+  // (as brands list it), never 120 mg. An inline "120 mg/5 ml" or "120 mg per 5 ml" wins.
+  const vol = (n) => (Number(n) === 1 ? 'ml' : `${Number(n)}ml`);
+  const basis = src.match(/\b(?:each|per|every)\s+(\d+(?:\.\d+)?)?\s*ml\b/i);
+  const perVol = basis ? `/${vol(basis[1] || 1)}` : '';
+  // The name starts at a word start: never a tail of a longer word ("h" of "Each").
+  const re = /\b([A-Za-z][A-Za-z\- ]{2,40}?)\s*(?:\b(?:IP|BP|USP)\b)?\s*[:\-]?\s*(\d+(?:\.\d+)?)\s*(mg|mcg|g|gm|iu)\b(?:\s*(?:\/|per)\s*(\d+(?:\.\d+)?)?\s*ml\b)?/gi;
   let m;
   while ((m = re.exec(src))) {
-    let name = m[1].replace(/\b(each|film|coated|uncoated|tablet|tablets|capsule|capsules|contains|composition|hard|gelatin|equivalent|to|as)\b/gi, ' ').replace(/\s+/g, ' ').trim();
+    let name = m[1].replace(/\b(each|per|every|ml|film|coated|uncoated|tablet|tablets|capsule|capsules|contains|composition|hard|gelatin|equivalent|to|as|oral|suspension|syrup|solution|drops|and|with|of|reconstituted|dispersible|chewable|gastro|resistant|enteric)\b/gi, ' ').replace(/\s+/g, ' ').trim();
     if (name.length < 4) continue;
-    const part = `${name} (${m[2]}${m[3].toLowerCase()})`;
+    const per = m[0].match(/(?:\/|per)\s*(\d+(?:\.\d+)?)?\s*ml\s*$/i) ? `/${vol(m[4] || 1)}` : perVol;
+    const part = `${name} (${m[2]}${m[3].toLowerCase()}${per})`;
     // The salt is usually printed twice (title line and "Each tablet contains"): count it once.
     if (seen.has(part.toLowerCase())) continue;
     seen.add(part.toLowerCase());

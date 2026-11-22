@@ -131,7 +131,7 @@ export async function handleMessage(env, msg, deps = {}, now = Date.now()) {
   };
   const answerOrWhy = (r) => {
     if (r.status === 'ok') return text(answerText(lang, r, s.pin, deps.origin));
-    if (r.status === 'not_found') return text(t(lang, 'notFound'));
+    if (r.status === 'not_found') return text([t(lang, 'notFound'), r.suggestions?.length ? t(lang, 'waDidYouMean', { names: r.suggestions.slice(0, 3).join(', ') }) : ''].filter(Boolean).join(' '));
     if (r.status === 'unreadable') return text(`${t(lang, 'photoUnreadable')} ${t(lang, 'waRetype')}`);
     if (r.status === 'vision_unavailable') return text(t(lang, 'visionDown'));
     return text(t(lang, 'waSlow'));

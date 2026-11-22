@@ -1,6 +1,6 @@
 import { LANGS, STRINGS, t, rupees, unitKind } from '/strings.js';
 import { createChat, newChatId } from '/chat.js';
-import { pharmacistEntry, mergeMedList, asksToSwitch, shouldAddToList, listenAllowed, pickVoice, isPhoneBrowser, freshMedList, kendraCode, showMobile, orderItems, orderQty, orderMessage, waLink, smsLink, ORDER_MAX_PACKS, photoSendSize, askTimeoutMs, savableAnswer, volunteerCode, shareText } from '/rules.js';
+import { pharmacistEntry, unlistedEntry, mergeMedList, asksToSwitch, shouldAddToList, listenAllowed, pickVoice, isPhoneBrowser, freshMedList, kendraCode, showMobile, orderItems, orderQty, orderMessage, waLink, smsLink, ORDER_MAX_PACKS, photoSendSize, askTimeoutMs, savableAnswer, volunteerCode, shareText } from '/rules.js';
 
 const $ = (s) => document.querySelector(s);
 const store = {
@@ -635,6 +635,7 @@ async function ask({ text, image, ocr, relog = true }) {
     if (r.status !== 'error' && !r.error) break;
     await new Promise((ok) => setTimeout(ok, 2000)); // one quiet retry on a network/server hiccup
   }
+  if (r.status === 'not_found' && text && !image && !ocr) r.typed = String(text).trim(); // for "Add to the pharmacist list"
   if (r.status === 'offline' || r.status === 'slow' || r.status === 'busy') {
     // A language change on a saved answer: keep showing it; it changes when the internet is back.
     if (!relog && last?.status === 'ok') { render(last); toast('offlineLang'); return; }
@@ -714,8 +715,8 @@ function showPharmacist() {
   $('#phLead').textContent = t(lang, (list.length > 1 ? 'pharmacistCardMany' : 'pharmacistCard') + (anyNti ? 'Nti' : ''));
   $('#phList').innerHTML = list.map((x, i) => `
     <li>
-      <p class="ph-comp">${esc(nbspUnits(x.composition))}</p>
-      <p class="ph-sub">${esc([x.form, x.name].filter(Boolean).join(' · '))}</p>
+      <p class="ph-comp">${esc(x.unlisted ? x.name : nbspUnits(x.composition))}</p>
+      <p class="ph-sub">${esc(x.unlisted ? t(lang, 'phUnlisted') : [x.form, x.name].filter(Boolean).join(' · '))}</p>
       ${x.nti ? whyHtml('ph-nti', t(lang, 'phNti')) : ''}
       ${x.ja ? `<p class="ph-ja">${esc(t(lang, x.nti ? 'phJaNti' : 'phJa', { name: x.ja.name, code: x.ja.code }))}</p>` : x.noJa ? `<p class="ph-ja ph-noja">${esc(t(lang, 'phNoJa'))}</p>` : ''}
       <button class="link ph-remove" type="button" data-i="${i}">${esc(t(lang, 'listRemove'))}</button>
@@ -898,6 +899,19 @@ function kendraInner(r) {
       ${k.by === 'location' || k.items?.some((x) => x.km != null) ? `<p class="med-meta k-approx">${esc(t(lang, 'kmApprox'))}</p>` : ''}`;
 }
 
+// "Not found": close names to tap, then what the person can still do (photograph the salts, type
+// them, or show the typed name to the pharmacist).
+function notFoundHelp(r) {
+  const sugg = (r.suggestions || []).slice(0, 5);
+  return `
+      ${sugg.length ? `<p class="nf-title">${esc(t(lang, 'didYouMean'))}</p><div class="nf-suggs">${sugg.map((n) => `<button class="secondary nf-sugg" type="button" data-name="${esc(n)}">${esc(n)}</button>`).join('')}</div>` : ''}
+      <p class="nf-title">${esc(t(lang, 'nfHow'))}</p>
+      <div class="crop-actions"><button class="primary" id="nfScan" type="button">${esc(t(lang, 'nfScanBack'))}</button></div>
+      <p class="med-meta">${esc(t(lang, 'nfScanBackWhy'))}</p>
+      <p class="med-meta">${esc(t(lang, 'nfTypeSalts'))}</p>
+      ${r.typed ? `<div class="crop-actions"><button class="secondary" id="nfAdd" type="button">${esc(t(lang, 'nfAddPh'))}</button></div>` : ''}`;
+}
+
 function render(r) {
   const out = $('#result');
   applyStrings();
@@ -911,6 +925,7 @@ function render(r) {
       <div class="card"><p class="med-name" style="font-size:22px;line-height:1.35">${esc(t(lang, why))}</p>
       ${r.status === 'unreadable' && whyRead ? `<p class="read-why">${esc(t(lang, whyRead))}</p>` : ''}
       ${readText ? `<p class="med-meta">${esc(t(lang, 'readOnStrip', { text: readText }))}</p>` : ''}
+      ${r.status === 'not_found' ? notFoundHelp(r) : ''}
       ${(r.status === 'offline' || r.status === 'slow' || r.status === 'busy') && pending ? `<div class="crop-actions" style="margin-top:14px"><button class="primary" id="retryBtn" type="button">${esc(t(lang, 'tryAgain'))}</button></div>${r.status === 'offline' ? `<p class="med-meta">${esc(t(lang, 'offlineAuto'))}</p>` : ''}` : ''}
       ${r.status === 'unreadable' ? `<div class="crop-actions" style="margin-top:14px"><button class="primary" id="retakeBtn" type="button">${esc(t(lang, 'retakePhoto'))}</button><button class="secondary" id="typeBtn" type="button">${esc(t(lang, 'confirmType'))}</button></div>` : ''}
       ${devMode ? `<p class="source">developer: status=${esc(r.status || '-')}${r.read_score != null ? ` · read score=${r.read_score}/100 (pass 70)${r.reason ? ` · ${esc(r.reason)}` : ''}` : ''}${r.error ? ` · error=${esc(r.error)}` : ''}${r.detail ? ` · ${esc(r.detail)}` : ''}${r.trace?.length ? ` · steps=${esc(r.trace.map((s) => s.tool + (s.error ? '!' : '') + (s.output?.failed ? `(${[].concat(s.output.failed).join('; ')})` : '')).join(' > '))}` : ''}</p>` : ''}</div>
@@ -919,6 +934,16 @@ function render(r) {
     if ($('#retakeBtn')) $('#retakeBtn').onclick = () => $('#scanBtn').click();
     if ($('#typeBtn')) $('#typeBtn').onclick = () => { show('home'); $('#nameInput').focus(); };
     if ($('#retryBtn')) $('#retryBtn').onclick = () => pending && ask(pending);
+    for (const b of out.querySelectorAll('.nf-sugg')) b.onclick = () => { $('#nameInput').value = b.dataset.name; ask({ text: b.dataset.name }); };
+    if ($('#nfScan')) $('#nfScan').onclick = () => $('#scanBtn').click();
+    if ($('#nfAdd')) $('#nfAdd').onclick = () => {
+      const e = unlistedEntry(r.typed);
+      if (!e) return;
+      saveMedList(mergeMedList(medList(), { ...e, qty: orderQty(), at: Date.now() }, MAX_LIST));
+      updatePhBtn();
+      toast('toastAdded');
+      $('#nfAdd').disabled = true;
+    };
     show('result');
     return;
   }

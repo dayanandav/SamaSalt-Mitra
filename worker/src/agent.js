@@ -7,7 +7,7 @@
 // Every step is recorded in `trace` (tool, input, short output, ms) and returned to the UI,
 // and the eval runner writes the same trace as AgentFoundry run JSONL (.codenow/runs/).
 import { readStrip, understandText, readPrescription } from './vision.js';
-import { identifyMedicine, janAushadhiByName, findSameSalt, janAushadhiMatch, ceilingPrice, nearestKendra, computeSaving, compositionFromText, brandCandidatesFromText } from './tools.js';
+import { identifyMedicine, janAushadhiByName, suggestNames, findSameSalt, janAushadhiMatch, ceilingPrice, nearestKendra, computeSaving, compositionFromText, brandCandidatesFromText } from './tools.js';
 import { describeKey, extractDosageForm, ntiFromKey, parseSaltComposition } from './normalize.js';
 import { assetMeds, d1Meds } from './medstore.js';
 import { composeAnswer } from '../../public/strings.js';
@@ -123,7 +123,12 @@ export async function runAgent(env, input) {
     }
   }
 
-  if (!id.found) return { status: 'not_found', lang, read, trace, source };
+  if (!id.found) {
+    // "Did you mean…?": close brand names for a typed name (a typo, "65O" for 650). Only shown
+    // for the person to tap; nothing is assumed, and a typed strength is never changed.
+    const suggestions = source === 'text' && text ? await suggestNames(ctx, text).catch(() => []) : [];
+    return { status: 'not_found', lang, read, trace, source, ...(suggestions.length ? { suggestions } : {}) };
+  }
 
   const med = id.medicine;
   const meta = await loadMeta(db);
@@ -243,7 +248,11 @@ export function looksScanned(text) {
 
 /** OCR-style text (on-device Tesseract, or the keyboard's Scan text) -> query, with no model call. */
 async function readOcrText(ctx, ocr, trace) {
-  const query = { brand: '', composition: compositionFromText(ocr), form: /capsule/i.test(ocr) ? 'capsule' : 'tablet' };
+  // The form printed or typed with the salts ("oral suspension", "syrup", "capsule"); a tablet
+  // only when no form word is there. A syrup must never be compared with tablets.
+  const composition = compositionFromText(ocr);
+  // A strength per ml ("Each 10 ml contains ...") is a liquid even when no form word was read.
+  const query = { brand: '', composition, form: extractDosageForm(ocr) || (/(?:mg|mcg|g|iu)\/\d*ml\)/i.test(composition) ? 'liquid' : 'tablet') };
   const candidates = brandCandidatesFromText(ocr);
   trace.push({ tool: 'parse_ocr_text', input: { chars: ocr.length }, output: { brand_candidates: candidates.slice(0, 6), composition: query.composition }, ms: 0 });
   // A word that merely looks like a brand ("APD", "Din A") is never enough: a brand is accepted

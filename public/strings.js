@@ -209,6 +209,14 @@ export const STRINGS = {
     safety: 'Disclaimer: This information is for reference only and is not medical advice. Only medicines with the same salt, strength and form are shown. Consult your doctor or pharmacist before changing any medicine.',
     nti: 'Caution: This medicine needs an exact dose. Do not change its brand or switch to a generic without consulting your doctor.',
     notFound: 'We could not find this medicine. Type the name exactly as printed on the strip.',
+    didYouMean: 'Did you mean:',
+    nfHow: 'Not in our list? You can still check it:',
+    nfScanBack: 'Photograph the salts on the strip',
+    nfScanBackWhy: 'Photograph the side that lists the salts and strength (“Each tablet contains…”). The app then works from the salts, even for a brand that is not in our list.',
+    nfTypeSalts: 'Or type the salts, strength and form, for example “Paracetamol 650 mg tablet” or “Sodium alginate 250 mg syrup”.',
+    nfAddPh: 'Add to the pharmacist list',
+    phUnlisted: 'Not in our list. Please check the salts printed on the strip.',
+    waDidYouMean: 'Did you mean: {names}? Send the exact name.',
     visionFallback: 'Reading the photo on this phone instead…',
     photoUnreadable: 'Strip details could not be extracted from this image.',
     readNoComposition: 'The salt and strength (for example “Paracetamol IP 650 mg”) were not clear. Photograph the side that lists the composition, close up, in good light. Nothing is suggested from a partial reading.',
@@ -525,6 +533,14 @@ export const STRINGS = {
     safety: 'ಸೂಚನೆ: ಈ ಮಾಹಿತಿ ಉಲ್ಲೇಖಕ್ಕಾಗಿ ಮಾತ್ರ, ಇದು ವೈದ್ಯಕೀಯ ಸಲಹೆಯಲ್ಲ. ಅದೇ ಔಷಧೀಯ ಘಟಕಾಂಶ, ಅದೇ ಪ್ರಮಾಣ ಮತ್ತು ಅದೇ ರೂಪದ ಔಷಧಿಗಳನ್ನು ಮಾತ್ರ ತೋರಿಸಲಾಗಿದೆ. ಯಾವುದೇ ಔಷಧಿ ಬದಲಾಯಿಸುವ ಮೊದಲು ನಿಮ್ಮ ವೈದ್ಯರು ಅಥವಾ ಫಾರ್ಮಸಿಸ್ಟ್ ಅವರನ್ನು ಸಂಪರ್ಕಿಸಿ.',
     nti: 'ಎಚ್ಚರಿಕೆ: ಈ ಔಷಧಿಗೆ ನಿಖರವಾದ ಡೋಸ್ ಬೇಕು. ನಿಮ್ಮ ವೈದ್ಯರನ್ನು ಸಂಪರ್ಕಿಸದೆ ಇದರ ಬ್ರ್ಯಾಂಡ್ ಬದಲಾಯಿಸಬೇಡಿ ಅಥವಾ ಜೆನೆರಿಕ್ ಔಷಧಿಗೆ ಬದಲಾಯಿಸಬೇಡಿ.',
     notFound: 'ಈ ಔಷಧಿ ಸಿಗಲಿಲ್ಲ. ಸ್ಟ್ರಿಪ್ ಮೇಲೆ ಮುದ್ರಿಸಿರುವಂತೆಯೇ ಹೆಸರನ್ನು ಟೈಪ್ ಮಾಡಿ.',
+    didYouMean: 'ನೀವು ಹುಡುಕಿದ್ದು ಇದೇನಾ:',
+    nfHow: 'ನಮ್ಮ ಪಟ್ಟಿಯಲ್ಲಿ ಇಲ್ಲವೇ? ಆದರೂ ಹೀಗೆ ಪರಿಶೀಲಿಸಬಹುದು:',
+    nfScanBack: 'ಸ್ಟ್ರಿಪ್ ಮೇಲಿನ ಘಟಕಾಂಶಗಳ ಫೋಟೋ ತೆಗೆಯಿರಿ',
+    nfScanBackWhy: 'ಘಟಕಾಂಶ ಮತ್ತು ಪ್ರಮಾಣ ಮುದ್ರಿಸಿರುವ ಬದಿಯ (“Each tablet contains…”) ಫೋಟೋ ತೆಗೆಯಿರಿ. ನಮ್ಮ ಪಟ್ಟಿಯಲ್ಲಿ ಇಲ್ಲದ ಬ್ರ್ಯಾಂಡ್ ಆದರೂ ಆ್ಯಪ್ ಘಟಕಾಂಶಗಳಿಂದ ಪರಿಶೀಲಿಸುತ್ತದೆ.',
+    nfTypeSalts: 'ಅಥವಾ ಘಟಕಾಂಶ, ಪ್ರಮಾಣ ಮತ್ತು ರೂಪವನ್ನು ಟೈಪ್ ಮಾಡಿ, ಉದಾಹರಣೆಗೆ “Paracetamol 650 mg tablet” ಅಥವಾ “Sodium alginate 250 mg syrup”.',
+    nfAddPh: 'ಫಾರ್ಮಸಿಸ್ಟ್ ಪಟ್ಟಿಗೆ ಸೇರಿಸಿ',
+    phUnlisted: 'ನಮ್ಮ ಪಟ್ಟಿಯಲ್ಲಿ ಇಲ್ಲ. ಸ್ಟ್ರಿಪ್ ಮೇಲೆ ಮುದ್ರಿಸಿರುವ ಘಟಕಾಂಶಗಳನ್ನು ಪರಿಶೀಲಿಸಿ.',
+    waDidYouMean: 'ನೀವು ಹುಡುಕಿದ್ದು ಇದೇನಾ: {names}? ಸರಿಯಾದ ಹೆಸರನ್ನು ಕಳುಹಿಸಿ.',
     visionFallback: 'ಫೋಟೋವನ್ನು ಈ ಫೋನ್‌ನಲ್ಲೇ ಓದಲಾಗುತ್ತಿದೆ…',
     photoUnreadable: 'ಈ ಫೋಟೋದಿಂದ ಔಷಧಿಯ ಸ್ಟ್ರಿಪ್‌ನ ವಿವರಗಳನ್ನು ಓದಲು ಸಾಧ್ಯವಾಗಲಿಲ್ಲ.',
     readNoComposition: 'ಔಷಧೀಯ ಘಟಕಾಂಶ ಮತ್ತು ಪ್ರಮಾಣ (ಉದಾ: “Paracetamol IP 650 mg”) ಸ್ಪಷ್ಟವಾಗಿಲ್ಲ. ಸಂಯೋಜನೆ ಇರುವ ಭಾಗವನ್ನು ಹತ್ತಿರದಿಂದ, ಒಳ್ಳೆಯ ಬೆಳಕಿನಲ್ಲಿ ಫೋಟೋ ತೆಗೆಯಿರಿ. ಅರ್ಧ ಓದಿದ ವಿವರದಿಂದ ಏನನ್ನೂ ಸೂಚಿಸುವುದಿಲ್ಲ.',
@@ -838,6 +854,14 @@ export const STRINGS = {
     safety: 'अस्वीकरण: यह जानकारी केवल संदर्भ के लिए है, चिकित्सा सलाह नहीं। सिर्फ़ वही सक्रिय घटक, वही मात्रा और वही रूप वाली दवाएँ दिखाई गई हैं। कोई भी दवा बदलने से पहले अपने डॉक्टर या फ़ार्मासिस्ट से सलाह लें।',
     nti: 'सावधानी: इस दवा की खुराक बिल्कुल सटीक होनी चाहिए। अपने डॉक्टर से सलाह लिए बिना इसका ब्रांड न बदलें और न ही जेनेरिक दवा पर जाएँ।',
     notFound: 'यह दवा नहीं मिली। पट्टी पर जैसा छपा है, वैसा ही नाम लिखें।',
+    didYouMean: 'क्या आपका मतलब है:',
+    nfHow: 'हमारी सूची में नहीं है? फिर भी ऐसे जाँच सकते हैं:',
+    nfScanBack: 'पट्टी पर छपे सक्रिय घटकों की फ़ोटो लें',
+    nfScanBackWhy: 'जिस तरफ़ सक्रिय घटक और मात्रा छपी है (“Each tablet contains…”), उसकी फ़ोटो लें। हमारी सूची में न होने वाले ब्रांड के लिए भी ऐप सक्रिय घटकों से जाँच करता है।',
+    nfTypeSalts: 'या सक्रिय घटक, मात्रा और रूप लिखें, जैसे “Paracetamol 650 mg tablet” या “Sodium alginate 250 mg syrup”।',
+    nfAddPh: 'फ़ार्मासिस्ट सूची में जोड़ें',
+    phUnlisted: 'हमारी सूची में नहीं है। पट्टी पर छपे सक्रिय घटक देखें।',
+    waDidYouMean: 'क्या आपका मतलब है: {names}? सही नाम भेजें।',
     visionFallback: 'फ़ोटो इसी फ़ोन पर पढ़ी जा रही है…',
     photoUnreadable: 'इस फ़ोटो से दवा की पट्टी की जानकारी नहीं पढ़ी जा सकी।',
     readNoComposition: 'सक्रिय घटक और मात्रा (जैसे “Paracetamol IP 650 mg”) साफ़ नहीं थे। कंपोज़िशन वाले हिस्से की पास से, अच्छी रोशनी में फ़ोटो लें। अधूरी जानकारी से कुछ भी सुझाया नहीं जाता।',
@@ -1003,7 +1027,7 @@ export function composeAnswer(lang, f) {
     if (f.jaUnit != null) L.push(`ಜನ ಔಷಧಿ ಕೇಂದ್ರದಲ್ಲಿ ${f.jaName}: ${per} ${rupees(f.jaUnit)}.`);
     if (noOption(f) === 'notLoaded') L.push('ಬ್ರ್ಯಾಂಡ್ ಬೆಲೆಗಳನ್ನು ಇನ್ನೂ ಲೋಡ್ ಮಾಡಿಲ್ಲ, ಆದ್ದರಿಂದ ಬೇರೆ ಬ್ರ್ಯಾಂಡ್‌ಗಳ ಬೆಲೆಗಳನ್ನು ಹೋಲಿಸಲು ಸಾಧ್ಯವಿಲ್ಲ.');
     if (noOption(f) === 'cheapest') L.push('ಇದು ಈಗಾಗಲೇ ಈ ಬ್ರ್ಯಾಂಡ್‌ಗಳಲ್ಲಿ ಅತಿ ಕಡಿಮೆ ಬೆಲೆಯದು.');
-    if (noOption(f) === 'none') L.push('ಅದೇ ಔಷಧೀಯ ಘಟಕಾಂಶ, ಅದೇ ಪ್ರಮಾಣ ಮತ್ತು ಅದೇ ರೂಪದ ಬೇರೆ ಬ್ರ್ಯಾಂಡ್ ಸಿಗಲಿಲ್ಲ.');
+    if (noOption(f) === 'none') L.push('ಅದೇ ಔಷಧೀಯ ಘಟಕಾಂಶ, ಅದೇ ಪ್ರಮಾಣ ಮತ್ತು ಅದೇ ರೂಪದ ಬೇರೆ ಬ್ರ್ಯಾಂಡ್ ನಮ್ಮ ಪಟ್ಟಿಯಲ್ಲಿ ಇಲ್ಲ.');
     if (f.saving > 0) L.push(`ಒಂದು ಪ್ಯಾಕ್ (${f.pack}) ಮೇಲೆ ಸುಮಾರು ${rupees(f.saving)} ಉಳಿಸಬಹುದು.`);
     L.push('ಬದಲಾಯಿಸುವ ಮೊದಲು ನಿಮ್ಮ ವೈದ್ಯರು ಅಥವಾ ಫಾರ್ಮಸಿಸ್ಟ್ ಅವರನ್ನು ಕೇಳಿ.');
   } else if (lang === 'hi') {
@@ -1015,7 +1039,7 @@ export function composeAnswer(lang, f) {
     if (f.jaUnit != null) L.push(`जन औषधि केंद्र पर ${f.jaName}: ${per} ${rupees(f.jaUnit)}।`);
     if (noOption(f) === 'notLoaded') L.push('ब्रांड की कीमतें अभी लोड नहीं हुई हैं, इसलिए दूसरे ब्रांडों से तुलना नहीं की जा सकती।');
     if (noOption(f) === 'cheapest') L.push('यह पहले से ही इन ब्रांडों में सबसे कम दाम वाली है।');
-    if (noOption(f) === 'none') L.push('बिल्कुल वही सक्रिय घटक, वही मात्रा और वही रूप वाला कोई दूसरा ब्रांड नहीं मिला।');
+    if (noOption(f) === 'none') L.push('बिल्कुल वही सक्रिय घटक, वही मात्रा और वही रूप वाला कोई दूसरा ब्रांड हमारी सूची में नहीं है।');
     if (f.saving > 0) L.push(`एक पैक (${f.pack}) पर लगभग ${rupees(f.saving)} बच सकते हैं।`);
     L.push('दवा बदलने से पहले अपने डॉक्टर या फ़ार्मासिस्ट से पूछें।');
   } else {
@@ -1027,7 +1051,7 @@ export function composeAnswer(lang, f) {
     if (f.jaUnit != null) L.push(`At a Jan Aushadhi Kendra, ${f.jaName} costs ${rupees(f.jaUnit)} ${per}.`);
     if (noOption(f) === 'notLoaded') L.push('Brand prices are not loaded yet, so other brands cannot be compared.');
     if (noOption(f) === 'cheapest') L.push('It is already the lowest-priced of these brands.');
-    if (noOption(f) === 'none') L.push('No other brand with exactly the same salt, strength and form was found.');
+    if (noOption(f) === 'none') L.push('No other brand with exactly the same salt, strength and form is in our list.');
     if (f.saving > 0) L.push(`That can save about ${rupees(f.saving)} on one pack of ${f.pack}.`);
     L.push('Please check with your doctor or pharmacist before switching.');
   }

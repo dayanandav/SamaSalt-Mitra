@@ -54,6 +54,7 @@ RELEASE_WORDS = [
     (r"extended[- ]release|\ber\b|\bxr\b", "XR"),
     (r"controlled[- ]release|\bcr\b", "CR"),
     (r"modified[- ]release|\bmr\b", "MR"),
+    (r"delayed[- ]release", "DR"),
 ]
 SALT_SUFFIXES = (
     "hydrochloride", "hcl", "sodium", "potassium", "calcium", "magnesium", "besilate", "besylate",
@@ -76,6 +77,12 @@ SYNONYMS = {
     "lignocaine": "lidocaine",
     "lignocaine hydrochloride": "lidocaine",
 }
+# The reviewed list of spelling variants, shared with public/pmbi.js (read from its JSON blocks).
+_SYN_JS = (Path(__file__).parent.parent / "public" / "ja-synonyms.js").read_text(encoding="utf-8")
+SYNONYMS.update(json.loads(re.search(r"/\*SYNONYMS\*/(.*?)/\*END\*/", _SYN_JS, re.S).group(1)))
+JA_ROUTE_WORDS = json.loads(re.search(r"/\*ROUTE_WORDS\*/(.*?)/\*END\*/", _SYN_JS, re.S).group(1))
+# "Olopatadine Ophthalmic", "Clotrimazole Vaginal": a word for where it is used is not part of the salt.
+ROUTE_TAIL = re.compile(r"\s+(?:" + "|".join(JA_ROUTE_WORDS) + r")$")
 STRENGTH_RE = r"(\d+(?:\.\d+)?)\s*(mg|mcg|µg|ug|gm|g|iu|%\s*w/[wv]|%|ml)(?![a-z])"
 MULTI_STRENGTH_RE = r"(\d+(?:\.\d+)?(?:\s*/\s*\d+(?:\.\d+)?)+)\s*(mg|mcg|µg|ug|gm|g|iu)(?![a-z])"
 UNIT_TO_MG = {"g": 1000.0, "gm": 1000.0, "mg": 1.0, "mcg": 0.001, "µg": 0.001, "ug": 0.001}
@@ -111,6 +118,7 @@ class Vocab:
 
     def map(self, name: str) -> str:
         n = re.sub(r"\s+", " ", name.lower()).strip(" ,.-")
+        n = ROUTE_TAIL.sub("", n)
         n = SYNONYMS.get(n, n)
         if not self.names or n in self.names:
             return n
@@ -127,7 +135,8 @@ class Vocab:
 
 def parse_generic(name: str, vocab: Vocab) -> tuple[str | None, str]:
     """PMBJP generic name -> (canonical key or None, reason)."""
-    s = re.sub(r"\s+", " ", name).strip()
+    # "15,00,000 IU" (Indian digit grouping) is one number.
+    s = re.sub(r"(?<=\d),(?=\d{2,3}\b)", "", re.sub(r"\s+", " ", name).strip())
     low = s.lower()
     form = None
     form_at = len(low)
@@ -144,7 +153,7 @@ def parse_generic(name: str, vocab: Vocab) -> tuple[str | None, str]:
             break
     salt_text = s[:form_at]
     salt_text = re.sub(r"\((?:sr|er|xr|cr|mr|pr)\)", " ", salt_text, flags=re.I)
-    salt_text = re.sub(r"\b(sustained|prolonged|extended|controlled|modified)[- ]release\b", " ", salt_text, flags=re.I)
+    salt_text = re.sub(r"\b(sustained|prolonged|extended|controlled|modified|delayed)[- ]release\b", " ", salt_text, flags=re.I)
     salt_text = re.sub(r"\b(gastro[- ]resistant|enteric[- ]coated|film[- ]coated|uncoated|orally disintegrating|dispersible|chewable)\b", " ", salt_text, flags=re.I)
     chunks = [x.strip() for x in re.split(r"\s*(?:,|&|\+|\band\b|\bwith\b)\s*", salt_text, flags=re.I) if x.strip()]
     inline = [re.search(STRENGTH_RE, c, flags=re.I) for c in chunks]
@@ -173,15 +182,20 @@ def parse_generic(name: str, vocab: Vocab) -> tuple[str | None, str]:
     strengths = strengths[: len(salts)]
     names = [vocab.map(n) for n in salts]
     per5 = form == "liquid" and re.search(r"\bper\s*5\s*ml\b|/\s*5\s*ml\b", low)
+    # Not "per ml": names give a total and a concentration ("500 mg (100mg per ml)"), and the brand
+    # list writes injections and drops as plain mg, so a /ml suffix would give wrong keys.
     keys = []
     for f in [form, *ALT_FORMS.get(form, [])]:
-        for bare_pct in (False, True):
+        # A bare "5%" is also tried as "5% w/w" (creams, gels) or "5% w/v" (liquids), as brands write it.
+        for pct in ("as", "bare", "qual"):
             for per in ((True, False) if per5 else (False,)):
                 sts = []
                 for v, u in strengths:
                     st = std_strength(v, u)
-                    if bare_pct:
+                    if pct == "bare":
                         st = st.split(" ")[0]
+                    if pct == "qual" and re.fullmatch(r"[\d.]+%", st):
+                        st += " w/w" if f == "topical" else " w/v"
                     if per and st.endswith("mg"):
                         st += "/5ml"
                     sts.append(st)

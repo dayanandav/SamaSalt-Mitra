@@ -23,6 +23,16 @@ export function pharmacistEntry(r) {
   };
 }
 
+/**
+ * A medicine that was not found, added to the pharmacist list by its typed name only, so the
+ * pharmacist can check the strip. No composition, no Jan Aushadhi product, never ordered.
+ */
+export function unlistedEntry(name) {
+  const n = String(name || '').replace(/\s+/g, ' ').trim().slice(0, 80);
+  if (!n) return null;
+  return { ckey: `unlisted:${n.toLowerCase()}`, name: n, composition: '', form: '', nti: false, ja: null, noJa: false, unlisted: true };
+}
+
 /** Newest first, one entry per composition key, at most `max`. */
 export function mergeMedList(list, entry, max = 15) {
   return [entry, ...(Array.isArray(list) ? list : []).filter((x) => x && x.ckey !== entry.ckey)].slice(0, max);

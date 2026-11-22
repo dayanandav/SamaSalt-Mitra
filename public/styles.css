@@ -487,3 +487,6 @@ html.has-fab .foot { padding-bottom: 88px; }
 html.big-text main, html.big-text .foot, html.big-text dialog { zoom: 1.18; }
 .kendra-here .kh-hours { display: block; font-size: 14px; margin-top: 2px; }
 .kendra-here .kh-hours[hidden] { display: none; }
+.nf-title { margin: 16px 0 8px; font-weight: 600; }
+.nf-suggs { display: flex; flex-wrap: wrap; gap: 8px; }
+.nf-suggs .nf-sugg { width: auto; padding: 8px 14px; min-height: 0; }

@@ -63,7 +63,9 @@ const UNIT_TO_MG = {
 };
 
 const RELEASE_PATTERNS = [
-  [/\b(?:sr|sustained[- ]?release)\b/, 'SR'],
+  // "Tablet PR" (prolonged release) and "-DSR" (domperidone sustained release) are SR, as the
+  // official Jan Aushadhi list reads them; an unread release would group them with plain tablets.
+  [/\b(?:sr|dsr|pr|sustained[- ]?release|prolonged[- ]?release)\b/, 'SR'],
   [/\b(?:xr|extended[- ]?release|er)\b/, 'XR'],
   [/\b(?:cr|controlled[- ]?release)\b/, 'CR'],
   [/\b(?:mr|modified[- ]?release)\b/, 'MR'],
