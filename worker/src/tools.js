@@ -241,7 +241,27 @@ export async function soundsLikeChoices(ctx, latin, limit = 5) {
     if (out.has(k)) continue;
     out.set(k, { name: r.name, composition: describeKey(r.ckey), rank: (soundKey(n[0]) === soundKey(word) ? 0 : 1) + (n.length - 1 - extra.length) * 0.1 + (r.form === 'tablet' ? 0 : 0.05) });
   }
-  return [...out.values()].sort((a, b) => a.rank - b.rank || a.name.length - b.name.length).slice(0, limit).map(({ name, composition }) => ({ name, composition }));
+  // Salt names typed in Kannada/Hindi ("मेटफॉर्मिन 500"): official Jan Aushadhi products whose name
+  // starts with a word that sounds alike and has the typed strength, offered first under their full
+  // official name (tapping it is the strict Jan Aushadhi name match). Never for a typed form it lacks.
+  const ja = [];
+  if (nums.length) {
+    const res = await db.prepare("SELECT drug_code, generic_name, ckey FROM ja_products WHERE ckey IS NOT NULL AND ckey != ''").all().catch(() => ({ results: [] }));
+    for (const p of res.results || []) {
+      const first = tokens(p.generic_name)[0];
+      if (!first || !soundsAlike(word, first)) continue;
+      // One typed number is the strength of the salt the patient named ("cetirizine 10" is never a
+      // combination where 10 mg is another salt's); several numbers must all be the product's.
+      const [salts, form] = p.ckey.split('|');
+      const named = salts.split('+').find((s) => soundsAlike(word, s.split(':')[0].split(' ')[0]));
+      if (nums.length === 1 ? !named || parseFloat(named.split(':')[1]) !== nums[0] : !nums.every((x) => [...numbersIn(p.generic_name), ...keyStrengths(p.ckey)].includes(x))) continue;
+      const oral = form === 'tablet' || form === 'capsule' ? 0 : 0.2; // no form typed: tablets and capsules first
+      ja.push({ name: p.generic_name, composition: describeKey(p.ckey), rank: (soundKey(first) === soundKey(word) ? 0 : 0.5) + (salts.includes('+') ? 0.3 : 0) + oral });
+    }
+  }
+  ja.sort((a, b) => a.rank - b.rank || a.name.length - b.name.length);
+  const brands = [...out.values()].sort((a, b) => a.rank - b.rank || a.name.length - b.name.length);
+  return [...ja.slice(0, 3), ...brands].slice(0, limit).map(({ name, composition }) => ({ name, composition }));
 }
 
 /** Tool: identify_medicine. Resolve a brand name (and optional composition read off the strip) to one DB row. */

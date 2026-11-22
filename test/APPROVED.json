@@ -1,6 +1,6 @@
 {
   "note": "Fingerprints of the owner-approved tests. Written only by `node tools/test-lock.mjs approve --yes`, run by the owner.",
-  "approved_at": "2026-11-22T18:28:54.637Z",
+  "approved_at": "2026-11-22T18:39:05.373Z",
   "files": {
     "test/admin.test.mjs": "e05dd44ef3382da2c7d122e94aea823f3930b03b6297a4ce424db789f271a8d3",
     "test/askdontguess.test.mjs": "ed74a9374f1afdfa3e9fc041165503272826a0bdc9492553923d9d393f4c9a04",
@@ -11,6 +11,7 @@
     "test/fixtures/db_sample.json": "9ede168301e369e8b69ffc9eb839661aa7e48a53cff8e2151236574d9461f291",
     "test/fixtures/med_subset.json": "082fb1e44eba5c3d01c6a082095b67f3dcc48004b67ce722e9445e27a4086a67",
     "test/indic.test.mjs": "6b80cf9f65d375a0e4a9b7d8769dc213c916baf1e3e86ba2fc85f07c02686f3b",
+    "test/indicsalt.test.mjs": "0d5690a1b1058868ab08229ae371e106fe1e8f1fac384b0ef42b3d0ec9cb0bb3",
     "test/janame.test.mjs": "e4b4413e58097ef127a2a3b4094f4791d7f28a006d5e390e7f42bebfad60a5d8",
     "test/jasyn.test.mjs": "5cf7b7dd949c188c52145e92614e3d7cb1d74bbaff7b578fe0093173d79df780",
     "test/kendra.test.mjs": "8b45b4d4c32327fcb5641bf3fa65e5a9e5538b511f3519f9b67bc81a67b7b838",
