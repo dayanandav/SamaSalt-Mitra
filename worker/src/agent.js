@@ -11,6 +11,7 @@ import { identifyMedicine, janAushadhiByName, suggestNames, findSameSalt, janAus
 import { describeKey, extractDosageForm, ntiFromKey, parseSaltComposition } from './normalize.js';
 import { assetMeds, d1Meds } from './medstore.js';
 import { composeAnswer } from '../../public/strings.js';
+import { expandShortForms } from '../../public/short-forms.js';
 
 /**
  * v2.0.4 Scan a prescription: read the medicine names (read_prescription), then match each one to
@@ -29,7 +30,7 @@ export async function readPrescriptionAgent(env, { image }) {
     try { id = await identifyMedicine(ctx, { brand, composition: '', form: it.form || '' }); } catch {}
     items.push(id.found
       ? { read: brand, found: true, name: id.medicine.name, composition: describeKey(id.medicine.ckey), nti: !!id.medicine.nti || ntiFromKey(id.medicine.ckey) }
-      : { read: brand, found: false });
+      : { read: brand, found: false, ...(id.choices?.length ? { choose: true } : {}) });
   }
   return { status: items.length ? 'ok' : 'unreadable', items, model: read.model };
 }
@@ -96,8 +97,10 @@ export async function runAgent(env, input) {
   }
 
   let id = await step('identify_medicine', query, () => identifyMedicine(ctx, query), (r) =>
-    r.found ? { name: r.medicine.name, composition: r.label, via: r.via, composition_agrees: r.composition_agrees } : { found: false }
+    r.found ? { name: r.medicine.name, composition: r.label, via: r.via, composition_agrees: r.composition_agrees } : { found: false, choices: r.choices?.length || 0 }
   );
+  // "Ask, don't guess": brands that only partly fit the typed name, offered with their salts.
+  const firstChoices = id.choices;
 
   // Read-confidence gate for anything read from a photo or a scan: below the pass mark nothing is
   // searched and the person is told the strip details could not be extracted. A misread must
@@ -107,6 +110,18 @@ export async function runAgent(env, input) {
     readCheck = scoreRead(id, query, read);
     trace.push({ tool: 'check_read', input: { pass_mark: READ_PASS_MARK }, output: readCheck, ms: 0 });
     if (readCheck.score < READ_PASS_MARK) return { status: 'unreadable', reason: readCheck.reason, read_score: readCheck.score, lang, read, trace, source };
+  }
+
+  // A typed short form ("pcm 500", "paracetamol syp 250"): the reviewed list (public/short-forms.js),
+  // tried only when the name as typed was not found, before any model; exact matching as always.
+  if (!id.found && source === 'text' && text) {
+    const expanded = expandShortForms(text);
+    if (expanded !== text) {
+      query = { brand: expanded, composition: '', form: '' };
+      id = await step('identify_medicine', { ...query, short_forms: true }, () => identifyMedicine(ctx, query), (r) =>
+        r.found ? { name: r.medicine.name, composition: r.label, via: r.via } : { found: false }
+      );
+    }
   }
 
   // Typed text in Kannada/Devanagari script, or phrased as a question: let the language model
@@ -126,6 +141,8 @@ export async function runAgent(env, input) {
   if (!id.found) {
     // "Did you mean…?": close brand names for a typed name (a typo, "65O" for 650). Only shown
     // for the person to tap; nothing is assumed, and a typed strength is never changed.
+    const choices = source === 'text' ? id.choices || firstChoices || [] : [];
+    if (choices.length) return { status: 'not_found', lang, read, trace, source, choices };
     const suggestions = source === 'text' && text ? await suggestNames(ctx, text).catch(() => []) : [];
     return { status: 'not_found', lang, read, trace, source, ...(suggestions.length ? { suggestions } : {}) };
   }

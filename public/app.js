@@ -944,8 +944,12 @@ function kendraInner(r) {
 // them, or show the typed name to the pharmacist).
 function notFoundHelp(r) {
   const sugg = (r.suggestions || []).slice(0, 5);
+  // "Ask, don't guess": brands that only partly fit what was typed, each with its salts.
+  const choices = (r.choices || []).slice(0, 5);
   return `
-      ${sugg.length ? `<p class="nf-title">${esc(t(lang, 'didYouMean'))}</p><div class="nf-suggs">${sugg.map((n) => `<button class="secondary nf-sugg" type="button" data-name="${esc(n)}">${esc(n)}</button>`).join('')}</div>` : ''}
+      ${choices.length ? `<ul class="rx-list nf-choices">${choices.map((c) => `<li><button type="button" class="nf-sugg" data-name="${esc(c.name)}"><b>${esc(c.name)}</b><span>${esc(c.composition)}</span></button></li>`).join('')}</ul>
+      <p class="med-meta">${esc(t(lang, 'chooseCheck'))}</p>` : ''}
+      ${!choices.length && sugg.length ? `<p class="nf-title">${esc(t(lang, 'didYouMean'))}</p><div class="nf-suggs">${sugg.map((n) => `<button class="secondary nf-sugg" type="button" data-name="${esc(n)}">${esc(n)}</button>`).join('')}</div>` : ''}
       <p class="nf-title">${esc(t(lang, 'nfHow'))}</p>
       <div class="crop-actions"><button class="primary" id="nfScan" type="button">${esc(t(lang, 'nfScanBack'))}</button></div>
       <p class="med-meta">${esc(t(lang, 'nfScanBackWhy'))}</p>
@@ -958,7 +962,7 @@ function render(r) {
   applyStrings();
   if (r.status !== 'ok') {
     // Say what actually went wrong: not in the database, photo unreadable, or the check failed.
-    const why = r.status === 'not_found' ? 'notFound' : r.status === 'unreadable' ? 'photoUnreadable' : r.status === 'vision_down' ? 'visionDown' : r.status === 'offline' ? 'offlineWait' : r.status === 'slow' ? 'slowNet' : r.status === 'busy' ? 'tooMany' : 'checkFailed';
+    const why = r.status === 'not_found' ? (r.choices?.length ? 'chooseOne' : 'notFound') : r.status === 'unreadable' ? 'photoUnreadable' : r.status === 'vision_down' ? 'visionDown' : r.status === 'offline' ? 'offlineWait' : r.status === 'slow' ? 'slowNet' : r.status === 'busy' ? 'tooMany' : 'checkFailed';
     // Read check failed: say why, show what was read, and offer a retake or typing.
     const whyRead = { no_composition: 'readNoComposition', brand_mismatch: 'readMismatch', low_confidence: 'readBlurry' }[r.reason];
     const readText = [r.read?.brand, r.read?.composition].filter(Boolean).join(' · ');
@@ -1354,10 +1358,13 @@ function renderRx() {
       <p class="med-meta" style="margin:0 0 12px">${esc(t(lang, 'rxNote'))}</p>
       <ul class="rx-list">${rxList.map((it, i) => it.found
         ? `<li><button type="button" data-i="${i}"><b>${esc(it.name)}</b><span>${esc(it.composition)}</span></button></li>`
-        : `<li class="rx-miss">${esc(t(lang, 'rxNotFound', { text: it.read }))}</li>`).join('')}</ul>
+        : it.choose
+          ? `<li><button type="button" data-r="${i}"><b>${esc(it.read)}</b><span>${esc(t(lang, 'rxChoose'))}</span></button></li>`
+          : `<li class="rx-miss">${esc(t(lang, 'rxNotFound', { text: it.read }))}</li>`).join('')}</ul>
     </div>
     <button class="secondary" id="rxHome" type="button">${esc(t(lang, 'another'))}</button>`;
   box.querySelectorAll('button[data-i]').forEach((b) => { b.onclick = () => ask({ text: rxList[Number(b.dataset.i)].name, via: 'rx' }); });
+  box.querySelectorAll('button[data-r]').forEach((b) => { b.onclick = () => ask({ text: rxList[Number(b.dataset.r)].read, via: 'rx' }); });
   $('#rxHome').onclick = () => { rxList = null; show('home'); };
   show('rx');
 }

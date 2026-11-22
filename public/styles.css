@@ -497,3 +497,4 @@ html.big-text main, html.big-text .foot, html.big-text dialog { zoom: 1.18; }
 .name-sugg-btn:active, .name-sugg-btn:hover { background: var(--fill); }
 body.suggesting #chatFab { display: none; }
 #typeForm { scroll-margin-top: 12px; }
+.nf-choices { margin-top: 14px; }

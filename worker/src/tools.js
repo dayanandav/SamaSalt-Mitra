@@ -168,20 +168,88 @@ export async function suggestNames(ctx, text, { limit = 5 } = {}) {
   return [...seen.values()].sort((a, b) => a.d - b.d || b.hits - a.hits || a.extra - b.extra || a.len - b.len).slice(0, limit).map((x) => x.name);
 }
 
+function jaNameResult(ja) {
+  const [, form = null, rel = null] = ja.ckey.split('|');
+  return {
+    found: true,
+    via: 'jan_aushadhi_name',
+    medicine: { id: null, name: ja.product.generic_name, manufacturer: null, salt: describeKey(ja.ckey).split(' · ')[0], ckey: ja.ckey, price: null, pack: null, unit_price: null, form, rel, nti: ntiFromKey(ja.ckey) ? 1 : 0, incomplete: 0 },
+    label: describeKey(ja.ckey),
+    alternatives: [],
+    composition_key_from_strip: null,
+    composition_agrees: null,
+  };
+}
+
+// Words in a brand name that do not make it another medicine: forms, units and pack words.
+// Anything else the patient did not type (E, T, H, AM, Plus, Forte, DS, SR, OD, MD …) may.
+const NEUTRAL_WORDS = new Set(['tablet', 'tablets', 'tab', 'tabs', 'capsule', 'capsules', 'cap', 'caps', 'syrup', 'syp', 'syr', 'suspension', 'susp', 'oral', 'solution', 'drops', 'drop', 'injection', 'inj', 'infusion', 'cream', 'gel', 'ointment', 'oint', 'lotion', 'spray', 'nasal', 'inhaler', 'respules', 'sachet', 'powder', 'granules', 'strip', 'mg', 'mcg', 'gm', 'g', 'ml', 'iu', 'w', 'v', 'ip', 'bp', 'usp', 'film', 'coated', 'uncoated', 'sugar', 'free', 'the', 'of', 'and']);
+const plainWords = (s) => tokens(s).filter((t) => !NEUTRAL_WORDS.has(t) && !/^\d/.test(t));
+const numbersIn = (s) => tokens(s).filter((t) => /^\d/.test(t)).map(Number);
+/** The brand's strengths as numbers ("atorvastatin:10mg+ezetimibe:10mg|tablet" -> [10, 10]). */
+const keyStrengths = (ckey) => String(ckey || '').split('|')[0].split('+').map((p) => parseFloat(p.split(':')[1])).filter((n) => !Number.isNaN(n));
+
+/**
+ * Is this brand exactly what was typed? Its words (forms and units aside) are the typed words, the
+ * first one in full; every typed number is in its name or is its strength ("Atorva 10" = "Atorva
+ * Tablet", 10 mg); a typed form ("syrup", "syp") is its form.
+ */
+export function fitsTyped(typed, row) {
+  const q = plainWords(typed);
+  const n = plainWords(row.name);
+  if (!q.length || q.length !== n.length || q.some((w, i) => w !== n[i])) return false;
+  const nameNums = numbersIn(row.name);
+  const strengths = keyStrengths(row.ckey);
+  if (!numbersIn(typed).every((x) => nameNums.includes(x) || strengths.includes(x))) return false;
+  const typedForm = extractDosageForm(String(typed).replace(/\bsy[pr]\b/gi, 'syrup').replace(/\bsusp\b/gi, 'suspension').replace(/\btabs?\b/gi, 'tablet').replace(/\bcaps?\b/gi, 'capsule'));
+  return !typedForm || !row.form || row.form === typedForm;
+}
+
 /** Tool: identify_medicine. Resolve a brand name (and optional composition read off the strip) to one DB row. */
 export async function identifyMedicine(ctx, { brand = '', composition = '', form = '' } = {}) {
   const { meds } = ctxOf(ctx);
   const q = tokens(brand);
+  let rows = [];
   let candidates = [];
   if (q.length) {
-    candidates = (await meds.byNamePrefix(q[0]))
-      .map((r) => ({ ...r, score: nameScore(brand, r.name) }))
-      .filter((r) => r.score > 0.45);
+    rows = await meds.byNamePrefix(q[0]);
+    candidates = rows.map((r) => ({ ...r, score: nameScore(brand, r.name) })).filter((r) => r.score > 0.45);
   }
 
   // Composition read from the strip, if any, gives a key to cross-check the brand guess.
   let compKey = '';
   if (composition) compKey = await resolveCompositionKey(ctx, composition, { name: `${brand} ${form}`, form });
+
+  // A typed name (no composition to cross-check): "ask, don't guess" (owner's decision 22 Nov 2026).
+  // Only a brand whose words are exactly the typed words is taken; one with extra words ("Atorva
+  // E", "Calpol T": another combination), a longer first word, or another form than typed is
+  // offered as a choice with its salts, never picked.
+  const fullName = (s) => String(s || '').toLowerCase().replace(/\s+/g, ' ').trim();
+  // A brand's full name exactly as listed (also a name tapped in the choices) is that brand.
+  const named = !composition && q.length ? rows.filter((r) => fullName(r.name) === fullName(brand)) : [];
+  if (named.length && new Set(named.map((r) => r.ckey)).size === 1) candidates = named.map((r) => ({ ...r, score: 2 }));
+  else if (!composition && q.length) {
+    const exact = rows.filter((r) => fitsTyped(brand, r)).map((r) => ({ ...r, score: 1 + nameScore(brand, r.name) }));
+    // The same name in more than one strength or composition ("Atorva" = 5, 10, 20, 40, 80 mg) is a choice too.
+    const several = new Set(exact.filter((r) => r.ckey).map((r) => r.ckey)).size > 1;
+    // No number typed, but the brand's name has one ("Crocin" -> "Crocin 1000mg"): the strength would be a guess.
+    const strengthGuess = !numbersIn(brand).length && exact.length > 0 && exact.every((r) => numbersIn(r.name).length > 0);
+    if (exact.length && !several && !strengthGuess) candidates = exact;
+    else if (exact.length || candidates.length) {
+      const ja = await janAushadhiByName(ctx, brand);
+      if (ja) return jaNameResult(ja);
+      const seen = new Set();
+      const choices = [];
+      const pool = exact.length && !strengthGuess ? exact : [...exact, ...candidates];
+      for (const c of [...pool].sort((a, b) => b.score - a.score || (a.form === 'tablet' ? 0 : 1) - (b.form === 'tablet' ? 0 : 1) || a.name.length - b.name.length)) {
+        if (seen.has(c.name.toLowerCase())) continue;
+        seen.add(c.name.toLowerCase());
+        choices.push({ name: c.name, composition: describeKey(c.ckey) });
+        if (choices.length >= 5) break;
+      }
+      return { found: false, choices };
+    }
+  }
 
   if (candidates.length) {
     candidates.sort((a, b) => {
@@ -211,18 +279,7 @@ export async function identifyMedicine(ctx, { brand = '', composition = '', form
   // its composition key comes from the PMBJP list, so the code, MRP and same-salt brands all follow.
   if (!composition && brand) {
     const ja = await janAushadhiByName(ctx, brand);
-    if (ja) {
-      const [, form = null, rel = null] = ja.ckey.split('|');
-      return {
-        found: true,
-        via: 'jan_aushadhi_name',
-        medicine: { id: null, name: ja.product.generic_name, manufacturer: null, salt: describeKey(ja.ckey).split(' · ')[0], ckey: ja.ckey, price: null, pack: null, unit_price: null, form, rel, nti: ntiFromKey(ja.ckey) ? 1 : 0, incomplete: 0 },
-        label: describeKey(ja.ckey),
-        alternatives: [],
-        composition_key_from_strip: null,
-        composition_agrees: null,
-      };
-    }
+    if (ja) return jaNameResult(ja);
   }
 
   if (compKey) {
