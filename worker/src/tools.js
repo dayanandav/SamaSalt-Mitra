@@ -1,6 +1,6 @@
 // The agent's tools. Each takes a D1-compatible `db` (prepare().bind().all()/first())
 // and returns plain JSON, so they are unit-testable with node:sqlite (see test/).
-import { keyFor, buildCanonicalKey, parseSaltComposition, extractDosageForm, extractReleaseType, describeKey, isNti } from './normalize.js';
+import { keyFor, buildCanonicalKey, parseSaltComposition, extractDosageForm, extractReleaseType, describeKey, isNti, ntiFromKey } from './normalize.js';
 import { d1Meds } from './medstore.js';
 
 // Tools take a plain D1 `db` (tests) or { db, meds } (the Worker, where brand medicines are
@@ -88,6 +88,36 @@ export async function resolveCompositionKey(ctx, composition, hints) {
   return variants[0] || '';
 }
 
+// Words a Jan Aushadhi product name may carry that do not change the medicine: salt forms and
+// coating words. Anything else the person did not type (release, another form, another salt,
+// another number) means it is not that product.
+const JA_HARMLESS = new Set(['calcium', 'sodium', 'potassium', 'magnesium', 'hydrochloride', 'hcl', 'besilate', 'besylate', 'maleate', 'succinate', 'tartrate', 'mesylate', 'mesilate', 'fumarate', 'citrate', 'sulphate', 'sulfate', 'phosphate', 'hyclate', 'dihydrate', 'monohydrate', 'trihydrate', 'anhydrous', 'bromide', 'acetate', 'gastro', 'resistant', 'enteric', 'i.p.', 'b.p.', 'u.s.p.', 'usp.', 'ip.', 'bp.', 's']);
+
+/**
+ * A typed name that is a product in the official Jan Aushadhi list (as printed on a Jan Aushadhi
+ * strip, or shorter: "Paracetamol 650"). Strict: every typed word and number is in the product
+ * name, every number of the product was typed, and its other words are only salt-form words.
+ * Two different compositions fitting = no match. Returns { product, ckey } or null.
+ */
+export async function janAushadhiByName(ctx, text) {
+  const { db } = ctxOf(ctx);
+  const q = tokens(text);
+  if (!q.length || !q.some((t) => /^\d/.test(t)) || q[0].length < 4) return null;
+  const res = await db
+    .prepare("SELECT drug_code, generic_name, unit_size, mrp, group_name, units, unit_price, ckey FROM ja_products WHERE ckey IS NOT NULL AND ckey != '' AND lower(generic_name) LIKE ?1")
+    .bind(`${q[0]}%`)
+    .all();
+  const fits = (res.results || []).filter((r) => {
+    const n = tokens(r.generic_name);
+    if (!q.every((t) => n.includes(t))) return false;
+    return n.every((t) => q.includes(t) || (!/^\d/.test(t) && JA_HARMLESS.has(t)));
+  });
+  const keys = [...new Set(fits.map((r) => r.ckey))];
+  if (keys.length !== 1) return null;
+  fits.sort((a, b) => (a.unit_price ?? 1e9) - (b.unit_price ?? 1e9));
+  return { product: fits[0], ckey: keys[0] };
+}
+
 /** Tool: identify_medicine. Resolve a brand name (and optional composition read off the strip) to one DB row. */
 export async function identifyMedicine(ctx, { brand = '', composition = '', form = '' } = {}) {
   const { meds } = ctxOf(ctx);
@@ -125,6 +155,24 @@ export async function identifyMedicine(ctx, { brand = '', composition = '', form
       composition_key_from_strip: compKey || null,
       composition_agrees: compKey ? best.ckey === compKey : null,
     };
+  }
+
+  // A typed name (no composition read from a photo) that is an official Jan Aushadhi product:
+  // its composition key comes from the PMBJP list, so the code, MRP and same-salt brands all follow.
+  if (!composition && brand) {
+    const ja = await janAushadhiByName(ctx, brand);
+    if (ja) {
+      const [, form = null, rel = null] = ja.ckey.split('|');
+      return {
+        found: true,
+        via: 'jan_aushadhi_name',
+        medicine: { id: null, name: ja.product.generic_name, manufacturer: null, salt: describeKey(ja.ckey).split(' · ')[0], ckey: ja.ckey, price: null, pack: null, unit_price: null, form, rel, nti: ntiFromKey(ja.ckey) ? 1 : 0, incomplete: 0 },
+        label: describeKey(ja.ckey),
+        alternatives: [],
+        composition_key_from_strip: null,
+        composition_agrees: null,
+      };
+    }
   }
 
   if (compKey) {

@@ -7,7 +7,7 @@
 // Every step is recorded in `trace` (tool, input, short output, ms) and returned to the UI,
 // and the eval runner writes the same trace as AgentFoundry run JSONL (.codenow/runs/).
 import { readStrip, understandText, readPrescription } from './vision.js';
-import { identifyMedicine, findSameSalt, janAushadhiMatch, ceilingPrice, nearestKendra, computeSaving, compositionFromText, brandCandidatesFromText } from './tools.js';
+import { identifyMedicine, janAushadhiByName, findSameSalt, janAushadhiMatch, ceilingPrice, nearestKendra, computeSaving, compositionFromText, brandCandidatesFromText } from './tools.js';
 import { describeKey, extractDosageForm, ntiFromKey, parseSaltComposition } from './normalize.js';
 import { assetMeds, d1Meds } from './medstore.js';
 import { composeAnswer } from '../../public/strings.js';
@@ -59,7 +59,9 @@ export async function runAgent(env, input) {
   const rawText = String(input.text || '').trim().slice(0, 2000);
   // Text read off the strip by the phone keyboard's "Scan text" (Gboard / iPhone Live Text):
   // many words or lines. Read it like on-device OCR (free) before any model is asked.
-  const scanned = looksScanned(rawText);
+  // A long typed name that is exactly an official Jan Aushadhi product ("Pantoprazole Gastro
+  // Resistant Tablets IP 40 mg") is typed, not a scanned strip: the strict name match allows no stray words.
+  const scanned = looksScanned(rawText) && !(input.image || input.ocr ? false : await janAushadhiByName(ctx, rawText.slice(0, 300)));
   let text = rawText.slice(0, 300);
   let pin = String(input.pin || '').replace(/\D/g, '').slice(0, 6);
   // A 6-digit number in typed text is a PIN code; on a scanned strip it is a batch or licence number.

@@ -710,13 +710,14 @@ const nbspUnits = (s) => s.replace(/(\d) (mg|mcg|ml|IU|%)/g, '$1 $2');
 function showPharmacist() {
   const list = medList();
   if (!list.length) return;
-  $('#phLead').textContent = t(lang, list.length > 1 ? 'pharmacistCardMany' : 'pharmacistCard');
+  const anyNti = list.some((x) => x.nti); // never-switch: never "the lowest-priced" for it
+  $('#phLead').textContent = t(lang, (list.length > 1 ? 'pharmacistCardMany' : 'pharmacistCard') + (anyNti ? 'Nti' : ''));
   $('#phList').innerHTML = list.map((x, i) => `
     <li>
       <p class="ph-comp">${esc(nbspUnits(x.composition))}</p>
       <p class="ph-sub">${esc([x.form, x.name].filter(Boolean).join(' · '))}</p>
       ${x.nti ? whyHtml('ph-nti', t(lang, 'phNti')) : ''}
-      ${x.ja ? `<p class="ph-ja">${esc(t(lang, 'phJa', { name: x.ja.name, code: x.ja.code }))}</p>` : ''}
+      ${x.ja ? `<p class="ph-ja">${esc(t(lang, x.nti ? 'phJaNti' : 'phJa', { name: x.ja.name, code: x.ja.code }))}</p>` : x.noJa ? `<p class="ph-ja ph-noja">${esc(t(lang, 'phNoJa'))}</p>` : ''}
       <button class="link ph-remove" type="button" data-i="${i}">${esc(t(lang, 'listRemove'))}</button>
     </li>`).join('');
   for (const b of $('#phList').querySelectorAll('.ph-remove')) {

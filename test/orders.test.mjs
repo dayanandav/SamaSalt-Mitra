@@ -34,11 +34,13 @@ test('order list: only Jan Aushadhi generics; never-switch (NTI) and no-equivale
   assert.deepEqual(orderItems(null), { items: [], excluded: [], total: null });
 });
 
-test('the medicine list entry carries the generic\'s pack size and MRP from the PMBI list; none for NTI', () => {
+test('the medicine list entry carries the generic\'s pack size and MRP from the PMBI list; for NTI the code only (no MRP, never ordered)', () => {
   const r = { medicine: { ckey: 'k1', name: 'Dolo 650', composition: 'Paracetamol 650 mg', form: 'tablet', nti: false },
     jan_aushadhi: { available: true, product: { generic_name: 'Paracetamol Tablets IP 650 mg', drug_code: '1234', unit_size: "10's", mrp: 15.5 } } };
   assert.deepEqual(pharmacistEntry(r).ja, { name: 'Paracetamol Tablets IP 650 mg', code: '1234', unit_size: "10's", mrp: 15.5 });
-  assert.equal(pharmacistEntry({ ...r, medicine: { ...r.medicine, nti: true } }).ja, null);
+  const nti = pharmacistEntry({ ...r, medicine: { ...r.medicine, nti: true } });
+  assert.deepEqual(nti.ja, { name: 'Paracetamol Tablets IP 650 mg', code: '1234', unit_size: "10's", mrp: null });
+  assert.equal(orderItems([nti]).items.length, 0);
 });
 
 test('message: list in packs, total, pickup with prescription; in the patient\'s language plus English', () => {

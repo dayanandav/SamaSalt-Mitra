@@ -12,10 +12,14 @@ export function pharmacistEntry(r) {
     composition: String(m.composition || '').split(' · ')[0],
     form: m.form || '',
     nti,
-    // The Jan Aushadhi generic (from the PMBI list: name, code, pack size, MRP). Never for NTI.
-    ja: ja.available && !nti && ja.product
-      ? { name: ja.product.generic_name, code: ja.product.drug_code, unit_size: ja.product.unit_size || '', mrp: Number(ja.product.mrp) || null }
+    // The Jan Aushadhi product with the same composition (from the PMBI list: name, code, pack
+    // size, MRP). Owner's decision 22 Nov 2026: also for a never-switch medicine, as information
+    // for the pharmacist with the never-switch warning: then no MRP (no prices for NTI), never ordered.
+    ja: ja.available && ja.product
+      ? { name: ja.product.generic_name, code: ja.product.drug_code, unit_size: ja.product.unit_size || '', mrp: nti ? null : Number(ja.product.mrp) || null }
       : null,
+    // The PMBI list was checked and has no product of this exact composition (strength, form, release).
+    noJa: ja.available === false,
   };
 }
 

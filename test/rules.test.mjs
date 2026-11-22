@@ -6,7 +6,7 @@ import assert from 'node:assert/strict';
 import { fixtureDb } from './d1shim.mjs';
 import { runAgent } from '../worker/src/agent.js';
 import { STRINGS, composeAnswer } from '../public/strings.js';
-import { pharmacistEntry, mergeMedList, asksToSwitch, canShowPharmacist, shouldAddToList, listenAllowed, pickVoice } from '../public/rules.js';
+import { pharmacistEntry, mergeMedList, asksToSwitch, canShowPharmacist, shouldAddToList, listenAllowed, pickVoice, orderItems } from '../public/rules.js';
 
 // TEST FIXTURES ONLY (made-up codes and prices).
 const JA = [
@@ -18,28 +18,38 @@ const db = fixtureDb({ ja: JA, meta: { ja_loaded_at: 'test', ja_list_date: 'test
 const ask = (text, lang = 'en') => runAgent({ DB: db, AI: null }, { text, lang });
 const scan = (text) => runAgent({ DB: db, AI: null }, { text, lang: 'en' }); // keyboard "Scan text": needs confirmation
 
-test('critical: a never-switch medicine never gets a Jan Aushadhi code on the pharmacist list', async () => {
+// Owner's decision 22 Nov 2026: a never-switch medicine shows its Jan Aushadhi code to the
+// pharmacist (with the never-switch warning), but never an MRP, a switch question or an order.
+test('critical: a never-switch medicine: the code for the pharmacist with the warning, never its MRP; none listed = "not available"', async () => {
   const r = await ask('Warf 5');
   assert.equal(r.status, 'ok');
   assert.equal(r.medicine.nti, true);
   const e = pharmacistEntry(r);
   assert.equal(e.nti, true);
-  assert.equal(e.ja, null);
+  assert.deepEqual(e.ja, { name: 'Warfarin Tablets IP 5 mg', code: 'TEST-NTI', unit_size: '10 tablets', mrp: null });
+  assert.equal(e.noJa, false);
+  const none = pharmacistEntry({ ...r, jan_aushadhi: { available: false, nti: true } });
+  assert.equal(none.ja, null);
+  assert.equal(none.noJa, true, 'the pharmacist sees "not available in this strength and form"');
 });
 
-test('critical: anti-epileptic read from a scan (Jan Aushadhi product exists) gets no code either', async () => {
+test('critical: anti-epileptic read from a scan (Jan Aushadhi product exists): code for the pharmacist, never an MRP or an order', async () => {
   const r = await scan('Brivapride 50\nBrivaracetam Tablets 50 mg\nEach film coated tablet contains Brivaracetam 50 mg');
   assert.equal(r.status, 'ok');
   assert.equal(r.jan_aushadhi.available, true); // shown as information on the result
   r.confirmed = true;
   const e = pharmacistEntry(r);
   assert.equal(e.nti, true);
-  assert.equal(e.ja, null);
+  assert.equal(e.ja.code, 'TEST-AED');
+  assert.equal(e.ja.mrp, null, 'no price for a never-switch medicine');
+  assert.equal(asksToSwitch(r), false);
+  assert.equal(orderItems([e]).items.length, 0, 'never ordered');
 });
 
-test('critical: never-switch flag on the Jan Aushadhi result alone is enough to drop the code', () => {
-  const r = { status: 'ok', medicine: { name: 'X', ckey: 'x:1mg|tablet', composition: 'X 1 mg · tablet', nti: false }, jan_aushadhi: { available: true, nti: true, product: { generic_name: 'X', drug_code: '9' } } };
-  assert.equal(pharmacistEntry(r).ja, null);
+test('critical: never-switch flag on the Jan Aushadhi result alone is enough to mark it never-switch (no MRP, no switch)', () => {
+  const r = { status: 'ok', medicine: { name: 'X', ckey: 'x:1mg|tablet', composition: 'X 1 mg · tablet', nti: false }, jan_aushadhi: { available: true, nti: true, product: { generic_name: 'X', drug_code: '9', mrp: 5 } } };
+  assert.equal(pharmacistEntry(r).nti, true);
+  assert.equal(pharmacistEntry(r).ja.mrp, null);
   assert.equal(asksToSwitch(r), false);
 });
 
