@@ -1,5 +1,6 @@
 import { LANGS, STRINGS, t, rupees, unitKind } from '/strings.js';
 import { createChat, newChatId } from '/chat.js';
+import { suggestWhileTyping, suggestable } from '/suggest.js';
 import { pharmacistEntry, unlistedEntry, mergeMedList, asksToSwitch, shouldAddToList, listenAllowed, pickVoice, isPhoneBrowser, freshMedList, kendraCode, showMobile, orderItems, orderQty, orderMessage, waLink, smsLink, ORDER_MAX_PACKS, photoSendSize, askTimeoutMs, savableAnswer, volunteerCode, shareText } from '/rules.js';
 
 const $ = (s) => document.querySelector(s);
@@ -202,9 +203,49 @@ async function openFromQr(code) {
 
 $('#typeForm').addEventListener('submit', (e) => {
   e.preventDefault();
+  hideNameSugg();
   const q = $('#nameInput').value.trim();
   if (q) ask({ text: q });
 });
+
+// ── Suggestions while typing (roadmap S1.1) ─────────────────────────────────
+// Brand names that start like the typed text, read in the phone from the static name index
+// (public/suggest.js): no Worker request, the typed text is not sent. Tapping one checks it.
+let suggTimer = null;
+let suggSeq = 0;
+function hideNameSugg() {
+  clearTimeout(suggTimer);
+  suggSeq += 1; // a late answer for older text is dropped
+  $('#nameSugg').hidden = true;
+  $('#nameSugg').innerHTML = '';
+  document.body.classList.remove('suggesting');
+}
+// The box sits low on the page: bring it to the top while typing, so the list stays above the keyboard.
+$('#nameInput').addEventListener('focus', () => setTimeout(() => $('#typeForm').scrollIntoView({ block: 'start', behavior: 'smooth' }), 300));
+$('#nameInput').addEventListener('input', () => {
+  clearTimeout(suggTimer);
+  const typed = $('#nameInput').value;
+  if (!suggestable(typed)) return hideNameSugg();
+  suggTimer = setTimeout(async () => {
+    const seq = ++suggSeq;
+    const names = await suggestWhileTyping(typed).catch(() => []);
+    if (seq !== suggSeq || $('#nameInput').value !== typed) return;
+    const list = $('#nameSugg');
+    list.innerHTML = names.map((n) => `<li><button type="button" class="name-sugg-btn" data-name="${esc(n)}">${esc(n)}</button></li>`).join('');
+    list.hidden = !names.length;
+    document.body.classList.toggle('suggesting', names.length > 0); // the Chat button steps aside
+    for (const b of list.querySelectorAll('button')) {
+      b.addEventListener('pointerdown', (e) => e.preventDefault()); // keep the keyboard until the tap ends
+      b.addEventListener('click', () => {
+        $('#nameInput').value = b.dataset.name;
+        hideNameSugg();
+        ask({ text: b.dataset.name });
+      });
+    }
+  }, 150);
+});
+$('#nameInput').addEventListener('keydown', (e) => { if (e.key === 'Escape') hideNameSugg(); });
+$('#nameInput').addEventListener('blur', () => setTimeout(hideNameSugg, 150));
 
 // ── Photo: take it, choose the area with the name and composition, send only that ──
 // Phone photos are 3-12 MB; the server takes up to ~1.8 MB, so nothing is sent full size.

@@ -4,10 +4,10 @@
 // - Never stored: /api/* (answers, Kendras, prices come fresh from the Worker), staff and developer pages.
 // VERSION must equal APP_VERSION in worker/src/index.js (test/offline.test.mjs checks it): a new
 // version installs a fresh copy of every shell file at once and removes the old copy.
-const VERSION = '2.0.5';
+const VERSION = '2.0.6';
 const CACHE = `ssm-shell-${VERSION}`;
 const SHELL = [
-  '/', '/app.js', '/rules.js', '/strings.js', '/styles.css', '/envbanner.js', '/chat.js',
+  '/', '/app.js', '/rules.js', '/strings.js', '/styles.css', '/envbanner.js', '/chat.js', '/suggest.js',
   '/manifest.webmanifest', '/icon-128.png', '/icon-256.png', '/assets/SamaSalt-Mitra-Wordmark.svg',
 ];
 const WAIT_MS = 4000; // slower than this: use the saved copy (and keep saving the fresh one in the background)

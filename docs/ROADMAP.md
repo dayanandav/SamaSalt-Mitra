@@ -1,6 +1,6 @@
 # SamaSalt-Mitra roadmap and stage status
 
-*Refreshed 17 Nov 2026.*
+*Refreshed 22 Nov 2026.*
 
 **Purpose.** Help patients across India buy the same medicine for less: the same salt, strength, form and release, at a Jan Aushadhi Kendra, under PMBJP rules (pickup at the counter, valid prescription, no online sale or delivery).
 
@@ -23,6 +23,7 @@ Full design: *SamaSalt-Mitra Design Document* (`docs/SamaSalt-Mitra Design Docum
 | 2.0.3 | 19 Nov 2026 | NPPA ceiling prices (owner chose option A): developer import of the NPPA list (CSV) on the same composition keys, "Government maximum price (NPPA): ₹X per tablet + GST" under the answer and in the chat/bot (never for never-switch medicines). Brand prices stay as dated; no "overpriced" flags on stale MRPs. Test site: table ready, no list loaded yet |
 | 2.0.4 | 19 Nov 2026 | Patient features (test site): share the answer, "Add to home screen" prompt, scan a prescription (names only, each checked when tapped), Kendras by distance (India Post PIN code centres; "Use my location"; ≈ km). Privacy page updated. Voice input and "Not in stock here?" reports were built, then removed by the owner (19 Nov 2026) |
 | 2.0.5 | 19 Nov 2026 | Operations and polish: tests on GitHub for every push, live site check every 3 hours (GitHub emails on failure; warns at 80% of the daily photo cap), weekly backup script + Time Travel restore (docs/OPERATIONS.md), monthly impact report (CSV / PDF) for PMBI, larger text button, Kendra opening hours in the chat and on the QR banner. Evals on the test site: 22/23 (the heavy-blur photo now asks for a retake instead of a match) |
+| 2.0.6 | 22 Nov 2026 | Search and matching fixes (live): typed Jan Aushadhi product names find their PMBJP code; never-switch medicines show the code to the pharmacist with "do not change without the doctor's approval" (no MRP, no order); "not available in this strength and form"; "Did you mean…?" suggestions and not-found help (photograph or type the salts, add the name to the pharmacist list); syrups read as liquids, strengths per 5 ml; "PR"/"DSR" read as SR (3,370 brands regrouped; SameSalt pipeline too); owner-approved Jan Aushadhi spelling list `public/ja-synonyms.js` (1,386 → 1,517 Jan Aushadhi products matched). Test lock: every test change approved by the owner |
 
 ## Overview
 
@@ -34,6 +35,9 @@ Full design: *SamaSalt-Mitra Design Document* (`docs/SamaSalt-Mitra Design Docum
 | 2 | v1.2 Order requests | Patient sends a medicine list with pack quantities to a registered Kendra by WhatsApp/SMS link; pickup only | **Done (approved 17 Nov 2026): public on the test site, pilot on live until PMBI confirms** | PMBI confirms reserve-and-collect fits PMBJP rules |
 | 3 | v1.3 Reach | More languages, weak-network mode, volunteer helpers | **Done (approved 17 Nov 2026), live**: weak-network mode live for everyone. Registered volunteers **parked** (`VOLUNTEER_REGISTRY = "off"` on live, on the test site only). More languages: later (owner) | Inform PMBI |
 | 4 | v2.0 WhatsApp bot | Check a medicine and send order requests inside WhatsApp | **Built: on the test site (simulator), off on live. Waiting for owner review, then the Meta WhatsApp account** | PMBI approves message templates; DPDP legal review |
+| S1 | v2.0.7 Search basics | Suggestions while typing, missing-medicines list (staff add brands), reviewed short forms ("PCM"), search quality numbers on the impact page | **In development (started 22 Nov 2026)** | none (inform PMBI of the missing-medicines list) |
+| S2 | v2.0.8 Search for everyone | Kannada/Hindi names without the AI model, "sounds-like" matching, QR code on strips (Schedule H2) | Planned | none |
+| S3 | ongoing | Newer brand data (PMBI / NPPA feed), real-search test set with a zero-wrong-match rule | Ongoing; data requests drafted 22 Nov 2026 | PMBI / NPPA share data |
 | 5 | v2.1 Doctor network | PMBJP-recommended volunteer doctors, registered and verified like Kendras | **Parked by the owner 19 Nov 2026 (future work)** | PMBI provides or endorses the doctor list |
 | 6 | v2.2 Request doctor review | Patient asks an approved doctor to review a switch to the Jan Aushadhi generic | Not started | PMBI agrees; Telemedicine Practice Guidelines and DPDP review |
 | 7 | v3.0 One journey | Scan → doctor-reviewed switch → order request → pickup, as one flow | Not started | PMBI agrees how pharmacists treat a reviewed request |
@@ -150,6 +154,27 @@ Check a medicine and send an order request inside WhatsApp. Needs DPDP Act legal
 2. Secrets on the live Worker: `WA_TOKEN` (permanent system-user token), `WA_PHONE_ID`, `WA_APP_SECRET`, `WA_VERIFY_TOKEN`, `WA_HASH_KEY`. Webhook URL `https://<live site>/api/wa/webhook`, subscribe to `messages`.
 3. DPDP review (parked 19 Nov 2026, revisit before go-live; the welcome message is the notice; DELETE and 24-hour expiry are the erasure); native-speaker check of the Kannada/Hindi bot text.
 4. Apply migration 0007 on the live database, set `WHATSAPP_BOT = "on"`, deploy. Tell PMBI.
+
+## Search track: finding the medicine (S1–S3)
+
+Goal: fewer "not found", never a wrong match. One rule holds throughout: fuzzy matching only **suggests** names for the patient to tap; the answer still needs exactly the same salt, strength, form and release. Every step is measured (S1.4) and guarded by tests that no wrong match appears.
+
+**Done in 2.0.6 (22 Nov 2026, live):** "Did you mean…?" after a not-found (typos, letter O for zero; never another strength or form), not-found help, Jan Aushadhi names typed in full, syrups and per-5 ml strengths, PR/DSR release, reviewed Jan Aushadhi spelling list. A check of all 1,914 Jan Aushadhi products against the brand list found the spelling gaps; about 250 have no brand in the 2022 list (Jan Aushadhi-only items, newer medicines).
+
+**S1: v2.0.7 Search basics (in development)**
+1. **Suggestions while typing**: brand names as the patient types ("Dol…" → Dolo 650, Dolo 500), from the existing name index; tapping one checks it.
+2. **Missing-medicines list**: anonymous count of names searched but not found (name and day only, no person); staff add the brand with its salts from the strip, a Reviewer approves (same roles as Kendras).
+3. **Short forms**: a small reviewed list ("PCM" → paracetamol, "Amox-clav", "Tab", "Syp"), reviewed like `public/ja-synonyms.js`; patients' spelling variants use the same reviewed lists.
+4. **Search quality numbers** on the impact page: found, not found, found through a suggestion, by language and by way of searching (no personal data).
+
+**S2: v2.0.8 Search for everyone (planned)**
+5. **Kannada and Hindi names without the AI model**: a fixed letter-by-letter conversion ("ಡೋಲೋ 650", "डोलो 650" → "dolo 650") plus "sounds-like" matching (Pantop / Pantap); faster, free and predictable.
+6. **QR code on strips**: India's top 300 brands carry a QR code with brand, generic name, manufacturer and batch (Schedule H2, 2023). First check which brands carry it and what it holds; then read it as an exact lookup.
+7. Voice search: **parked** (voice input was built and removed by the owner on 19 Nov 2026); revisit only if the owner asks.
+
+**S3: ongoing**
+8. **Newer brand data**: PMBI / NPPA data requests (drafted 22 Nov 2026). With every new list, rerun the Jan Aushadhi ↔ brand match check before it goes live.
+9. **Real-search test set**: 200–300 anonymised real queries (typos, Kannada/Hindi, strip photos, syrups, SR brands) with their correct answers, run on every change (`evals/`): more correct answers each version, and **zero wrong matches** (another strength, form or release) as a hard rule.
 
 ## Stage 5: v2.1 Doctor network
 

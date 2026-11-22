@@ -490,3 +490,10 @@ html.big-text main, html.big-text .foot, html.big-text dialog { zoom: 1.18; }
 .nf-title { margin: 16px 0 8px; font-weight: 600; }
 .nf-suggs { display: flex; flex-wrap: wrap; gap: 8px; }
 .nf-suggs .nf-sugg { width: auto; padding: 8px 14px; min-height: 0; }
+/* Suggestions while typing (roadmap S1.1) */
+.name-sugg { list-style: none; margin: 6px 0 0; padding: 4px; background: var(--card); border: 1px solid var(--line); border-radius: 12px; box-shadow: var(--shadow); }
+.name-sugg li + li { border-top: 1px solid var(--line); }
+.name-sugg-btn { display: block; width: 100%; text-align: left; background: none; border: 0; padding: 12px 10px; font: inherit; font-size: 16px; color: var(--text); min-height: 44px; cursor: pointer; }
+.name-sugg-btn:active, .name-sugg-btn:hover { background: var(--fill); }
+body.suggesting #chatFab { display: none; }
+#typeForm { scroll-margin-top: 12px; }

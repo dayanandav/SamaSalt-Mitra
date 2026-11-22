@@ -1,6 +1,6 @@
 {
   "note": "Fingerprints of the owner-approved tests. Written only by `node tools/test-lock.mjs approve --yes`, run by the owner.",
-  "approved_at": "2026-11-22T16:58:29.354Z",
+  "approved_at": "2026-11-22T17:34:28.794Z",
   "files": {
     "test/admin.test.mjs": "e05dd44ef3382da2c7d122e94aea823f3930b03b6297a4ce424db789f271a8d3",
     "test/ceiling.test.mjs": "4073d42eefa07afd08a1dbade54250c6c069c302fc86d27d29408537310f98fd",
@@ -25,6 +25,7 @@
     "test/release.test.mjs": "fda23ce2c5c1c81fea40753fbecab0f17cfbb9998fda05ef186172925f9fb6f9",
     "test/rules.test.mjs": "5edc2aa9a87ce544a61dca67f09f5a380820fc3e84e150633362a27482f3b902",
     "test/site.test.mjs": "b99fef1841b6f7325db3702ec823e85267025d1fc275126e5c5ad2b936b11e38",
+    "test/suggest.test.mjs": "eb570b05ab888ec4202f54b3d243875620f058a1936eeca8c90a9a0fac176eab",
     "test/test_build_ja.py": "d60d906266ba51aac3a525b847ec2e5a2e4691716c5ea6e36560c2e54772d692",
     "test/tools.test.mjs": "1aa12498c65b8342715c83ded1ce78fe9dcbfa8511aef3da450f812d834c6eb9",
     "test/volunteers.test.mjs": "9ccde0d1bf5ac2f9f39a9a8b0d3d582a17ec214d6953bd85be6e12401f1b4bcc",
