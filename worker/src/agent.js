@@ -7,11 +7,12 @@
 // Every step is recorded in `trace` (tool, input, short output, ms) and returned to the UI,
 // and the eval runner writes the same trace as AgentFoundry run JSONL (.codenow/runs/).
 import { readStrip, understandText, readPrescription } from './vision.js';
-import { identifyMedicine, janAushadhiByName, suggestNames, findSameSalt, janAushadhiMatch, ceilingPrice, nearestKendra, computeSaving, compositionFromText, brandCandidatesFromText } from './tools.js';
+import { identifyMedicine, janAushadhiByName, suggestNames, soundsLikeChoices, findSameSalt, janAushadhiMatch, ceilingPrice, nearestKendra, computeSaving, compositionFromText, brandCandidatesFromText } from './tools.js';
 import { describeKey, extractDosageForm, ntiFromKey, parseSaltComposition } from './normalize.js';
 import { assetMeds, d1Meds } from './medstore.js';
 import { composeAnswer } from '../../public/strings.js';
 import { expandShortForms } from '../../public/short-forms.js';
+import { hasIndic, transliterate } from '../../public/indic.js';
 
 /**
  * v2.0.4 Scan a prescription: read the medicine names (read_prescription), then match each one to
@@ -124,10 +125,25 @@ export async function runAgent(env, input) {
     }
   }
 
+  // Kannada/Hindi script (roadmap S2.5): English letters by a fixed table (public/indic.js); an exact
+  // fit is answered, otherwise brands that sound alike are offered as choices with their salts.
+  // The language model below is asked only when nothing sounds alike.
+  if (!id.found && source === 'text' && text && hasIndic(text)) {
+    const latin = transliterate(text);
+    query = { brand: latin, composition: '', form: '' };
+    id = await step('identify_medicine', { ...query, transliterated: true }, () => identifyMedicine(ctx, query), (r) =>
+      r.found ? { name: r.medicine.name, composition: r.label, via: r.via } : { found: false, choices: r.choices?.length || 0 }
+    );
+    if (!id.found && !id.choices?.length) {
+      const choices = await step('sounds_like', { text: latin }, () => soundsLikeChoices(ctx, latin), (r) => ({ choices: r.length }));
+      if (choices.length) id = { found: false, choices };
+    }
+  }
+
   // Typed text in Kannada/Devanagari script, or phrased as a question: let the language model
   // pull out the medicine name, then try again. Not for scanned text: a model guessing a brand
-  // from a strip's stray words could pick the wrong medicine.
-  if (!id.found && source === 'text' && text && (NON_LATIN.test(text) || text.split(/\s+/).length > 3) && env.AI) {
+  // from a strip's stray words could pick the wrong medicine. Never when there are choices to offer.
+  if (!id.found && !id.choices?.length && source === 'text' && text && (NON_LATIN.test(text) || text.split(/\s+/).length > 3) && env.AI) {
     const u = await step('understand_text', { text }, () => understandText(env, text), (r) => (r.ok ? { brand: r.brand, composition: r.composition, usage: r.usage } : { failed: r.error }));
     if (u.ok) {
       // Keep the dosage form the person typed ("... 500/125 tablet"); the model may drop it.

@@ -2,6 +2,7 @@
 // and returns plain JSON, so they are unit-testable with node:sqlite (see test/).
 import { keyFor, buildCanonicalKey, parseSaltComposition, extractDosageForm, extractReleaseType, describeKey, isNti, ntiFromKey } from './normalize.js';
 import { d1Meds } from './medstore.js';
+import { namePrefixes, soundsAlike, soundKey } from '../../public/indic.js';
 
 // Tools take a plain D1 `db` (tests) or { db, meds } (the Worker, where brand medicines are
 // read from static files: see medstore.js). Jan Aushadhi and Kendras are always in D1.
@@ -213,6 +214,34 @@ export function fitsTyped(typed, row) {
   if (!numbersIn(typed).every((x) => nameNums.includes(x) || strengths.includes(x))) return false;
   const typedForm = extractDosageForm(String(typed).replace(/\bsy[pr]\b/gi, 'syrup').replace(/\bsusp\b/gi, 'suspension').replace(/\btabs?\b/gi, 'tablet').replace(/\bcaps?\b/gi, 'capsule'));
   return !typedForm || !row.form || row.form === typedForm;
+}
+
+/**
+ * Kannada/Hindi names in English letters (roadmap S2.5): brands whose first word sounds like the
+ * typed word (public/indic.js), with the typed number in the name or as the strength. Choices only
+ * (name + salts): a transliteration is never trusted enough to answer by itself.
+ */
+export async function soundsLikeChoices(ctx, latin, limit = 5) {
+  const { meds, db } = ctxOf(ctx);
+  const word = String(latin || '').split(/\s+/).find((w) => /^[a-z]{3,}/.test(w));
+  if (!word) return [];
+  const nums = numbersIn(latin);
+  const extra = plainWords(latin).filter((w) => w !== word && /^[a-z]{2,}$/.test(w));
+  const prefixes = namePrefixes(word);
+  const lists = await Promise.all(prefixes.map(async (p) => [...(await meds.byNamePrefix(p).catch(() => [])), ...(await addedByNamePrefix(db, p))]));
+  const out = new Map();
+  for (const r of lists.flat()) {
+    const n = plainWords(r.name);
+    if (!n.length || !soundsAlike(word, n[0])) continue;
+    if (!extra.every((w) => n.slice(1).some((x) => soundsAlike(w, x) || x.startsWith(w)))) continue;
+    const nameNums = numbersIn(r.name);
+    const strengths = keyStrengths(r.ckey);
+    if (!nums.every((x) => nameNums.includes(x) || strengths.includes(x))) continue;
+    const k = r.name.toLowerCase();
+    if (out.has(k)) continue;
+    out.set(k, { name: r.name, composition: describeKey(r.ckey), rank: (soundKey(n[0]) === soundKey(word) ? 0 : 1) + (n.length - 1 - extra.length) * 0.1 + (r.form === 'tablet' ? 0 : 0.05) });
+  }
+  return [...out.values()].sort((a, b) => a.rank - b.rank || a.name.length - b.name.length).slice(0, limit).map(({ name, composition }) => ({ name, composition }));
 }
 
 /** Tool: identify_medicine. Resolve a brand name (and optional composition read off the strip) to one DB row. */

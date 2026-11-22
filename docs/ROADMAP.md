@@ -36,7 +36,7 @@ Full design: *SamaSalt-Mitra Design Document* (`docs/SamaSalt-Mitra Design Docum
 | 3 | v1.3 Reach | More languages, weak-network mode, volunteer helpers | **Done (approved 17 Nov 2026), live**: weak-network mode live for everyone. Registered volunteers **parked** (`VOLUNTEER_REGISTRY = "off"` on live, on the test site only). More languages: later (owner) | Inform PMBI |
 | 4 | v2.0 WhatsApp bot | Check a medicine and send order requests inside WhatsApp | **Built: on the test site (simulator), off on live. Waiting for owner review, then the Meta WhatsApp account** | PMBI approves message templates; DPDP legal review |
 | S1 | v2.0.7 Search basics | Suggestions while typing, missing-medicines list (staff add brands), reviewed short forms ("PCM"), search quality numbers on the impact page | **Done 22 Nov 2026, live** (2.0.6–2.0.7) | none (inform PMBI of the missing-medicines list) |
-| S2 | v2.0.8 Search for everyone | Kannada/Hindi names without the AI model, "sounds-like" matching, QR code on strips (Schedule H2) | Planned | none |
+| S2 | v2.0.8 Search for everyone | Kannada/Hindi names without the AI model, "sounds-like" matching, QR code on strips (Schedule H2) | **In development**: Kannada/Hindi names live 22 Nov 2026 | none |
 | S3 | ongoing | Newer brand data (PMBI / NPPA feed), real-search test set with a zero-wrong-match rule | Ongoing; data requests drafted 22 Nov 2026 | PMBI / NPPA share data |
 | 5 | v2.1 Doctor network | PMBJP-recommended volunteer doctors, registered and verified like Kendras | **Parked by the owner 19 Nov 2026 (future work)** | PMBI provides or endorses the doctor list |
 | 6 | v2.2 Request doctor review | Patient asks an approved doctor to review a switch to the Jan Aushadhi generic | Not started | PMBI agrees; Telemedicine Practice Guidelines and DPDP review |
@@ -176,6 +176,8 @@ Status: 1 **live in 2.0.6** (22 Nov 2026). 4 **live** (22 Nov 2026): "Finding th
 **S2: v2.0.8 Search for everyone (planned)**
 5. **Kannada and Hindi names without the AI model**: a fixed letter-by-letter conversion ("ಡೋಲೋ 650", "डोलो 650" → "dolo 650") plus "sounds-like" matching (Pantop / Pantap); faster, free and predictable.
 6. **QR code on strips**: India's top 300 brands carry a QR code with brand, generic name, manufacturer and batch (Schedule H2, 2023). First check which brands carry it and what it holds; then read it as an exact lookup.
+Status: 5 **live** (22 Nov 2026): `public/indic.js` turns Kannada/Devanagari letters and digits into English letters (Hindi drops the inherent "a" where it is not spoken: मेटफॉर्मिन → metformin); an exact fit is answered (ಡೋಲೋ 650 / डोलो 650 → Dolo 650); otherwise brands that sound alike (same consonants, or 1–2 letters apart; first letters spelled c/k/s, th/t, ph/f…) are offered as choices with their salts, keeping the typed number (टेल्मा 40 → Telma 40 first; एटोर्वा 10 → Atorva Tablet 10 mg first). The AI model is asked only when nothing sounds alike. Next: Kannada/Hindi **salt** names (मेटफॉर्मिन 500 → metformin 500 mg via the salt list), then 6.
+
 7. Voice search: **parked** (voice input was built and removed by the owner on 19 Nov 2026); revisit only if the owner asks.
 
 **S3: ongoing**
