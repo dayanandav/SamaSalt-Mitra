@@ -39,6 +39,8 @@ function istDay(d = new Date()) {
 
 // v2.0.7 (roadmap S1.4): how a typed name was chosen. Only these words are ever stored, never text.
 const SEARCH_VIA = new Set(['typed', 'suggest', 'didyoumean', 'rx']);
+// Why a photo or scan was not read (the agent's fixed words only).
+const READ_REASONS = new Set(['no_composition', 'brand_mismatch', 'low_confidence']);
 const searchVia = (body) => (body && typeof body.text === 'string' && body.text && !body.image && !body.ocr && SEARCH_VIA.has(body.via) ? body.via : null);
 
 async function logLookup(env, body, result, isTest) {
@@ -48,8 +50,8 @@ async function logLookup(env, body, result, isTest) {
   // v1.3: an approved volunteer's code (from their personal link), never anything about the patient.
   const volunteer = body.mode === 'volunteer' && body.volunteer ? await activeVolunteer(env.DB, body.volunteer).catch(() => null) : null;
   await env.DB.prepare(
-    `INSERT INTO lookups (id, ts, day, status, input, medicine, ckey, pack, scanned_unit, cheapest_unit, ja_unit, saving_pack, equivalents, lang, pin3, mode, device, is_test, volunteer, via)
-     VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?10, ?11, ?12, ?13, ?14, ?15, ?16, ?17, ?18, ?19, ?20)`
+    `INSERT INTO lookups (id, ts, day, status, input, medicine, ckey, pack, scanned_unit, cheapest_unit, ja_unit, saving_pack, equivalents, lang, pin3, mode, device, is_test, volunteer, via, read_reason)
+     VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?10, ?11, ?12, ?13, ?14, ?15, ?16, ?17, ?18, ?19, ?20, ?21)`
   )
     .bind(
       id,
@@ -71,7 +73,8 @@ async function logLookup(env, body, result, isTest) {
       device,
       isTest ? 1 : 0,
       volunteer,
-      searchVia(body)
+      searchVia(body),
+      result.status === 'unreadable' && READ_REASONS.has(result.reason) ? result.reason : null
     )
     .run();
   // v2.0.7 (roadmap S1.2): a typed name not found (and not a choice between brands) is counted for
@@ -197,10 +200,11 @@ async function handleImpact(env, url) {
   // v2.0.7 search quality (roadmap S1.4): found / not found by way in, by how a typed name was
   // chosen, and by language. "Found" = a medicine was identified (status ok).
   const found = "SUM(status = 'ok') AS found, SUM(status = 'not_found') AS not_found, SUM(status = 'unreadable') AS unreadable";
-  const [byInput, byVia, byLangFound] = await Promise.all([
+  const [byInput, byVia, byLangFound, byReason] = await Promise.all([
     q(`SELECT CASE WHEN mode IN ('chat', 'whatsapp') THEN mode WHEN input LIKE 'photo%' THEN 'photo' WHEN input = 'text-scan' THEN 'text-scan' ELSE 'typed' END AS way, COUNT(*) AS n, ${found} FROM lookups WHERE ${real} GROUP BY way ORDER BY n DESC`),
     q(`SELECT via, COUNT(*) AS n, ${found} FROM lookups WHERE ${real} AND via IS NOT NULL GROUP BY via ORDER BY n DESC`),
     q(`SELECT lang, COUNT(*) AS n, ${found} FROM lookups WHERE ${real} GROUP BY lang ORDER BY n DESC`),
+    q(`SELECT CASE WHEN input = 'text-scan' THEN 'text-scan' ELSE 'photo' END AS way, COALESCE(read_reason, 'not_recorded') AS reason, COUNT(*) AS n FROM lookups WHERE ${real} AND status = 'unreadable' GROUP BY way, reason ORDER BY n DESC`),
   ]);
   const [byLang, byDay, byPin, topMeds, testCount] = await Promise.all([
     q(`SELECT lang, COUNT(*) AS n FROM lookups WHERE ${real} GROUP BY lang ORDER BY n DESC`),
@@ -218,7 +222,7 @@ async function handleImpact(env, url) {
     by_day: byDay,
     by_pin_prefix: byPin,
     top_medicines: topMeds,
-    search: { by_way: byInput, by_via: byVia, by_language: byLangFound },
+    search: { by_way: byInput, by_via: byVia, by_language: byLangFound, unreadable_by_reason: byReason },
     excluded_test_lookups: testCount[0]?.n ?? 0,
   }, 200, { 'cache-control': 'public, max-age=30' });
 }

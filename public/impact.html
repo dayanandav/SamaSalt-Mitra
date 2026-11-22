@@ -106,6 +106,8 @@
         <div id="searchVia"></div>
         <h3 style="margin:16px 0 6px;font-size:15px">By language</h3>
         <div id="searchLang"></div>
+        <h3 style="margin:16px 0 6px;font-size:15px">Why photos and scans were not read</h3>
+        <div id="searchWhy"></div>
       </div>
     </div>
 
@@ -228,6 +230,8 @@
     $('#searchWay').innerHTML = table(S.by_way || [], qcols({ h: 'Way in', f: (r) => WAY[r.way] || r.way }));
     $('#searchVia').innerHTML = table(S.by_via || [], qcols({ h: 'Name chosen by', f: (r) => VIA[r.via] || r.via }));
     $('#searchLang').innerHTML = table(S.by_language || [], qcols({ h: 'Language', f: (r) => LANG[r.lang] || r.lang }));
+    const WHY = { no_composition: 'Salts and strengths not clear', brand_mismatch: 'Brand and salts read do not belong together', low_confidence: 'Too unsure (blur, glare, cut off)', not_recorded: 'Not recorded (before 23 Nov 2026)' };
+    $('#searchWhy').innerHTML = table(S.unreadable_by_reason || [], [{ h: 'Way in', f: (r) => WAY[r.way] || r.way }, { h: 'Reason', f: (r) => WHY[r.reason] || r.reason }, { h: 'Lookups', num: 1, f: (r) => num(r.n) }]);
     // ── Report: header for print, CSV of every figure on the page ──
     const period = month ? monthName(month) : 'All time';
     $('#printHead').textContent = `SamaSalt-Mitra impact report · ${period} · generated ${new Date(d.generated_at).toLocaleString('en-IN', { timeZone: 'Asia/Kolkata' })} (IST) · real lookups only, test traffic excluded`;
@@ -242,7 +246,8 @@
         ['Medicine', 'Lookups', 'Avg saving per pack (Rs)'], ...(d.top_medicines || []).map((x) => [x.medicine, x.n, x.avg_saving]), [],
         ['Way in', 'Lookups', 'Found', 'Not found', 'Unreadable'], ...(S.by_way || []).map((x) => [WAY[x.way] || x.way, x.n, x.found, x.not_found, x.unreadable]), [],
         ['Typed name chosen by', 'Lookups', 'Found', 'Not found', 'Unreadable'], ...(S.by_via || []).map((x) => [VIA[x.via] || x.via, x.n, x.found, x.not_found, x.unreadable]), [],
-        ['Language', 'Lookups', 'Found', 'Not found', 'Unreadable'], ...(S.by_language || []).map((x) => [x.lang, x.n, x.found, x.not_found, x.unreadable])];
+        ['Language', 'Lookups', 'Found', 'Not found', 'Unreadable'], ...(S.by_language || []).map((x) => [x.lang, x.n, x.found, x.not_found, x.unreadable]), [],
+        ['Not read: way in', 'Reason', 'Lookups'], ...(S.unreadable_by_reason || []).map((x) => [WAY[x.way] || x.way, WHY[x.reason] || x.reason, x.n])];
       const blob = new Blob(['\ufeff' + rows.map((r) => r.map(q).join(',')).join('\r\n')], { type: 'text/csv;charset=utf-8' });
       const a = document.createElement('a');
       a.href = URL.createObjectURL(blob);
