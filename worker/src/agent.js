@@ -110,7 +110,20 @@ export async function runAgent(env, input) {
   if (source !== 'text') {
     readCheck = scoreRead(id, query, read);
     trace.push({ tool: 'check_read', input: { pass_mark: READ_PASS_MARK }, output: readCheck, ms: 0 });
-    if (readCheck.score < READ_PASS_MARK) return { status: 'unreadable', reason: readCheck.reason, read_score: readCheck.score, lang, read, trace, source };
+    if (readCheck.score < READ_PASS_MARK) {
+      // Front of the strip: the brand was read but no salts (owner's decision 23 Nov 2026). The brand
+      // read is matched like a typed name and offered as choices with their salts: never an answer,
+      // nothing priced until the person taps one; a partial fit is never picked.
+      const brandRead = String(read?.brand || '').trim().slice(0, 80);
+      let choices = [];
+      if (readCheck.reason === 'no_composition' && brandRead) {
+        choices = await step('brand_choices', { brand: brandRead }, async () => {
+          const x = await identifyMedicine(ctx, { brand: brandRead });
+          return x.found ? [{ name: x.medicine.name, composition: describeKey(x.medicine.ckey) }] : (x.choices || []);
+        }, (c) => ({ choices: c.length }));
+      }
+      return { status: 'unreadable', reason: readCheck.reason, read_score: readCheck.score, lang, read, trace, source, ...(choices.length ? { choices } : {}) };
+    }
   }
 
   // A typed short form ("pcm 500", "paracetamol syp 250"): the reviewed list (public/short-forms.js),

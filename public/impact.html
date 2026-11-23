@@ -223,7 +223,7 @@
     $('#pins').innerHTML = table(d.by_pin_prefix || [], [{ h: 'PIN', f: (r) => `${r.pin3}xxx` }, { h: 'Lookups', num: 1, f: (r) => num(r.n) }]);
     // v2.0.7 search quality (roadmap S1.4)
     const WAY = { typed: 'Typed name', photo: 'Photo of the strip', 'text-scan': 'Keyboard "Scan text"', chat: 'Chat in the app', whatsapp: 'WhatsApp' };
-    const VIA = { typed: 'Typed in full', suggest: 'Tapped a suggestion while typing', didyoumean: 'Tapped "Did you mean…?"', rx: 'From a prescription photo' };
+    const VIA = { typed: 'Typed in full', suggest: 'Tapped a suggestion while typing', didyoumean: 'Tapped "Did you mean…?"', rx: 'From a prescription photo', photochoice: 'Brand read from a strip photo, then chosen' };
     const S = d.search || {};
     const pct = (r) => (r.n ? `${Math.round((100 * (r.found || 0)) / r.n)}%` : '—');
     const qcols = (label) => [label, { h: 'Lookups', num: 1, f: (r) => num(r.n) }, { h: 'Found', num: 1, f: (r) => num(r.found || 0) }, { h: 'Not found', num: 1, f: (r) => num(r.not_found || 0) }, { h: 'Unreadable', num: 1, f: (r) => num(r.unreadable || 0) }, { h: 'Found %', num: 1, f: pct }];

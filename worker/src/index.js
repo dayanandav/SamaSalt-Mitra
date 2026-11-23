@@ -38,7 +38,7 @@ function istDay(d = new Date()) {
 }
 
 // v2.0.7 (roadmap S1.4): how a typed name was chosen. Only these words are ever stored, never text.
-const SEARCH_VIA = new Set(['typed', 'suggest', 'didyoumean', 'rx']);
+const SEARCH_VIA = new Set(['typed', 'suggest', 'didyoumean', 'rx', 'photochoice']);
 // Why a photo or scan was not read (the agent's fixed words only).
 const READ_REASONS = new Set(['no_composition', 'brand_mismatch', 'low_confidence']);
 const searchVia = (body) => (body && typeof body.text === 'string' && body.text && !body.image && !body.ocr && SEARCH_VIA.has(body.via) ? body.via : null);

@@ -968,7 +968,10 @@ function render(r) {
     const readText = [r.read?.brand, r.read?.composition].filter(Boolean).join(' · ');
     out.innerHTML = `
       <div class="card"><p class="med-name" style="font-size:22px;line-height:1.35">${esc(t(lang, why))}</p>
-      ${r.status === 'unreadable' && whyRead ? `<p class="read-why">${esc(t(lang, whyRead))}</p>` : ''}
+      ${r.status === 'unreadable' && r.choices?.length ? `<p class="read-why">${esc(t(lang, 'photoChoose', { brand: r.read?.brand || '' }))}</p>
+      <ul class="rx-list nf-choices">${r.choices.slice(0, 5).map((c) => `<li><button type="button" class="nf-sugg" data-via="photochoice" data-name="${esc(c.name)}"><b>${esc(c.name)}</b><span>${esc(c.composition)}</span></button></li>`).join('')}</ul>
+      <p class="med-meta">${esc(t(lang, 'chooseCheck'))}</p>` : ''}
+      ${r.status === 'unreadable' && whyRead && !r.choices?.length ? `<p class="read-why">${esc(t(lang, whyRead))}</p>` : ''}
       ${readText ? `<p class="med-meta">${esc(t(lang, 'readOnStrip', { text: readText }))}</p>` : ''}
       ${r.status === 'not_found' ? notFoundHelp(r) : ''}
       ${(r.status === 'offline' || r.status === 'slow' || r.status === 'busy') && pending ? `<div class="crop-actions" style="margin-top:14px"><button class="primary" id="retryBtn" type="button">${esc(t(lang, 'tryAgain'))}</button></div>${r.status === 'offline' ? `<p class="med-meta">${esc(t(lang, 'offlineAuto'))}</p>` : ''}` : ''}
@@ -979,7 +982,11 @@ function render(r) {
     if ($('#retakeBtn')) $('#retakeBtn').onclick = () => $('#scanBtn').click();
     if ($('#typeBtn')) $('#typeBtn').onclick = () => { show('home'); $('#nameInput').focus(); };
     if ($('#retryBtn')) $('#retryBtn').onclick = () => pending && ask(pending);
-    for (const b of out.querySelectorAll('.nf-sugg')) b.onclick = () => { $('#nameInput').value = b.dataset.name; ask({ text: b.dataset.name, via: 'didyoumean' }); };
+    for (const b of out.querySelectorAll('.nf-sugg')) b.onclick = () => {
+      $('#nameInput').value = b.dataset.name;
+      if (b.dataset.via === 'photochoice') ask({ text: b.dataset.name, via: 'photochoice' }); // a brand read from a photo
+      else ask({ text: b.dataset.name, via: 'didyoumean' });
+    };
     if ($('#nfScan')) $('#nfScan').onclick = () => $('#scanBtn').click();
     if ($('#nfAdd')) $('#nfAdd').onclick = () => {
       const e = unlistedEntry(r.typed);
