@@ -7,7 +7,7 @@
 // Every step is recorded in `trace` (tool, input, short output, ms) and returned to the UI,
 // and the eval runner writes the same trace as AgentFoundry run JSONL (.codenow/runs/).
 import { readStrip, understandText, readPrescription } from './vision.js';
-import { identifyMedicine, janAushadhiByName, suggestNames, soundsLikeChoices, findSameSalt, janAushadhiMatch, ceilingPrice, nearestKendra, computeSaving, compositionFromText, brandCandidatesFromText } from './tools.js';
+import { identifyMedicine, janAushadhiByName, suggestNames, soundsLikeChoices, saltChoices, findSameSalt, janAushadhiMatch, ceilingPrice, nearestKendra, computeSaving, compositionFromText, brandCandidatesFromText } from './tools.js';
 import { describeKey, extractDosageForm, ntiFromKey, parseSaltComposition } from './normalize.js';
 import { assetMeds, d1Meds } from './medstore.js';
 import { composeAnswer } from '../../public/strings.js';
@@ -151,6 +151,14 @@ export async function runAgent(env, input) {
       const choices = await step('sounds_like', { text: latin }, () => soundsLikeChoices(ctx, latin), (r) => ({ choices: r.length }));
       if (choices.length) id = { found: false, choices };
     }
+  }
+
+  // A salt and strength typed in English letters ("Metoprolol 50 mg") that no brand or Jan Aushadhi
+  // name fits (roadmap S3.11): the real medicines with that salt and strength, as choices with their
+  // salts; Jan Aushadhi products first. Never an answer by itself (form and release are not guessed).
+  if (!id.found && !id.choices?.length && source === 'text' && text && !hasIndic(text)) {
+    const choices = await step('salt_choices', { text }, () => saltChoices(ctx, text), (r) => ({ choices: r.length }));
+    if (choices.length) id = { found: false, choices };
   }
 
   // Typed text in Kannada/Devanagari script, or phrased as a question: let the language model

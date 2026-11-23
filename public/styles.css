@@ -196,7 +196,7 @@ html[data-boot] .home { animation: none; }
 .scan-alt .link { font-size: clamp(14px, 3.8vw, 15px); padding: 6px 2px; }
 /* Short screens (small phones): drop the intro paragraph and tips so the home screen fits. */
 @media (max-height: 640px) {
-  .home .lede, .home .scan-text-tip, .home .hint { display: none; }
+  .home .lede, .home .scan-text-tip, .home .hint:not(.scan-tip) { display: none; }
   .home h1 { margin-bottom: 12px; }
 }
 .read-why { margin: 10px 0 0; font-size: 15px; line-height: 1.45; letter-spacing: 0; color: var(--muted); }
@@ -323,6 +323,21 @@ dialog.pharmacist { max-height: 90dvh; overflow-y: auto; }
 .ph-remove::before { content: '✕'; font-size: 10px; opacity: .8; }
 .ph-remove:hover { background: color-mix(in srgb, var(--danger) 8%, var(--card)); }
 .ph-hint { margin: 4px 0 14px; text-align: left; }
+/* P1 My monthly medicines: the switch under the list, packs per medicine once it is on. */
+.keep { display: grid; gap: 6px; margin: 4px 0 12px; padding: 12px 14px; background: var(--fill); border-radius: var(--radius-sm); }
+.keep[hidden] { display: none; }
+.keep .field-note { margin: 0; text-align: left; }
+.keep-row { display: flex; align-items: center; justify-content: space-between; gap: 12px; font-weight: 600; font-size: 16px; cursor: pointer; }
+.keep-row input { appearance: none; -webkit-appearance: none; flex: none; width: 48px; height: 28px; margin: 0; border-radius: 14px; background: var(--fill-2); position: relative; cursor: pointer; transition: background .15s var(--ease); }
+.keep-row input::after { content: ''; position: absolute; top: 3px; left: 3px; width: 22px; height: 22px; border-radius: 50%; background: var(--card); box-shadow: 0 1px 2px rgba(0, 0, 0, .3); transition: left .15s var(--ease); }
+.keep-row input:checked { background: var(--accent); }
+.keep-row input:checked::after { left: 23px; }
+.keep-row input:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
+.keep-save { margin: 2px 0 0; font-size: 15px; }
+.keep-save b { color: var(--accent); white-space: nowrap; }
+.ph-packs { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-top: 10px; }
+.ph-packs span { font-size: 14px; color: var(--muted); }
+@media (prefers-reduced-motion: reduce) { .keep-row input, .keep-row input::after { transition: none; } }
 #phClear[hidden] { display: none; }
 
 .crop-links [hidden] { display: none; }
@@ -352,6 +367,8 @@ details.why-inline { margin-top: 12px; }
 .list .p .dir-btn .dir-icon { flex: none; }
 /* Home: "Scan a medicine strip" with Take a photo, then Choose from gallery and Use phone camera. */
 .scan-title { margin: 0 0 8px; font-size: 15px; font-weight: 600; color: var(--muted); letter-spacing: 0; }
+/* S3.10: what to photograph, right under Take a photo (kept on small screens too). */
+.scan-tip { margin: 8px 2px 0; text-align: left; font-size: 13.5px; }
 .scan-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 10px; }
 .scan-row .secondary { gap: 8px; padding: 8px 12px; min-height: clamp(46px, 6.5vh, 52px); font-size: clamp(14px, 3.8vw, 16px); line-height: 1.2; text-align: center; background: var(--card); box-shadow: var(--shadow); }
 .scan-row .secondary svg { flex: none; }

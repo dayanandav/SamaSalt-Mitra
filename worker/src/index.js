@@ -15,7 +15,7 @@ import { recordMissing, listMissing, previewAdded, addMedicine, decideMedicine, 
 import { registerVolunteer, listVolunteers, decideVolunteer, updateVolunteer, volunteerHistory, activeVolunteer, volunteerLinkStatus } from './volunteers.js';
 
 // Not exported: a Worker's main module may only export handlers.
-const APP_VERSION = '2.0.6';
+const APP_VERSION = '2.0.8';
 
 const MAX_IMAGE_CHARS = 2_500_000; // ~1.8 MB JPEG as a data URL; the app resizes to ~1 MP first
 
@@ -130,7 +130,7 @@ export function canonicalRedirect(env, url, method = 'GET') {
 }
 
 // Requests that run a check (or record feedback) count towards the per-address limit.
-const CHECK_PATHS = new Set(['/api/ask', '/api/feedback', '/api/chat', '/api/wa/simulate', '/api/prescription']);
+const CHECK_PATHS = new Set(['/api/ask', '/api/feedback', '/api/monthly', '/api/chat', '/api/wa/simulate', '/api/prescription']);
 // Over the limit: a calm "wait a minute" in the patient's language. The app shows it as an answer
 // (status "busy"); the chat boxes show it as a bot message.
 async function tooMany(request, url) {
@@ -166,6 +166,19 @@ async function handleFeedback(request, env) {
   }
   const r = await env.DB.prepare('UPDATE lookups SET switched = ?1 WHERE id = ?2').bind(body.switched, body.id).run();
   return json({ ok: true, updated: r.meta?.changes ?? 0 });
+}
+
+// P1 My monthly medicines: numbers only, per IST month: lists kept, and kept lists opened again.
+// The list itself never reaches the server; test traffic is never counted.
+const MONTHLY_EVENTS = new Set(['kept', 'opened']);
+async function handleMonthly(request, env) {
+  let body;
+  try { body = await request.json(); } catch { return json({ error: 'bad_json' }, 400); }
+  if (!MONTHLY_EVENTS.has(body?.event)) return json({ error: 'bad_request' }, 400);
+  if (isTestRequest(request, body)) return json({ ok: true, counted: false });
+  await env.DB.prepare("INSERT INTO meta (key, value) VALUES (?1, '1') ON CONFLICT(key) DO UPDATE SET value = CAST(value AS INTEGER) + 1")
+    .bind(`monthly_${body.event}_${istDay().slice(0, 7)}`).run();
+  return json({ ok: true, counted: true });
 }
 
 async function handleImpact(env, url) {
@@ -213,6 +226,12 @@ async function handleImpact(env, url) {
     q(`SELECT medicine, COUNT(*) AS n, ROUND(AVG(saving_pack), 2) AS avg_saving FROM lookups WHERE ${real} AND status = 'ok' AND ${right} GROUP BY medicine ORDER BY n DESC LIMIT 10`),
     q(`SELECT COUNT(*) AS n FROM lookups WHERE is_test = 1`),
   ]);
+  const monthlyRows = await q(`SELECT key, value FROM meta WHERE key LIKE 'monthly_%'`);
+  const monthlyLists = { kept: 0, opened: 0 };
+  for (const r of monthlyRows) {
+    const m = /^monthly_(kept|opened)_(\d{4}-\d{2})$/.exec(r.key);
+    if (m && (!month || m[2] === month)) monthlyLists[m[1]] += Number.parseInt(r.value, 10) || 0;
+  }
   return json({
     generated_at: new Date().toISOString(),
     month,
@@ -223,6 +242,7 @@ async function handleImpact(env, url) {
     by_pin_prefix: byPin,
     top_medicines: topMeds,
     search: { by_way: byInput, by_via: byVia, by_language: byLangFound, unreadable_by_reason: byReason },
+    monthly_lists: monthlyLists,
     excluded_test_lookups: testCount[0]?.n ?? 0,
   }, 200, { 'cache-control': 'public, max-age=30' });
 }
@@ -487,6 +507,7 @@ export default {
       if (url.pathname.startsWith('/api/admin/')) return await handleAdmin(request, env, url);
       if (url.pathname === '/api/ask' && request.method === 'POST') return await handleAsk(request, env, ctx);
       if (url.pathname === '/api/feedback' && request.method === 'POST') return await handleFeedback(request, env);
+      if (url.pathname === '/api/monthly' && request.method === 'POST') return await handleMonthly(request, env);
       if (url.pathname === '/api/prescription' && request.method === 'POST') return await handlePrescription(request, env);
       if (url.pathname === '/api/impact') return await handleImpact(env, url);
       if (url.pathname === '/api/health') {
@@ -495,7 +516,7 @@ export default {
         const day = istDay();
         const reads = await env.DB.prepare("SELECT (SELECT COUNT(*) FROM lookups WHERE day = ?1 AND input LIKE 'photo%') + COALESCE((SELECT CAST(value AS INTEGER) FROM meta WHERE key = 'rx_reads_' || ?1), 0) AS n").bind(day).first().catch(() => null);
         const usage = { day, photo_reads: reads?.n ?? null, photo_cap: Number.parseInt(env.DAILY_PHOTO_LIMIT || '', 10) || null };
-        return json({ ok: true, version: APP_VERSION, kendra_registry: env.KENDRA_REGISTRY || 'off', registration_email: env.REGISTRATION_EMAIL || null, order_requests: env.ORDER_REQUESTS || 'off', volunteer_registry: env.VOLUNTEER_REGISTRY === 'on' ? 'on' : 'off', whatsapp_bot: botOn(env) ? 'on' : 'off', canonical_host: String(env.CANONICAL_HOST || '').trim().toLowerCase() || null, usage, wa_bot_number: botNumber(env), app_chat: appChatOn(env) ? 'on' : 'off', meta: Object.fromEntries((r.results || []).filter((x) => !x.key.startsWith('rx_reads_')).map((x) => [x.key, x.value])) });
+        return json({ ok: true, version: APP_VERSION, kendra_registry: env.KENDRA_REGISTRY || 'off', registration_email: env.REGISTRATION_EMAIL || null, order_requests: env.ORDER_REQUESTS || 'off', volunteer_registry: env.VOLUNTEER_REGISTRY === 'on' ? 'on' : 'off', whatsapp_bot: botOn(env) ? 'on' : 'off', canonical_host: String(env.CANONICAL_HOST || '').trim().toLowerCase() || null, usage, wa_bot_number: botNumber(env), app_chat: appChatOn(env) ? 'on' : 'off', meta: Object.fromEntries((r.results || []).filter((x) => !x.key.startsWith('rx_reads_') && !x.key.startsWith('monthly_')).map((x) => [x.key, x.value])) });
       }
       // Nearest Kendras for a PIN, for the PIN box in an answer's Kendra card (no lookup is logged).
       if (url.pathname === '/api/kendras') {

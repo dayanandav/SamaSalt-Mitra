@@ -1,7 +1,7 @@
 import { LANGS, STRINGS, t, rupees, unitKind } from '/strings.js';
 import { createChat, newChatId } from '/chat.js';
 import { suggestWhileTyping, suggestable } from '/suggest.js';
-import { pharmacistEntry, unlistedEntry, mergeMedList, asksToSwitch, shouldAddToList, listenAllowed, pickVoice, isPhoneBrowser, freshMedList, kendraCode, showMobile, orderItems, orderQty, orderMessage, waLink, smsLink, ORDER_MAX_PACKS, photoSendSize, askTimeoutMs, savableAnswer, volunteerCode, shareText } from '/rules.js';
+import { pharmacistEntry, unlistedEntry, mergeMedList, asksToSwitch, shouldAddToList, listenAllowed, pickVoice, isPhoneBrowser, freshMedList, keptMedList, monthlySaving, kendraCode, showMobile, orderItems, orderQty, orderMessage, waLink, smsLink, ORDER_MAX_PACKS, photoSendSize, askTimeoutMs, savableAnswer, volunteerCode, shareText } from '/rules.js';
 
 const $ = (s) => document.querySelector(s);
 const store = {
@@ -725,12 +725,40 @@ store.set('ss_medlist', null); // the old long-lived list (before Nov 2026) is r
 // camera was open (the person did not choose to leave; keep what they had).
 // v1.3: opened again without internet: keep the list and the last answer of this visit.
 if (!returnedFromCamera && navigator.onLine) { session.set('ss_medlist', null); session.set('ss_last', null); }
+// P1 My monthly medicines: "Keep this list for next month" (off by default) keeps the list in this
+// phone's storage instead of for the visit only. Never sent to our server; off deletes it.
+const KEEP = 'ss_keep_list';
+const kept = () => store.get(KEEP) != null;
 function medList() {
+  if (kept()) { try { return keptMedList(JSON.parse(store.get(KEEP))); } catch { return []; } }
   try { return freshMedList(JSON.parse(session.get('ss_medlist') || '[]')); } catch { return []; }
 }
 function saveMedList(list) {
-  session.set('ss_medlist', list.length ? JSON.stringify(list.slice(0, MAX_LIST)) : null);
+  // A kept list that becomes empty (cleared, or the last one removed) is deleted.
+  if (kept()) store.set(KEEP, list.length ? JSON.stringify(list.slice(0, MAX_LIST)) : null);
+  else session.set('ss_medlist', list.length ? JSON.stringify(list.slice(0, MAX_LIST)) : null);
   renderHomeList();
+}
+// Numbers only for the impact page (lists kept, kept lists opened again); no list, no device.
+function countMonthly(event) {
+  if (isTest) return;
+  try { fetch('/api/monthly', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ event }), keepalive: true }).catch(() => {}); } catch {}
+}
+function setKeep(on) {
+  const list = medList();
+  if (on) {
+    store.set(KEEP, JSON.stringify(list.slice(0, MAX_LIST)));
+    session.set('ss_medlist', null);
+    countMonthly('kept');
+  } else {
+    store.set(KEEP, null);
+    // Still this visit's list: shown until the app is closed, as before.
+    const now = Date.now();
+    session.set('ss_medlist', list.length ? JSON.stringify(list.map((x) => ({ ...x, at: now }))) : null);
+  }
+  renderHomeList();
+  showPharmacist();
+  toast(on ? 'toastKept' : 'toastUnkept');
 }
 function addToMedList(r) {
   if (!shouldAddToList(r)) return;
@@ -746,12 +774,13 @@ function renderHomeList() {
   const n = medList().length;
   const b = $('#homeListBtn');
   b.hidden = !n;
-  b.textContent = n === 1 ? t(lang, 'pharmacistBtn') : t(lang, 'pharmacistBtnN', { n });
+  b.textContent = kept() ? t(lang, 'monthlyBtn', { n }) : n === 1 ? t(lang, 'pharmacistBtn') : t(lang, 'pharmacistBtnN', { n });
 }
 const nbspUnits = (s) => s.replace(/(\d) (mg|mcg|ml|IU|%)/g, '$1 $2');
 function showPharmacist() {
   const list = medList();
-  if (!list.length) return;
+  if (!list.length) { if ($('#pharmacist').open) $('#pharmacist').close(); return; }
+  const keep = kept();
   const anyNti = list.some((x) => x.nti); // never-switch: never "the lowest-priced" for it
   $('#phLead').textContent = t(lang, (list.length > 1 ? 'pharmacistCardMany' : 'pharmacistCard') + (anyNti ? 'Nti' : ''));
   $('#phList').innerHTML = list.map((x, i) => `
@@ -760,8 +789,33 @@ function showPharmacist() {
       <p class="ph-sub">${esc(x.unlisted ? t(lang, 'phUnlisted') : [x.form, x.name].filter(Boolean).join(' · '))}</p>
       ${x.nti ? whyHtml('ph-nti', t(lang, 'phNti')) : ''}
       ${x.ja ? `<p class="ph-ja">${esc(t(lang, x.nti ? 'phJaNti' : 'phJa', { name: x.ja.name, code: x.ja.code }))}</p>` : x.noJa ? `<p class="ph-ja ph-noja">${esc(t(lang, 'phNoJa'))}</p>` : ''}
+      ${keep && x.ja && !x.nti && !x.unlisted ? `<div class="ph-packs"><span>${esc(t(lang, 'monthlyPacks'))}${x.ja.unit_size ? ` (${esc(x.ja.unit_size)})` : ''}</span>
+        <div class="qty" role="group" aria-label="${esc(t(lang, 'orderPacks'))}">
+          <button type="button" data-ph-q="-1" data-i="${i}" aria-label="${esc(t(lang, 'orderLess'))}"${orderQty(x.qty) <= 1 ? ' disabled' : ''}>−</button>
+          <output aria-live="polite">${orderQty(x.qty)}</output>
+          <button type="button" data-ph-q="1" data-i="${i}" aria-label="${esc(t(lang, 'orderMore'))}"${orderQty(x.qty) >= ORDER_MAX_PACKS ? ' disabled' : ''}>+</button>
+        </div></div>` : ''}
       <button class="link ph-remove" type="button" data-i="${i}">${esc(t(lang, 'listRemove'))}</button>
     </li>`).join('');
+  for (const b of $('#phList').querySelectorAll('[data-ph-q]')) {
+    b.onclick = () => {
+      const l = medList();
+      const x = l[Number(b.dataset.i)];
+      if (!x) return;
+      x.qty = orderQty(orderQty(x.qty) + Number(b.dataset.phQ));
+      saveMedList(l);
+      showPharmacist();
+    };
+  }
+  // The switch, and the saving for the packs in the kept list (prices only from our data).
+  $('#keepSwitch').checked = keep;
+  $('#keepNote').textContent = t(lang, keep ? 'keepOn' : 'keepOff');
+  $('#phHint').hidden = keep;
+  const sv = keep ? monthlySaving(list) : null;
+  $('#keepSave').hidden = !sv;
+  $('#keepSave').innerHTML = sv
+    ? `${esc(t(lang, 'monthlySave', { month: '@@MONTH@@', year: '@@YEAR@@' })).replace('@@MONTH@@', `<b>${esc(rupees(sv.month))}</b>`).replace('@@YEAR@@', `<b>${esc(rupees(sv.year))}</b>`)}${sv.left ? `<br><span class="field-note">${esc(t(lang, 'monthlyLeft'))}</span>` : ''}<br><span class="field-note">${esc(t(lang, 'monthlyNote'))}</span>`
+    : '';
   for (const b of $('#phList').querySelectorAll('.ph-remove')) {
     b.onclick = () => {
       const l = medList();
@@ -863,7 +917,12 @@ $('#phClear').onclick = () => {
   updatePhBtn();
   toast('toastCleared');
 };
-$('#homeListBtn').onclick = showPharmacist;
+$('#homeListBtn').onclick = () => {
+  // A kept list opened again (counted once per visit, number only).
+  if (kept() && !session.get('ss_keep_opened')) { session.set('ss_keep_opened', '1'); countMonthly('opened'); }
+  showPharmacist();
+};
+$('#keepSwitch').onchange = (e) => setKeep(e.target.checked);
 function updatePhBtn() {
   const b = $('#phBtn');
   if (!b) return;
@@ -957,9 +1016,18 @@ function notFoundHelp(r) {
       ${r.typed ? `<div class="crop-actions"><button class="secondary" id="nfAdd" type="button">${esc(t(lang, 'nfAddPh'))}</button></div>` : ''}`;
 }
 
+// S3.10: photos not read in this visit (each answer counted once; kept for the visit only).
+function unreadTwice() { return Number(session.get('ss_unread') || 0) >= 2; }
+function countUnread(r) {
+  if (r.status !== 'unreadable' || r.unreadCounted) return;
+  r.unreadCounted = true;
+  session.set('ss_unread', String(Number(session.get('ss_unread') || 0) + 1));
+}
+
 function render(r) {
   const out = $('#result');
   applyStrings();
+  countUnread(r);
   if (r.status !== 'ok') {
     // Say what actually went wrong: not in the database, photo unreadable, or the check failed.
     const why = r.status === 'not_found' ? (r.choices?.length ? 'chooseOne' : 'notFound') : r.status === 'unreadable' ? 'photoUnreadable' : r.status === 'vision_down' ? 'visionDown' : r.status === 'offline' ? 'offlineWait' : r.status === 'slow' ? 'slowNet' : r.status === 'busy' ? 'tooMany' : 'checkFailed';
@@ -975,7 +1043,10 @@ function render(r) {
       ${readText ? `<p class="med-meta">${esc(t(lang, 'readOnStrip', { text: readText }))}</p>` : ''}
       ${r.status === 'not_found' ? notFoundHelp(r) : ''}
       ${(r.status === 'offline' || r.status === 'slow' || r.status === 'busy') && pending ? `<div class="crop-actions" style="margin-top:14px"><button class="primary" id="retryBtn" type="button">${esc(t(lang, 'tryAgain'))}</button></div>${r.status === 'offline' ? `<p class="med-meta">${esc(t(lang, 'offlineAuto'))}</p>` : ''}` : ''}
-      ${r.status === 'unreadable' ? `<div class="crop-actions" style="margin-top:14px"><button class="primary" id="retakeBtn" type="button">${esc(t(lang, 'retakePhoto'))}</button><button class="secondary" id="typeBtn" type="button">${esc(t(lang, 'confirmType'))}</button></div>` : ''}
+      ${r.status === 'unreadable' ? (unreadTwice()
+        // S3.10: a second photo not read in this visit: typing the name is offered first.
+        ? `<p class="read-why">${esc(t(lang, 'photoTypeTip'))}</p><div class="crop-actions" style="margin-top:14px"><button class="primary" id="typeBtn" type="button">${esc(t(lang, 'confirmType'))}</button><button class="secondary" id="retakeBtn" type="button">${esc(t(lang, 'retakePhoto'))}</button></div>`
+        : `<div class="crop-actions" style="margin-top:14px"><button class="primary" id="retakeBtn" type="button">${esc(t(lang, 'retakePhoto'))}</button><button class="secondary" id="typeBtn" type="button">${esc(t(lang, 'confirmType'))}</button></div>`) : ''}
       ${devMode ? `<p class="source">developer: status=${esc(r.status || '-')}${r.read_score != null ? ` · read score=${r.read_score}/100 (pass 70)${r.reason ? ` · ${esc(r.reason)}` : ''}` : ''}${r.error ? ` · error=${esc(r.error)}` : ''}${r.detail ? ` · ${esc(r.detail)}` : ''}${r.trace?.length ? ` · steps=${esc(r.trace.map((s) => s.tool + (s.error ? '!' : '') + (s.output?.failed ? `(${[].concat(s.output.failed).join('; ')})` : '')).join(' > '))}` : ''}</p>` : ''}</div>
       <button class="secondary" id="againBtn">${esc(t(lang, 'another'))}</button>`;
     $('#againBtn').onclick = () => { show('home'); $('#nameInput').focus(); };

@@ -20,7 +20,42 @@ export function pharmacistEntry(r) {
       : null,
     // The PMBI list was checked and has no product of this exact composition (strength, form, release).
     noJa: ja.available === false,
+    // P1 monthly list: per-tablet prices from our data, for the saving. Never for a never-switch medicine.
+    ...(!nti && Number(m.unit_price) > 0 ? { brandUnit: Number(m.unit_price) } : {}),
+    ...(!nti && ja.available && Number(ja.product?.units) > 0 ? { jaUnits: Number(ja.product.units) } : {}),
   };
+}
+
+// ── P1 My monthly medicines ─────────────────────────────────────────────────
+// "Keep this list for next month": the pharmacist list, kept on this phone only (never on our
+// server). The patient sets how many Jan Aushadhi packs they buy; we never ask how many to take.
+
+/** A kept list read back from the phone: entries with a composition key only, at most `max`, no age limit. */
+export function keptMedList(list, max = 15) {
+  if (!Array.isArray(list)) return [];
+  return list.filter((x) => x && typeof x === 'object' && typeof x.ckey === 'string' && x.ckey && typeof x.name === 'string').slice(0, max);
+}
+
+/**
+ * The saving for the packs in the list, per tablet from our data: each counted item is
+ * `qty` Jan Aushadhi packs; the same number of tablets at the brand's price. Never-switch
+ * medicines, medicines not in our list, and anything without both prices are not counted.
+ * Returns { month, year, counted, left } or null when nothing is counted or nothing is saved.
+ */
+export function monthlySaving(list) {
+  let brand = 0, ja = 0, counted = 0, left = 0;
+  for (const x of Array.isArray(list) ? list : []) {
+    if (!x) continue;
+    const mrp = Number(x.ja?.mrp);
+    if (x.nti || x.unlisted || !x.ja || !(mrp > 0) || !(Number(x.brandUnit) > 0) || !(Number(x.jaUnits) > 0)) { left++; continue; }
+    const q = orderQty(x.qty);
+    brand += q * Number(x.jaUnits) * Number(x.brandUnit);
+    ja += q * mrp;
+    counted++;
+  }
+  const month = Math.round((brand - ja) * 100) / 100;
+  if (!counted || !(month > 0)) return null;
+  return { month, year: Math.round(month * 12 * 100) / 100, counted, left };
 }
 
 /**

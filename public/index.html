@@ -52,6 +52,8 @@
         <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 8.5A2.5 2.5 0 0 1 5.5 6h1.8l1.4-2h6.6l1.4 2h1.8A2.5 2.5 0 0 1 21 8.5v9a2.5 2.5 0 0 1-2.5 2.5h-13A2.5 2.5 0 0 1 3 17.5z"/><circle cx="12" cy="13" r="3.6"/></svg>
         <span data-t="takePhoto">Take a photo</span>
       </button>
+      <!-- S3.10: what to photograph, right under the button (most unread photos showed the front). -->
+      <p class="hint scan-tip" data-t="scanHint"></p>
       <div class="scan-row">
         <button class="secondary" id="homeGallery" type="button">
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4" width="18" height="16" rx="2.5"/><circle cx="8.5" cy="9.5" r="1.6"/><path d="m21 16-5-5-9 9"/></svg>
@@ -69,7 +71,6 @@
       <input id="gallery" type="file" accept="image/*" hidden>
       <p class="cam-note" id="camLost" hidden data-t="camLost"></p>
       <p class="scan-alt" id="camLostActions" hidden><button class="link" id="camUseApp" type="button" data-t="camUseApp">Use the in-app camera instead</button></p>
-      <p class="hint" data-t="scanHint"></p>
       <!-- Medicines checked so far (kept on this phone only), to show the pharmacist in one go. -->
       <button class="secondary list-btn" id="homeListBtn" type="button" hidden></button>
       <!-- v1.3: the last answer of this visit (also without internet). -->
@@ -209,7 +210,13 @@
   <dialog id="pharmacist" class="pharmacist">
     <p class="ph-lead" id="phLead"></p>
     <ol class="ph-list" id="phList"></ol>
-    <p class="field-note ph-hint" data-t="listHint"></p>
+    <!-- P1 My monthly medicines: keep this list on the phone for next month (off by default). -->
+    <div class="keep" id="keepBox">
+      <label class="keep-row" for="keepSwitch"><span data-t="keepList">Keep this list for next month</span><input type="checkbox" id="keepSwitch" role="switch"></label>
+      <p class="field-note" id="keepNote"></p>
+      <p class="keep-save" id="keepSave" hidden></p>
+    </div>
+    <p class="field-note ph-hint" id="phHint" data-t="listHint"></p>
     <button class="primary ph-order" id="phOrder" type="button" hidden data-t="orderFromList">Order these from a Kendra</button>
     <form method="dialog" class="crop-actions"><button class="secondary" data-t="close">Close</button><button class="link" id="phClear" type="button" value="clear" data-t="listClear">Clear list</button></form>
   </dialog>

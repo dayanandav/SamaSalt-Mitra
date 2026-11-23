@@ -111,6 +111,12 @@
       </div>
     </div>
 
+    <p class="section-title">My monthly medicines</p>
+    <div class="card">
+      <div id="monthly"></div>
+      <p class="muted" style="margin:8px 0 0;font-size:13px">Patients who turned on "Keep this list for next month", and visits where a kept list was opened again. Numbers only: the list stays on the patient's phone.</p>
+    </div>
+
     <p class="section-title">Data behind every answer</p>
     <div class="card"><ul class="data" id="data"><li><span class="muted">Loading…</span></li></ul></div>
 
@@ -232,6 +238,8 @@
     $('#searchLang').innerHTML = table(S.by_language || [], qcols({ h: 'Language', f: (r) => LANG[r.lang] || r.lang }));
     const WHY = { no_composition: 'Salts and strengths not clear', brand_mismatch: 'Brand and salts read do not belong together', low_confidence: 'Too unsure (blur, glare, cut off)', not_recorded: 'Not recorded (before 23 Nov 2026)' };
     $('#searchWhy').innerHTML = table(S.unreadable_by_reason || [], [{ h: 'Way in', f: (r) => WAY[r.way] || r.way }, { h: 'Reason', f: (r) => WHY[r.reason] || r.reason }, { h: 'Lookups', num: 1, f: (r) => num(r.n) }]);
+    const ML = d.monthly_lists || { kept: 0, opened: 0 };
+    $('#monthly').innerHTML = table([{ k: 'Lists kept for next month', n: ML.kept }, { k: 'Kept lists opened again', n: ML.opened }], [{ h: 'Figure', f: (r) => r.k }, { h: 'Count', num: 1, f: (r) => num(r.n) }]);
     // ── Report: header for print, CSV of every figure on the page ──
     const period = month ? monthName(month) : 'All time';
     $('#printHead').textContent = `SamaSalt-Mitra impact report · ${period} · generated ${new Date(d.generated_at).toLocaleString('en-IN', { timeZone: 'Asia/Kolkata' })} (IST) · real lookups only, test traffic excluded`;
@@ -239,7 +247,7 @@
     $('#csvBtn').onclick = () => {
       const q = (v) => `"${String(v ?? '').replace(/"/g, '""')}"`;
       const rows = [['SamaSalt-Mitra impact report'], ['Period', period], ['Generated (UTC)', d.generated_at], ['Note', d.note], [],
-        ['Figure', 'Value'], ...Object.entries(T).map(([k, v]) => [k, v]), [],
+        ['Figure', 'Value'], ...Object.entries(T).map(([k, v]) => [k, v]), ['monthly_lists_kept', ML.kept], ['monthly_lists_opened', ML.opened], [],
         ['Day', 'Lookups', 'Saving found (Rs)'], ...(d.by_day || []).map((x) => [x.day, x.n, x.saving]), [],
         ['Language', 'Lookups'], ...(d.by_language || []).map((x) => [x.lang, x.n]), [],
         ['PIN prefix', 'Lookups'], ...(d.by_pin_prefix || []).map((x) => [`${x.pin3}xxx`, x.n]), [],

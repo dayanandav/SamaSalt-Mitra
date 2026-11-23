@@ -89,6 +89,11 @@ export async function resolveCompositionKey(ctx, composition, hints) {
   return variants[0] || '';
 }
 
+/** The dosage form in typed text, plurals and short forms included ("Tablets", "caps", "syp"). */
+function typedFormOf(text) {
+  return extractDosageForm(String(text || '').replace(/\b(tablet|capsule|injection)s\b/gi, '$1').replace(/\bsy[pr]\b/gi, 'syrup').replace(/\btabs\b/gi, 'tablet').replace(/\bcaps\b/gi, 'capsule'));
+}
+
 // Words a Jan Aushadhi product name may carry that do not change the medicine: salt forms and
 // coating words. Anything else the person did not type (release, another form, another salt,
 // another number) means it is not that product.
@@ -113,7 +118,13 @@ export async function janAushadhiByName(ctx, text) {
     if (!q.every((t) => n.includes(t))) return false;
     return n.every((t) => q.includes(t) || (!/^\d/.test(t) && JA_HARMLESS.has(t)));
   });
-  const keys = [...new Set(fits.map((r) => r.ckey))];
+  let keys = [...new Set(fits.map((r) => r.ckey))];
+  // "Tablets" and "capsules" are not compared above: when both fit, the form typed decides.
+  const typedForm = keys.length > 1 ? typedFormOf(text) : null;
+  if (typedForm) {
+    keys = keys.filter((k) => k.split('|')[1] === typedForm);
+    for (let i = fits.length - 1; i >= 0; i--) if (fits[i].ckey.split('|')[1] !== typedForm) fits.splice(i, 1);
+  }
   if (keys.length !== 1) return null;
   fits.sort((a, b) => (a.unit_price ?? 1e9) - (b.unit_price ?? 1e9));
   return { product: fits[0], ckey: keys[0] };
@@ -262,6 +273,82 @@ export async function soundsLikeChoices(ctx, latin, limit = 5) {
   ja.sort((a, b) => a.rank - b.rank || a.name.length - b.name.length);
   const brands = [...out.values()].sort((a, b) => a.rank - b.rank || a.name.length - b.name.length);
   return [...ja.slice(0, 3), ...brands].slice(0, limit).map(({ name, composition }) => ({ name, composition }));
+}
+
+/**
+ * A salt and strength typed in English letters ("Metoprolol 50 mg", "Pramipexole 0.25") when no
+ * brand or Jan Aushadhi name fits (roadmap S3.11): the real medicines with that salt and strength,
+ * as choices only, never an answer. Official Jan Aushadhi products come first (also the ~400 with
+ * no brand in our list), then brand compositions. Form and release are never guessed: every
+ * variant that exists is offered ("Metoprolol 50" plain and extended-release). Each choice carries
+ * a name that, when tapped, checks exactly the composition shown (verified here).
+ */
+export async function saltChoices(ctx, text, limit = 5) {
+  const { db, meds } = ctxOf(ctx);
+  const raw = String(text || '').replace(/\s+/g, ' ').trim();
+  const q = tokens(raw);
+  const word = q[0];
+  const nums = numbersIn(raw);
+  if (!word || !/^[a-z]{4,}$/.test(word) || nums.length !== 1 || !(nums[0] > 0)) return [];
+  const n = nums[0];
+  const unit = (raw.toLowerCase().match(/\d\s*(mcg|mg|gm|g|iu|ml)\b/) || [])[1] || null;
+  if (unit === 'ml') return [];
+  // The typed strength in the key's units: mg (mcg and g converted) or IU.
+  const want = unit === 'mcg' ? { v: n / 1000, u: 'mg' } : unit === 'g' || unit === 'gm' ? { v: n * 1000, u: 'mg' } : unit === 'iu' ? { v: n, u: 'IU' } : { v: n, u: null };
+  const strengthFits = (st) => {
+    const m = /^([\d.]+)(mg|IU)$/.exec(st || '');
+    if (!m) return false;
+    if (want.u && m[2] !== want.u) return false;
+    return Math.abs(parseFloat(m[1]) - want.v) < 1e-9;
+  };
+  const typedForm = typedFormOf(raw);
+  const found = new Map(); // ckey -> { ckey, name, ja }
+  // 1. Official Jan Aushadhi products where one salt is the typed word and has the typed strength.
+  const res = await db.prepare("SELECT drug_code, generic_name, ckey, unit_price FROM ja_products WHERE ckey IS NOT NULL AND ckey != ''").all().catch(() => ({ results: [] }));
+  for (const p of (res.results || []).sort((a, b) => (a.unit_price ?? 1e9) - (b.unit_price ?? 1e9))) {
+    const [salts, form] = p.ckey.split('|');
+    if (typedForm && form !== typedForm) continue;
+    if (!salts.split('+').some((s) => { const [name, st] = s.split(':'); return tokens(name).includes(word) && strengthFits(st); })) continue;
+    if (!found.has(p.ckey)) found.set(p.ckey, { ckey: p.ckey, name: p.generic_name, ja: true });
+  }
+  // 2. Brand compositions of the typed salt alone ("metoprolol tartrate", "metoprolol succinate"),
+  // in every form and release brands use: one text search over the key list (not parsed: CPU).
+  const brandKeys = new Set();
+  if (meds.keysJson) {
+    const all = String(await meds.keysJson().catch(() => '[]'));
+    for (let i = all.indexOf(word); i >= 0; i = all.indexOf(word, i + word.length)) {
+      const k = all.slice(all.lastIndexOf('"', i) + 1, all.indexOf('"', i));
+      const [salts, form] = k.split('|');
+      if (!salts || salts.includes('+') || (typedForm && form !== typedForm)) continue;
+      const [name, st] = salts.split(':');
+      if (tokens(name).includes(word) && strengthFits(st)) brandKeys.add(k);
+    }
+  }
+  // One salt alone first (a combination only when the typed salt exists only in combinations),
+  // then the typed form or tablets/capsules, plain before extended release, Jan Aushadhi first.
+  for (const k of brandKeys) if (!found.has(k)) found.set(k, { ckey: k, name: null, ja: false });
+  let list = [...found.values()];
+  if (list.some((x) => !x.ckey.split('|')[0].includes('+'))) list = list.filter((x) => !x.ckey.split('|')[0].includes('+'));
+  // A typed release ("50 XL", "SR", "ER") keeps only that release, when any has it.
+  const REL = { sr: 'SR', pr: 'SR', xr: 'XR', er: 'XR', xl: 'XL', cr: 'CR', mr: 'MR', dr: 'DR', la: 'LA' };
+  const typedRel = q.map((t) => REL[t]).find(Boolean);
+  if (typedRel && list.some((x) => x.ckey.split('|')[2] === typedRel)) list = list.filter((x) => x.ckey.split('|')[2] === typedRel);
+  const rank = (x) => {
+    const [, form, rel] = x.ckey.split('|');
+    return (form === 'tablet' || form === 'capsule' ? 0 : 2) + (rel ? 1 : 0) + (x.ja ? 0 : 0.5);
+  };
+  list.sort((a, b) => rank(a) - rank(b) || a.ckey.length - b.ckey.length);
+  // Only a name that checks exactly the composition shown is offered; a brand composition is
+  // offered under its lowest-priced brand. At most limit + 2 checks.
+  const out = [];
+  for (const x of list.slice(0, limit + 2)) {
+    if (out.length >= limit) break;
+    const name = x.name || (await meds.sameSalt(x.ckey, 1).catch(() => null))?.items?.[0]?.name;
+    if (!name) continue;
+    const id = await identifyMedicine(ctx, { brand: name }).catch(() => null);
+    if (id?.found && id.medicine.ckey === x.ckey) out.push({ name, composition: describeKey(x.ckey) });
+  }
+  return out;
 }
 
 /** Tool: identify_medicine. Resolve a brand name (and optional composition read off the strip) to one DB row. */
