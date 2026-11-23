@@ -118,10 +118,12 @@
     </div>
 
     <!-- v2.0.9 P5 demand by area: for Kendras and PMBI stocking. Counts only. -->
+    <div id="demandBox" hidden>
     <p class="section-title">Demand by area (for Kendra stocking)</p>
     <div class="card">
       <div id="demand"></div>
       <p class="muted" id="demandNote" style="margin:8px 0 0;font-size:13px"></p>
+    </div>
     </div>
 
     <p class="section-title">Data behind every answer</p>
@@ -248,10 +250,11 @@
     const ML = d.monthly_lists || { kept: 0, opened: 0 };
     $('#monthly').innerHTML = table([{ k: 'Lists kept for next month', n: ML.kept }, { k: 'Kept lists opened again', n: ML.opened }], [{ h: 'Figure', f: (r) => r.k }, { h: 'Count', num: 1, f: (r) => num(r.n) }]);
     // v2.0.9 P5: one row per medicine, grouped by PIN area.
-    const DA = d.demand_by_area || { min_checks: 3, areas: [] };
+    const DA = d.demand_by_area || { min_devices: 3, areas: [] };
+    $('#demandBox').hidden = !d.demand_by_area; // off in wrangler.toml
     const demandRows = DA.areas.flatMap((a) => a.medicines.map((m, i) => ({ area: i ? '' : `${a.pin3}xxx`, ...m })));
     $('#demand').innerHTML = table(demandRows, [{ h: 'PIN area', f: (r) => r.area }, { h: 'PMBJP code', f: (r) => r.drug_code }, { h: 'Jan Aushadhi medicine', f: (r) => r.name }, { h: 'Salts', f: (r) => r.composition }, { h: 'Checks', num: 1, f: (r) => num(r.n) }]);
-    $('#demandNote').textContent = `The Jan Aushadhi medicines patients checked most in each PIN area (first 3 digits of the PIN they entered to find a Kendra). A medicine is listed for an area only after ${DA.min_checks} or more checks there, so no single person shows. Numbers only.`;
+    $('#demandNote').textContent = `The Jan Aushadhi medicines patients checked most in each PIN area (first 3 digits of the PIN they entered to find a Kendra). A medicine is listed for an area only when it was checked there from ${DA.min_devices} or more different phones. Numbers only.`;
     // ── Report: header for print, CSV of every figure on the page ──
     const period = month ? monthName(month) : 'All time';
     $('#printHead').textContent = `SamaSalt-Mitra impact report · ${period} · generated ${new Date(d.generated_at).toLocaleString('en-IN', { timeZone: 'Asia/Kolkata' })} (IST) · real lookups only, test traffic excluded`;
@@ -268,7 +271,7 @@
         ['Typed name chosen by', 'Lookups', 'Found', 'Not found', 'Unreadable'], ...(S.by_via || []).map((x) => [VIA[x.via] || x.via, x.n, x.found, x.not_found, x.unreadable]), [],
         ['Language', 'Lookups', 'Found', 'Not found', 'Unreadable'], ...(S.by_language || []).map((x) => [x.lang, x.n, x.found, x.not_found, x.unreadable]), [],
         ['Not read: way in', 'Reason', 'Lookups'], ...(S.unreadable_by_reason || []).map((x) => [WAY[x.way] || x.way, WHY[x.reason] || x.reason, x.n]), [],
-        [`Demand by area (min ${DA.min_checks} checks)`, 'PMBJP code', 'Jan Aushadhi medicine', 'Salts', 'Checks'], ...DA.areas.flatMap((a) => a.medicines.map((m) => [`${a.pin3}xxx`, m.drug_code, m.name, m.composition, m.n]))];
+        [`Demand by area (min ${DA.min_devices} phones)`, 'PMBJP code', 'Jan Aushadhi medicine', 'Salts', 'Checks'], ...DA.areas.flatMap((a) => a.medicines.map((m) => [`${a.pin3}xxx`, m.drug_code, m.name, m.composition, m.n]))];
       const blob = new Blob(['\ufeff' + rows.map((r) => r.map(q).join(',')).join('\r\n')], { type: 'text/csv;charset=utf-8' });
       const a = document.createElement('a');
       a.href = URL.createObjectURL(blob);

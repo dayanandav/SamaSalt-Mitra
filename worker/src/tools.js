@@ -89,6 +89,19 @@ export async function resolveCompositionKey(ctx, composition, hints) {
   return variants[0] || '';
 }
 
+/**
+ * May this composition key be answered by itself (no brand or Jan Aushadhi name fits)? Every salt needs
+ * a strength with a number in it, and a number inside a salt's name ("amoxicillin 500 clavulanic
+ * acid:125mg": two salts run together) is accepted only for a key the data really has ("dextran 40").
+ */
+async function clearComposition(ctx, key) {
+  const parts = String(key).split('|')[0].split('+').map((p) => p.split(':'));
+  if (!parts.every(([name, st]) => name && /^\d/.test(st || ''))) return false;
+  if (!parts.some(([name]) => /(^|\s)\d[\d.]*(mg|mcg|g|gm|ml|iu)?(\s|$)/i.test(name))) return true;
+  const { db, meds } = ctxOf(ctx);
+  return !!(await meds.hasKey(key)) || !!(await db.prepare('SELECT 1 AS ok FROM ja_products WHERE ckey = ?1 LIMIT 1').bind(key).first());
+}
+
 /** The dosage form in typed text, plurals and short forms included ("Tablets", "caps", "syp"). */
 function typedFormOf(text) {
   return extractDosageForm(String(text || '').replace(/\b(tablet|capsule|injection)s\b/gi, '$1').replace(/\bsy[pr]\b/gi, 'syrup').replace(/\btabs\b/gi, 'tablet').replace(/\bcaps\b/gi, 'capsule'));
@@ -429,7 +442,7 @@ export async function identifyMedicine(ctx, { brand = '', composition = '', form
     if (ja) return jaNameResult(ja);
   }
 
-  if (compKey) {
+  if (compKey && (await clearComposition(ctx, compKey))) {
     // Brand unknown to the database, but the strip's composition is enough to compare.
     const salts = parseSaltComposition(composition);
     // A typed generic name ("amoxicillin clavulanic acid 500 125") is not a brand: name it by its composition.

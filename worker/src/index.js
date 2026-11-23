@@ -15,7 +15,7 @@ import { recordMissing, listMissing, previewAdded, addMedicine, decideMedicine, 
 import { registerVolunteer, listVolunteers, decideVolunteer, updateVolunteer, volunteerHistory, activeVolunteer, volunteerLinkStatus } from './volunteers.js';
 
 // Not exported: a Worker's main module may only export handlers.
-const APP_VERSION = '2.0.9';
+const APP_VERSION = '2.0.10';
 
 const MAX_IMAGE_CHARS = 2_500_000; // ~1.8 MB JPEG as a data URL; the app resizes to ~1 MP first
 
@@ -168,7 +168,7 @@ async function handleFeedback(request, env) {
   return json({ ok: true, updated: r.meta?.changes ?? 0 });
 }
 
-// v2.0.9 P5: a medicine is listed for an area only after this many checks there; the card shows at most
+// v2.0.9 P5: a medicine is listed for an area only when checked there from this many different phones; the card shows at most
 // DEMAND_PER_AREA medicines for DEMAND_AREAS areas.
 const DEMAND_MIN = 3, DEMAND_PER_AREA = 5, DEMAND_AREAS = 12;
 
@@ -232,12 +232,14 @@ async function handleImpact(env, url) {
   ]);
   // v2.0.9 P5 demand by area (for Kendras and PMBI stocking): the Jan Aushadhi medicines checked
   // most in each PIN area (first 3 digits, already in the log). Counts only; a medicine is listed
-  // for an area only once it was checked there DEMAND_MIN times, so a single person never shows.
-  const demandRows = await q(`SELECT l.pin3 AS pin3, l.ckey AS ckey, COUNT(*) AS n,
+  // for an area only once it was checked there from DEMAND_MIN different phones (checks with no phone id do not count towards that).
+  // DEMAND_BY_AREA = "off" (wrangler.toml): not computed, not sent, card hidden.
+  const demandOn = env.DEMAND_BY_AREA !== 'off';
+  const demandRows = !demandOn ? [] : await q(`SELECT l.pin3 AS pin3, l.ckey AS ckey, COUNT(*) AS n,
       (SELECT j.drug_code FROM ja_products j WHERE j.ckey = l.ckey ORDER BY j.mrp LIMIT 1) AS drug_code,
       (SELECT j.generic_name FROM ja_products j WHERE j.ckey = l.ckey ORDER BY j.mrp LIMIT 1) AS ja_name
     FROM lookups l WHERE ${real} AND l.status = 'ok' AND ${right} AND l.ja_unit IS NOT NULL AND l.pin3 IS NOT NULL AND l.ckey IS NOT NULL
-    GROUP BY l.pin3, l.ckey HAVING COUNT(*) >= ${DEMAND_MIN} ORDER BY l.pin3, n DESC`);
+    GROUP BY l.pin3, l.ckey HAVING COUNT(DISTINCT l.device) >= ${DEMAND_MIN} ORDER BY l.pin3, n DESC`);
   const demand = new Map();
   for (const r of demandRows) {
     if (!r.drug_code) continue;
@@ -264,7 +266,7 @@ async function handleImpact(env, url) {
     top_medicines: topMeds,
     search: { by_way: byInput, by_via: byVia, by_language: byLangFound, unreadable_by_reason: byReason },
     monthly_lists: monthlyLists,
-    demand_by_area: { min_checks: DEMAND_MIN, areas: demandByArea },
+    demand_by_area: demandOn ? { min_devices: DEMAND_MIN, areas: demandByArea } : null,
     excluded_test_lookups: testCount[0]?.n ?? 0,
   }, 200, { 'cache-control': 'public, max-age=30' });
 }

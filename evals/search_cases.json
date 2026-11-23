@@ -1,7 +1,7 @@
 {
  "name": "search-test-set",
  "description": "Roadmap S3.9: realistic typed searches with their correct result. expect = answer (must be answered with exactly this composition), choice (answered with it, or offered among the choices), none (must not be answered). The composition key of each case comes from the brand database by `brand` (exact name) or from the Jan Aushadhi list by `ja` (drug code), never written by hand. Built by evals/build_search_cases.mjs into evals/search_cases.json.",
- "built": "2026-11-22",
+ "built": "2026-11-23",
  "cases": [
   {
    "id": "exact-dolo650",
@@ -481,6 +481,2115 @@
    "id": "none-sentence",
    "text": "which tablet is good for fever",
    "expect": "none",
+   "expect_ckey": null
+  },
+  {
+   "id": "brand-amaryl1",
+   "text": "Amaryl 1",
+   "expect": "answer",
+   "brand": "Amaryl 1mg Tablet",
+   "expect_ckey": "glimepiride:1mg|tablet"
+  },
+  {
+   "id": "brand-volibo03",
+   "text": "Volibo 0.3",
+   "expect": "answer",
+   "brand": "Volibo 0.3 Tablet",
+   "expect_ckey": "voglibose:0.3mg|tablet"
+  },
+  {
+   "id": "brand-stamlo5",
+   "text": "Stamlo 5",
+   "expect": "answer",
+   "brand": "Stamlo 5 Tablet",
+   "expect_ckey": "amlodipine:5mg|tablet"
+  },
+  {
+   "id": "brand-cilacar10",
+   "text": "Cilacar 10",
+   "expect": "answer",
+   "brand": "Cilacar 10 Tablet",
+   "expect_ckey": "cilnidipine:10mg|tablet"
+  },
+  {
+   "id": "brand-losar50",
+   "text": "Losar 50",
+   "expect": "answer",
+   "brand": "Losar 50 Tablet",
+   "expect_ckey": "losartan:50mg|tablet"
+  },
+  {
+   "id": "brand-repace50",
+   "text": "Repace 50",
+   "expect": "answer",
+   "brand": "Repace 50 Tablet",
+   "expect_ckey": "losartan:50mg|tablet"
+  },
+  {
+   "id": "brand-olmezest20",
+   "text": "Olmezest 20",
+   "expect": "answer",
+   "brand": "Olmezest 20 Tablet",
+   "expect_ckey": "olmesartan medoxomil:20mg|tablet"
+  },
+  {
+   "id": "brand-concor5",
+   "text": "Concor 5",
+   "expect": "answer",
+   "brand": "Concor 5 Tablet",
+   "expect_ckey": "bisoprolol:5mg|tablet"
+  },
+  {
+   "id": "brand-metolar25",
+   "text": "Metolar 25",
+   "expect": "answer",
+   "brand": "Metolar 25 Tablet",
+   "expect_ckey": "metoprolol tartrate:25mg|tablet"
+  },
+  {
+   "id": "brand-nebicard5",
+   "text": "Nebicard 5",
+   "expect": "answer",
+   "brand": "Nebicard 5 Tablet",
+   "expect_ckey": "nebivolol:5mg|tablet"
+  },
+  {
+   "id": "brand-storvas10",
+   "text": "Storvas 10",
+   "expect": "answer",
+   "brand": "Storvas 10 Tablet",
+   "expect_ckey": "atorvastatin:10mg|tablet"
+  },
+  {
+   "id": "brand-rosuvas10",
+   "text": "Rosuvas 10",
+   "expect": "choice",
+   "brand": "Rosuvas 10 Tablet",
+   "note": "tablet and sprinkle capsule: ask",
+   "expect_ckey": "rosuvastatin:10mg|tablet"
+  },
+  {
+   "id": "brand-pantop40",
+   "text": "Pantop 40",
+   "expect": "answer",
+   "brand": "Pantop 40 Tablet",
+   "expect_ckey": "pantoprazole:40mg|tablet"
+  },
+  {
+   "id": "brand-razo20",
+   "text": "Razo 20",
+   "expect": "answer",
+   "brand": "Razo 20 Tablet",
+   "expect_ckey": "rabeprazole:20mg|tablet"
+  },
+  {
+   "id": "brand-omez20",
+   "text": "Omez 20",
+   "expect": "answer",
+   "brand": "Omez 20mg Capsule",
+   "expect_ckey": "omeprazole:20mg|capsule"
+  },
+  {
+   "id": "brand-nexpro40",
+   "text": "Nexpro 40",
+   "expect": "answer",
+   "brand": "Nexpro 40 Tablet",
+   "expect_ckey": "esomeprazole:40mg|tablet"
+  },
+  {
+   "id": "brand-rantac150",
+   "text": "Rantac 150",
+   "expect": "answer",
+   "brand": "Rantac 150 Tablet",
+   "expect_ckey": "ranitidine:150mg|tablet"
+  },
+  {
+   "id": "brand-aciloc150",
+   "text": "Aciloc 150",
+   "expect": "answer",
+   "brand": "Aciloc 150 Tablet",
+   "expect_ckey": "ranitidine:150mg|tablet"
+  },
+  {
+   "id": "brand-ondem4",
+   "text": "Ondem 4",
+   "expect": "answer",
+   "brand": "Ondem 4 Tablet",
+   "expect_ckey": "ondansetron:4mg|tablet"
+  },
+  {
+   "id": "brand-emeset4",
+   "text": "Emeset 4",
+   "expect": "answer",
+   "brand": "Emeset 4 Tablet",
+   "expect_ckey": "ondansetron:4mg|tablet"
+  },
+  {
+   "id": "brand-domstal10",
+   "text": "Domstal 10",
+   "expect": "answer",
+   "brand": "Domstal 10mg Tablet",
+   "expect_ckey": "domperidone:10mg|tablet"
+  },
+  {
+   "id": "brand-sompraz40",
+   "text": "Sompraz 40",
+   "expect": "choice",
+   "brand": "Sompraz 40 Tablet",
+   "note": "tablet and injection: ask",
+   "expect_ckey": "esomeprazole:40mg|tablet"
+  },
+  {
+   "id": "brand-allegra120",
+   "text": "Allegra 120",
+   "expect": "answer",
+   "brand": "Allegra 120mg Tablet",
+   "expect_ckey": "fexofenadine:120mg|tablet"
+  },
+  {
+   "id": "brand-allegra180",
+   "text": "Allegra 180",
+   "expect": "answer",
+   "brand": "Allegra 180mg Tablet",
+   "expect_ckey": "fexofenadine:180mg|tablet"
+  },
+  {
+   "id": "brand-montek-lc",
+   "text": "Montek LC",
+   "expect": "choice",
+   "brand": "Montek LC Tablet",
+   "expect_ckey": "levocetirizine:5mg+montelukast:10mg|tablet"
+  },
+  {
+   "id": "brand-azee500",
+   "text": "Azee 500",
+   "expect": "answer",
+   "brand": "Azee 500 Tablet",
+   "expect_ckey": "azithromycin:500mg|tablet"
+  },
+  {
+   "id": "brand-azithral500",
+   "text": "Azithral 500",
+   "expect": "choice",
+   "brand": "Azithral 500 Tablet",
+   "note": "tablet and injection: ask",
+   "expect_ckey": "azithromycin:500mg|tablet"
+  },
+  {
+   "id": "brand-zifi200",
+   "text": "Zifi 200",
+   "expect": "answer",
+   "brand": "Zifi 200 Tablet",
+   "expect_ckey": "cefixime:200mg|tablet"
+  },
+  {
+   "id": "brand-cifran500",
+   "text": "Cifran 500",
+   "expect": "answer",
+   "brand": "Cifran 500 Tablet",
+   "expect_ckey": "ciprofloxacin:500mg|tablet"
+  },
+  {
+   "id": "brand-ciplox500",
+   "text": "Ciplox 500",
+   "expect": "answer",
+   "brand": "Ciplox 500 Tablet",
+   "expect_ckey": "ciprofloxacin:500mg|tablet"
+  },
+  {
+   "id": "brand-norflox400",
+   "text": "Norflox 400",
+   "expect": "answer",
+   "brand": "Norflox 400 Tablet",
+   "expect_ckey": "lactobacillus:120Million spores+norfloxacin:400mg|tablet"
+  },
+  {
+   "id": "brand-oflox200",
+   "text": "Oflox 200",
+   "expect": "choice",
+   "brand": "Oflox 200 Tablet",
+   "note": "tablet and infusion: ask",
+   "expect_ckey": "ofloxacin:200mg|tablet"
+  },
+  {
+   "id": "brand-levoflox500",
+   "text": "Levoflox 500",
+   "expect": "choice",
+   "brand": "Levoflox 500 Tablet",
+   "note": "tablet and infusion: ask",
+   "expect_ckey": "levofloxacin:500mg|tablet"
+  },
+  {
+   "id": "brand-mox500",
+   "text": "Mox 500",
+   "expect": "answer",
+   "brand": "Mox 500mg Capsule",
+   "expect_ckey": "amoxicillin:500mg|capsule"
+  },
+  {
+   "id": "brand-novamox500",
+   "text": "Novamox 500",
+   "expect": "choice",
+   "brand": "Novamox 500 Capsule",
+   "note": "capsule and injection: ask",
+   "expect_ckey": "amoxicillin:500mg|capsule"
+  },
+  {
+   "id": "brand-clavam625",
+   "text": "Clavam 625",
+   "expect": "answer",
+   "brand": "Clavam 625 Tablet",
+   "expect_ckey": "amoxicillin:500mg+clavulanic acid:125mg|tablet"
+  },
+  {
+   "id": "brand-metrogyl400",
+   "text": "Metrogyl 400",
+   "expect": "answer",
+   "brand": "Metrogyl 400 Tablet",
+   "expect_ckey": "metronidazole:400mg|tablet"
+  },
+  {
+   "id": "brand-flagyl400",
+   "text": "Flagyl 400",
+   "expect": "answer",
+   "brand": "Flagyl 400 Tablet",
+   "expect_ckey": "metronidazole:400mg|tablet"
+  },
+  {
+   "id": "brand-forcan150",
+   "text": "Forcan 150",
+   "expect": "answer",
+   "brand": "Forcan 150 Tablet",
+   "expect_ckey": "fluconazole:150mg|tablet"
+  },
+  {
+   "id": "brand-zocon150",
+   "text": "Zocon 150",
+   "expect": "answer",
+   "brand": "Zocon 150 Tablet",
+   "expect_ckey": "fluconazole:150mg|tablet"
+  },
+  {
+   "id": "brand-brufen400",
+   "text": "Brufen 400",
+   "expect": "answer",
+   "brand": "Brufen 400 Tablet",
+   "expect_ckey": "ibuprofen:400mg|tablet"
+  },
+  {
+   "id": "brand-zerodol-pt",
+   "text": "Zerodol PT",
+   "expect": "answer",
+   "brand": "Zerodol PT Tablet",
+   "expect_ckey": "aceclofenac:100mg+paracetamol:325mg|tablet"
+  },
+  {
+   "id": "brand-calpol650",
+   "text": "Calpol 650",
+   "expect": "answer",
+   "brand": "Calpol 650mg Tablet",
+   "expect_ckey": "paracetamol:650mg|tablet"
+  },
+  {
+   "id": "brand-pacimol650",
+   "text": "Pacimol 650",
+   "expect": "answer",
+   "brand": "Pacimol 650 Tablet",
+   "expect_ckey": "paracetamol:650mg|tablet"
+  },
+  {
+   "id": "brand-folvite5",
+   "text": "Folvite 5",
+   "expect": "answer",
+   "brand": "Folvite 5mg Tablet",
+   "expect_ckey": "folic acid:5mg|tablet"
+  },
+  {
+   "id": "brand-pregaba75",
+   "text": "Pregaba 75",
+   "expect": "answer",
+   "brand": "Pregaba 75 Capsule",
+   "expect_ckey": "pregabalin:75mg|capsule"
+  },
+  {
+   "id": "brand-gabapin300",
+   "text": "Gabapin 300",
+   "expect": "answer",
+   "brand": "Gabapin 300 Capsule",
+   "expect_ckey": "gabapentin:300mg|capsule"
+  },
+  {
+   "id": "brand-lyrica75",
+   "text": "Lyrica 75",
+   "expect": "answer",
+   "brand": "Lyrica 75mg Capsule",
+   "expect_ckey": "pregabalin:75mg|capsule"
+  },
+  {
+   "id": "brand-tryptomer10",
+   "text": "Tryptomer 10",
+   "expect": "answer",
+   "brand": "Tryptomer 10mg Tablet",
+   "expect_ckey": "amitriptyline:10mg|tablet"
+  },
+  {
+   "id": "brand-nexito10",
+   "text": "Nexito 10",
+   "expect": "answer",
+   "brand": "Nexito 10 Tablet",
+   "expect_ckey": "escitalopram oxalate:10mg|tablet"
+  },
+  {
+   "id": "brand-alprax025",
+   "text": "Alprax 0.25",
+   "expect": "answer",
+   "brand": "Alprax 0.25 Tablet",
+   "expect_ckey": "alprazolam:0.25mg|tablet"
+  },
+  {
+   "id": "brand-restyl025",
+   "text": "Restyl 0.25",
+   "expect": "answer",
+   "brand": "Restyl 0.25mg Tablet",
+   "expect_ckey": "alprazolam:0.25mg|tablet"
+  },
+  {
+   "id": "brand-etizola05",
+   "text": "Etizola 0.5",
+   "expect": "answer",
+   "brand": "Etizola 0.5 Tablet",
+   "expect_ckey": "etizolam:0.5mg|tablet"
+  },
+  {
+   "id": "brand-zolfresh10",
+   "text": "Zolfresh 10",
+   "expect": "answer",
+   "brand": "Zolfresh 10mg Tablet",
+   "expect_ckey": "zolpidem:10mg|tablet"
+  },
+  {
+   "id": "brand-oleanz5",
+   "text": "Oleanz 5",
+   "expect": "answer",
+   "brand": "Oleanz 5 Tablet",
+   "expect_ckey": "olanzapine:5mg|tablet"
+  },
+  {
+   "id": "brand-qutipin25",
+   "text": "Qutipin 25",
+   "expect": "answer",
+   "brand": "Qutipin 25 Tablet",
+   "expect_ckey": "quetiapine:25mg|tablet"
+  },
+  {
+   "id": "brand-ecosprin150",
+   "text": "Ecosprin 150",
+   "expect": "answer",
+   "brand": "Ecosprin 150 Tablet",
+   "expect_ckey": "aspirin:150mg|tablet"
+  },
+  {
+   "id": "brand-janumet50-500",
+   "text": "Janumet 50/500",
+   "expect": "answer",
+   "brand": "Janumet 50mg/500mg Tablet",
+   "expect_ckey": "metformin:500mg+sitagliptin:50mg|tablet"
+  },
+  {
+   "id": "brand-galvusmet50-500",
+   "text": "Galvus Met 50/500",
+   "expect": "answer",
+   "brand": "Galvus Met 50mg/500mg Tablet",
+   "expect_ckey": "metformin:500mg+vildagliptin:50mg|tablet"
+  },
+  {
+   "id": "brand-istamet50-1000",
+   "text": "Istamet 50/1000",
+   "expect": "answer",
+   "brand": "Istamet 50mg/1000mg Tablet",
+   "expect_ckey": "metformin:1000mg+sitagliptin:50mg|tablet"
+  },
+  {
+   "id": "brand-ecosprin-av75-20",
+   "text": "Ecosprin AV 75/20",
+   "expect": "answer",
+   "brand": "Ecosprin AV 75/20 Capsule",
+   "expect_ckey": "aspirin:75mg+atorvastatin:20mg|capsule"
+  },
+  {
+   "id": "brand-ecosprin-av75",
+   "text": "Ecosprin AV 75",
+   "expect": "choice",
+   "brand": "Ecosprin AV 75/20 Capsule",
+   "note": "two atorvastatin strengths: ask",
+   "expect_ckey": "aspirin:75mg+atorvastatin:20mg|capsule"
+  },
+  {
+   "id": "way-stamlo5-glued",
+   "text": "stamlo5",
+   "expect": "answer",
+   "brand": "Stamlo 5 Tablet",
+   "expect_ckey": "amlodipine:5mg|tablet"
+  },
+  {
+   "id": "way-ciplox500-glued",
+   "text": "Ciplox500",
+   "expect": "answer",
+   "brand": "Ciplox 500 Tablet",
+   "expect_ckey": "ciprofloxacin:500mg|tablet"
+  },
+  {
+   "id": "way-nexito10-glued",
+   "text": "nexito10",
+   "expect": "answer",
+   "brand": "Nexito 10 Tablet",
+   "expect_ckey": "escitalopram oxalate:10mg|tablet"
+  },
+  {
+   "id": "way-allegra120-glued",
+   "text": "ALLEGRA120",
+   "expect": "answer",
+   "brand": "Allegra 120mg Tablet",
+   "expect_ckey": "fexofenadine:120mg|tablet"
+  },
+  {
+   "id": "way-pan40-glued",
+   "text": "PAN40",
+   "expect": "answer",
+   "brand": "PAN 40 Tablet",
+   "expect_ckey": "pantoprazole:40mg|tablet"
+  },
+  {
+   "id": "way-pan40-mg",
+   "text": "pan 40mg",
+   "expect": "answer",
+   "brand": "PAN 40 Tablet",
+   "expect_ckey": "pantoprazole:40mg|tablet"
+  },
+  {
+   "id": "way-telma40-mg-tablet",
+   "text": "Telma 40mg tablet",
+   "expect": "answer",
+   "brand": "Telma 40 Tablet",
+   "expect_ckey": "telmisartan:40mg|tablet"
+  },
+  {
+   "id": "way-telma40-upper",
+   "text": "TELMA 40",
+   "expect": "answer",
+   "brand": "Telma 40 Tablet",
+   "expect_ckey": "telmisartan:40mg|tablet"
+  },
+  {
+   "id": "way-azee500-mg",
+   "text": "Azee 500mg",
+   "expect": "answer",
+   "brand": "Azee 500 Tablet",
+   "expect_ckey": "azithromycin:500mg|tablet"
+  },
+  {
+   "id": "way-ondem4-mg",
+   "text": "Ondem 4mg",
+   "expect": "answer",
+   "brand": "Ondem 4 Tablet",
+   "expect_ckey": "ondansetron:4mg|tablet"
+  },
+  {
+   "id": "way-clavam625-tab",
+   "text": "Clavam 625 tab",
+   "expect": "answer",
+   "brand": "Clavam 625 Tablet",
+   "expect_ckey": "amoxicillin:500mg+clavulanic acid:125mg|tablet"
+  },
+  {
+   "id": "way-calpol650-tablet",
+   "text": "calpol 650 tablet",
+   "expect": "answer",
+   "brand": "Calpol 650mg Tablet",
+   "expect_ckey": "paracetamol:650mg|tablet"
+  },
+  {
+   "id": "way-mox500-cap",
+   "text": "Mox 500 cap",
+   "expect": "answer",
+   "brand": "Mox 500mg Capsule",
+   "expect_ckey": "amoxicillin:500mg|capsule"
+  },
+  {
+   "id": "way-omez20-capsule",
+   "text": "Omez 20 capsule",
+   "expect": "answer",
+   "brand": "Omez 20mg Capsule",
+   "expect_ckey": "omeprazole:20mg|capsule"
+  },
+  {
+   "id": "way-azithral500-tablet",
+   "text": "Azithral 500 tablet",
+   "expect": "answer",
+   "brand": "Azithral 500 Tablet",
+   "expect_ckey": "azithromycin:500mg|tablet"
+  },
+  {
+   "id": "way-oflox200-tab",
+   "text": "Oflox 200 tab",
+   "expect": "answer",
+   "brand": "Oflox 200 Tablet",
+   "expect_ckey": "ofloxacin:200mg|tablet"
+  },
+  {
+   "id": "typo-amaril1",
+   "text": "Amaril 1",
+   "expect": "choice",
+   "brand": "Amaryl 1mg Tablet",
+   "expect_ckey": "glimepiride:1mg|tablet"
+  },
+  {
+   "id": "typo-rosuvaz10",
+   "text": "Rosuvaz 10",
+   "expect": "choice",
+   "brand": "Rosuvas 10 Tablet",
+   "expect_ckey": "rosuvastatin:10mg|tablet"
+  },
+  {
+   "id": "typo-pantp40",
+   "text": "Pantp 40",
+   "expect": "choice",
+   "brand": "Pantop 40 Tablet",
+   "expect_ckey": "pantoprazole:40mg|tablet"
+  },
+  {
+   "id": "typo-azitral500",
+   "text": "Azitral 500",
+   "expect": "choice",
+   "brand": "Azithral 500 Tablet",
+   "expect_ckey": "azithromycin:500mg|tablet"
+  },
+  {
+   "id": "typo-metrogil400",
+   "text": "Metrogil 400",
+   "expect": "choice",
+   "brand": "Metrogyl 400 Tablet",
+   "expect_ckey": "metronidazole:400mg|tablet"
+  },
+  {
+   "id": "typo-telmaa40",
+   "text": "Telmaa 40",
+   "expect": "choice",
+   "brand": "Telma 40 Tablet",
+   "expect_ckey": "telmisartan:40mg|tablet"
+  },
+  {
+   "id": "typo-pregabba75",
+   "text": "Pregabba 75",
+   "expect": "choice",
+   "brand": "Pregaba 75 Capsule",
+   "expect_ckey": "pregabalin:75mg|capsule"
+  },
+  {
+   "id": "typo-lyrika75",
+   "text": "Lyrika 75",
+   "expect": "choice",
+   "brand": "Lyrica 75mg Capsule",
+   "expect_ckey": "pregabalin:75mg|capsule"
+  },
+  {
+   "id": "typo-ecospirin75",
+   "text": "Ecospirin 75",
+   "expect": "choice",
+   "brand": "Ecosprin 75 Tablet",
+   "expect_ckey": "aspirin:75mg|tablet"
+  },
+  {
+   "id": "typo-augmentine625",
+   "text": "Augmentine 625",
+   "expect": "choice",
+   "brand": "Augmentin 625 Duo Tablet",
+   "expect_ckey": "amoxicillin:500mg+clavulanic acid:125mg|tablet"
+  },
+  {
+   "id": "typo-allegr120",
+   "text": "Alegra 120",
+   "expect": "choice",
+   "brand": "Allegra 120mg Tablet",
+   "expect_ckey": "fexofenadine:120mg|tablet"
+  },
+  {
+   "id": "typo-nexitto10",
+   "text": "Nexitto 10",
+   "expect": "choice",
+   "brand": "Nexito 10 Tablet",
+   "expect_ckey": "escitalopram oxalate:10mg|tablet"
+  },
+  {
+   "id": "typo-cilacr10",
+   "text": "Cilacr 10",
+   "expect": "choice",
+   "brand": "Cilacar 10 Tablet",
+   "expect_ckey": "cilnidipine:10mg|tablet"
+  },
+  {
+   "id": "typo-zolfrsh10",
+   "text": "Zolfrsh 10",
+   "expect": "choice",
+   "brand": "Zolfresh 10mg Tablet",
+   "expect_ckey": "zolpidem:10mg|tablet"
+  },
+  {
+   "id": "typo-glycomett500sr",
+   "text": "Glycomett 500 SR",
+   "expect": "choice",
+   "brand": "Glycomet 500 SR Tablet",
+   "expect_ckey": "metformin:500mg|tablet|SR"
+  },
+  {
+   "id": "nostrength-losar",
+   "text": "Losar",
+   "expect": "choice",
+   "brand": "Losar 50 Tablet",
+   "expect_ckey": "losartan:50mg|tablet"
+  },
+  {
+   "id": "nostrength-pantop",
+   "text": "Pantop",
+   "expect": "choice",
+   "brand": "Pantop 40 Tablet",
+   "expect_ckey": "pantoprazole:40mg|tablet"
+  },
+  {
+   "id": "nostrength-azee",
+   "text": "Azee",
+   "expect": "choice",
+   "brand": "Azee 500 Tablet",
+   "expect_ckey": "azithromycin:500mg|tablet"
+  },
+  {
+   "id": "nostrength-allegra",
+   "text": "Allegra",
+   "expect": "choice",
+   "brand": "Allegra 120mg Tablet",
+   "expect_ckey": "fexofenadine:120mg|tablet"
+  },
+  {
+   "id": "nostrength-ondem",
+   "text": "Ondem",
+   "expect": "choice",
+   "brand": "Ondem 4 Tablet",
+   "expect_ckey": "ondansetron:4mg|tablet"
+  },
+  {
+   "id": "nostrength-ecosprin",
+   "text": "Ecosprin",
+   "expect": "choice",
+   "brand": "Ecosprin 75 Tablet",
+   "expect_ckey": "aspirin:75mg|tablet"
+  },
+  {
+   "id": "nostrength-amaryl",
+   "text": "Amaryl",
+   "expect": "choice",
+   "brand": "Amaryl 1mg Tablet",
+   "expect_ckey": "glimepiride:1mg|tablet"
+  },
+  {
+   "id": "nostrength-concor",
+   "text": "Concor",
+   "expect": "choice",
+   "brand": "Concor 5 Tablet",
+   "expect_ckey": "bisoprolol:5mg|tablet"
+  },
+  {
+   "id": "nostrength-galvusmet",
+   "text": "Galvus Met",
+   "expect": "choice",
+   "brand": "Galvus Met 50mg/500mg Tablet",
+   "expect_ckey": "metformin:500mg+vildagliptin:50mg|tablet"
+  },
+  {
+   "id": "nostrength-combiflam",
+   "text": "Combiflam",
+   "expect": "choice",
+   "brand": "Combiflam Tablet",
+   "note": "tablet and suspension: ask",
+   "expect_ckey": "ibuprofen:400mg+paracetamol:325mg|tablet"
+  },
+  {
+   "id": "nostrength-ultracet",
+   "text": "Ultracet",
+   "expect": "choice",
+   "brand": "Ultracet Tablet",
+   "expect_ckey": "paracetamol/acetaminophen:325mg+tramadol:37.5mg|tablet"
+  },
+  {
+   "id": "nostrength-methycobal",
+   "text": "Methycobal",
+   "expect": "choice",
+   "brand": "Methycobal Tablet",
+   "expect_ckey": "methylcobalamin:0.5mg|tablet"
+  },
+  {
+   "id": "liquid-ascoril-ls",
+   "text": "Ascoril LS syrup",
+   "expect": "choice",
+   "brand": "Ascoril LS Syrup",
+   "expect_ckey": "ambroxol:30mg/5ml+levosalbutamol:1mg/5ml|liquid"
+  },
+  {
+   "id": "liquid-benadryl",
+   "text": "Benadryl syrup",
+   "expect": "choice",
+   "brand": "Benadryl Syrup",
+   "expect_ckey": "ammonium chloride:138mg/5ml+diphenhydramine:14.08mg/5ml|liquid"
+  },
+  {
+   "id": "liquid-alex",
+   "text": "Alex syrup",
+   "expect": "choice",
+   "brand": "Alex Syrup",
+   "note": "Alex Junior Syrup is another composition: ask",
+   "expect_ckey": "chlorpheniramine maleate:2mg/5ml+phenylephrine:5mg/5ml|liquid"
+  },
+  {
+   "id": "liquid-calpol250-susp",
+   "text": "Calpol 250 suspension",
+   "expect": "choice",
+   "brand": "Calpol 250mg Paediatric Oral Suspension Strawberry",
+   "expect_ckey": "paracetamol:250mg/5ml|liquid"
+  },
+  {
+   "id": "liquid-zifi100-dry",
+   "text": "Zifi 100 dry syrup",
+   "expect": "answer",
+   "brand": "Zifi 100 Dry Syrup",
+   "expect_ckey": "cefixime:100mg/5ml|liquid"
+  },
+  {
+   "id": "liquid-combiflam-susp",
+   "text": "Combiflam suspension",
+   "expect": "answer",
+   "brand": "Combiflam Suspension",
+   "expect_ckey": "ibuprofen:100mg+paracetamol:162.5mg|liquid"
+  },
+  {
+   "id": "liquid-ibugesic-plus-susp",
+   "text": "Ibugesic Plus suspension",
+   "expect": "answer",
+   "brand": "Ibugesic Plus Oral Suspension Orange",
+   "expect_ckey": "ibuprofen:100mg+paracetamol:162.5mg|liquid"
+  },
+  {
+   "id": "liquid-augmentin-duo",
+   "text": "Augmentin Duo syrup",
+   "expect": "choice",
+   "brand": "Augmentin Duo Oral Suspension",
+   "expect_ckey": "amoxicillin:200mg+clavulanic acid:28.5mg|liquid"
+  },
+  {
+   "id": "liquid-zentel-susp",
+   "text": "Zentel suspension",
+   "expect": "choice",
+   "brand": "Zentel Oral Suspension",
+   "expect_ckey": "albendazole:400mg|liquid"
+  },
+  {
+   "id": "liquid-montair-lc-kid",
+   "text": "Montair LC Kid syrup",
+   "expect": "answer",
+   "brand": "Montair LC Kid Syrup",
+   "expect_ckey": "levocetirizine:2.5mg/5ml+montelukast:4mg/5ml|liquid"
+  },
+  {
+   "id": "liquid-montek-lc-kid",
+   "text": "Montek LC Kid syrup",
+   "expect": "answer",
+   "brand": "Montek LC Kid Syrup",
+   "expect_ckey": "levocetirizine:2.5mg/5ml+montelukast:4mg/5ml|liquid"
+  },
+  {
+   "id": "liquid-grilinctus-ls",
+   "text": "Grilinctus LS syrup",
+   "expect": "choice",
+   "brand": "Grilinctus-LS Syrup",
+   "expect_ckey": "ambroxol:30mg/5ml+levosalbutamol:1mg/5ml|liquid"
+  },
+  {
+   "id": "liquid-cyclopam-susp",
+   "text": "Cyclopam suspension",
+   "expect": "answer",
+   "brand": "Cyclopam Suspension",
+   "expect_ckey": "dicyclomine:10mg+simethicone:40mg|liquid"
+  },
+  {
+   "id": "liquid-zifi100-tablet",
+   "text": "Zifi 100 tablet",
+   "expect": "answer",
+   "brand": "Zifi 100 DT Tablet",
+   "note": "tablet typed: never the dry syrup",
+   "expect_ckey": "cefixime:100mg|tablet"
+  },
+  {
+   "id": "liquid-ja-ondansetron",
+   "text": "Ondansetron Oral Solution IP 2 mg per 5ml",
+   "expect": "answer",
+   "ja": "993",
+   "expect_ckey": "ondansetron:2mg/5ml|liquid"
+  },
+  {
+   "id": "liquid-ja-azithro",
+   "text": "Azithromycin Oral Suspension IP 100mg per 5ml",
+   "expect": "answer",
+   "ja": "47",
+   "expect_ckey": "azithromycin:100mg/5ml|liquid"
+  },
+  {
+   "id": "liquid-ja-albendazole",
+   "text": "Albendazole Oral Suspension IP 200 mg per 5ml",
+   "expect": "answer",
+   "ja": "177",
+   "expect_ckey": "albendazole:200mg/5ml|liquid"
+  },
+  {
+   "id": "liquid-ja-ranitidine",
+   "text": "Ranitidine Syrup IP 75 mg per 5ml",
+   "expect": "answer",
+   "ja": "1777",
+   "expect_ckey": "ranitidine:75mg/5ml|liquid"
+  },
+  {
+   "id": "liquid-ja-cefixime",
+   "text": "Cefixime Oral Suspension IP 50mg per 5ml",
+   "expect": "answer",
+   "ja": "53",
+   "expect_ckey": "cefixime:50mg/5ml|liquid"
+  },
+  {
+   "id": "liquid-ja-montelukast-levocet",
+   "text": "Montelukast 4mg and Levocetirizine 2.5mg Syrup",
+   "expect": "answer",
+   "ja": "1711",
+   "expect_ckey": "levocetirizine:2.5mg+montelukast:4mg|liquid"
+  },
+  {
+   "id": "liquid-short-ranitidine",
+   "text": "Ranitidine syrup",
+   "expect": "choice",
+   "ja": "1777",
+   "expect_ckey": "ranitidine:75mg/5ml|liquid"
+  },
+  {
+   "id": "release-glycomet1g-sr",
+   "text": "Glycomet 1g SR",
+   "expect": "answer",
+   "brand": "Glycomet 1gm Tablet SR",
+   "expect_ckey": "metformin:1000mg|tablet|SR"
+  },
+  {
+   "id": "release-glyciphage-sr500",
+   "text": "Glyciphage SR 500",
+   "expect": "answer",
+   "brand": "Glyciphage SR 500mg Tablet",
+   "expect_ckey": "metformin:500mg|tablet|SR"
+  },
+  {
+   "id": "release-gluconorm-sr500",
+   "text": "Gluconorm SR 500",
+   "expect": "answer",
+   "brand": "Gluconorm SR 500mg Tablet",
+   "expect_ckey": "metformin:500mg|tablet|SR"
+  },
+  {
+   "id": "release-diamicron-xr60",
+   "text": "Diamicron XR 60",
+   "expect": "answer",
+   "brand": "Diamicron XR 60 Tablet",
+   "expect_ckey": "gliclazide:60mg|tablet|XR"
+  },
+  {
+   "id": "release-metxl25",
+   "text": "Met XL 25",
+   "expect": "answer",
+   "brand": "Met XL 25 Tablet",
+   "expect_ckey": "metoprolol succinate:23.75mg|tablet|XL"
+  },
+  {
+   "id": "release-metxl50",
+   "text": "Met XL 50",
+   "expect": "answer",
+   "brand": "Met XL 50 Tablet",
+   "expect_ckey": "metoprolol succinate:47.5mg|tablet|XL"
+  },
+  {
+   "id": "release-prolomet-xl50",
+   "text": "Prolomet XL 50",
+   "expect": "answer",
+   "brand": "Prolomet XL 50 Tablet",
+   "expect_ckey": "metoprolol succinate:47.5mg|tablet|XL"
+  },
+  {
+   "id": "release-seloken-xl50",
+   "text": "Seloken XL 50",
+   "expect": "answer",
+   "brand": "Seloken XL 50mg Tablet",
+   "expect_ckey": "metoprolol succinate:47.5mg|tablet|XL"
+  },
+  {
+   "id": "release-nitrocontin26",
+   "text": "Nitrocontin 2.6",
+   "expect": "answer",
+   "brand": "Nitrocontin 2.6 Tablet CR",
+   "expect_ckey": "nitroglycerin:2.6mg|tablet|CR"
+  },
+  {
+   "id": "release-ganaton-od",
+   "text": "Ganaton OD",
+   "expect": "answer",
+   "brand": "Ganaton OD Capsule SR",
+   "expect_ckey": "itopride:150mg|capsule|SR"
+  },
+  {
+   "id": "release-alfoo10",
+   "text": "Alfoo 10",
+   "expect": "answer",
+   "brand": "Alfoo 10mg Tablet PR",
+   "expect_ckey": "alfuzosin:10mg|tablet|SR"
+  },
+  {
+   "id": "release-urimax04",
+   "text": "Urimax 0.4",
+   "expect": "answer",
+   "brand": "Urimax 0.4 Capsule MR",
+   "expect_ckey": "tamsulosin:0.4mg|capsule|MR"
+  },
+  {
+   "id": "release-veltam04",
+   "text": "Veltam 0.4",
+   "expect": "answer",
+   "brand": "Veltam 0.4 Tablet MR",
+   "expect_ckey": "tamsulosin:0.4mg|tablet|MR"
+  },
+  {
+   "id": "release-voveran-sr100",
+   "text": "Voveran SR 100",
+   "expect": "answer",
+   "brand": "Voveran SR 100 Tablet",
+   "expect_ckey": "diclofenac:100mg|tablet|SR"
+  },
+  {
+   "id": "release-ja-diclofenac-pr",
+   "text": "Diclofenac Sodium Prolonged Release Tablets IP 100 mg",
+   "expect": "answer",
+   "ja": "9",
+   "expect_ckey": "diclofenac:100mg|tablet|SR"
+  },
+  {
+   "id": "release-ja-gliclazide-xr",
+   "text": "Gliclazide Extended release Tablets 60 mg",
+   "expect": "answer",
+   "ja": "368",
+   "expect_ckey": "gliclazide:60mg|tablet|XR"
+  },
+  {
+   "id": "release-ja-tamsulosin-pr",
+   "text": "Tamsulosin Hydrochloride Prolonged Release Capsules IP 0.4mg",
+   "expect": "answer",
+   "ja": "1072",
+   "expect_ckey": "tamsulosin:0.4mg|capsule|SR"
+  },
+  {
+   "id": "release-ja-aceclofenac-sr",
+   "text": "Aceclofenac Sustained Release Tablets 200mg",
+   "expect": "answer",
+   "ja": "516",
+   "expect_ckey": "aceclofenac:200mg|tablet|SR"
+  },
+  {
+   "id": "release-ja-metoprolol-er",
+   "text": "Metoprolol Extended release Tablets IP 50mg",
+   "expect": "answer",
+   "ja": "291",
+   "expect_ckey": "metoprolol:50mg|tablet|XR"
+  },
+  {
+   "id": "release-salt-gliclazide60xr",
+   "text": "Gliclazide 60 XR",
+   "expect": "choice",
+   "ja": "368",
+   "expect_ckey": "gliclazide:60mg|tablet|XR"
+  },
+  {
+   "id": "release-salt-diclofenac100sr",
+   "text": "Diclofenac 100 SR",
+   "expect": "choice",
+   "ja": "9",
+   "expect_ckey": "diclofenac:100mg|tablet|SR"
+  },
+  {
+   "id": "release-salt-metoprolol50xr",
+   "text": "Metoprolol 50 XR",
+   "expect": "choice",
+   "ja": "291",
+   "expect_ckey": "metoprolol:50mg|tablet|XR"
+  },
+  {
+   "id": "release-salt-tamsulosin04",
+   "text": "Tamsulosin 0.4",
+   "expect": "choice",
+   "ja": "1072",
+   "expect_ckey": "tamsulosin:0.4mg|capsule|SR"
+  },
+  {
+   "id": "release-plain-gliclazide80",
+   "text": "Gliclazide 80",
+   "expect": "choice",
+   "ja": "136",
+   "note": "plain: never the 60 mg XR",
+   "expect_ckey": "gliclazide:80mg|tablet"
+  },
+  {
+   "id": "release-plain-diclofenac50",
+   "text": "Diclofenac 50",
+   "expect": "choice",
+   "ja": "11",
+   "note": "plain: never the 100 mg SR",
+   "expect_ckey": "diclofenac:50mg|tablet"
+  },
+  {
+   "id": "ja-name-atorva10",
+   "text": "Atorvastatin Tablets IP 10mg",
+   "expect": "answer",
+   "ja": "266",
+   "expect_ckey": "atorvastatin:10mg|tablet"
+  },
+  {
+   "id": "ja-name-losartan50",
+   "text": "Losartan Tablets IP 50mg",
+   "expect": "answer",
+   "ja": "289",
+   "expect_ckey": "losartan:50mg|tablet"
+  },
+  {
+   "id": "ja-name-glimepiride1",
+   "text": "Glimepiride Tablets IP 1mg",
+   "expect": "answer",
+   "ja": "137",
+   "expect_ckey": "glimepiride:1mg|tablet"
+  },
+  {
+   "id": "ja-name-rosuva10",
+   "text": "Rosuvastatin Tablets IP 10mg",
+   "expect": "answer",
+   "ja": "759",
+   "expect_ckey": "rosuvastatin:10mg|tablet"
+  },
+  {
+   "id": "ja-name-clopidogrel75",
+   "text": "Clopidogrel Tablets IP 75mg",
+   "expect": "answer",
+   "ja": "269",
+   "expect_ckey": "clopidogrel:75mg|tablet"
+  },
+  {
+   "id": "ja-name-clopi-asp",
+   "text": "Clopidogrel 75mg and Aspirin 75mg Tablets IP",
+   "expect": "answer",
+   "ja": "270",
+   "expect_ckey": "aspirin:75mg+clopidogrel:75mg|tablet"
+  },
+  {
+   "id": "ja-name-ondansetron4",
+   "text": "Ondansetron Tablets IP 4 mg",
+   "expect": "answer",
+   "ja": "209",
+   "expect_ckey": "ondansetron:4mg|tablet"
+  },
+  {
+   "id": "ja-name-rabeprazole20",
+   "text": "Rabeprazole Gastro Resistant Tablets IP 20 mg",
+   "expect": "answer",
+   "ja": "215",
+   "expect_ckey": "rabeprazole:20mg|tablet"
+  },
+  {
+   "id": "ja-name-ofloxacin200",
+   "text": "Ofloxacin Tablets IP 200mg",
+   "expect": "answer",
+   "ja": "101",
+   "expect_ckey": "ofloxacin:200mg|tablet"
+  },
+  {
+   "id": "ja-name-cefixime200",
+   "text": "Cefixime Tablets IP 200 mg",
+   "expect": "answer",
+   "ja": "55",
+   "expect_ckey": "cefixime:200mg|tablet"
+  },
+  {
+   "id": "ja-name-amoxclav625",
+   "text": "Amoxycillin 500mg and Potassium Clavulanate 125mg Tablets IP",
+   "expect": "answer",
+   "ja": "39",
+   "expect_ckey": "amoxicillin:500mg+clavulanic acid:125mg|tablet"
+  },
+  {
+   "id": "ja-name-ibuprofen400",
+   "text": "Ibuprofen Tablets IP 400 mg",
+   "expect": "answer",
+   "ja": "16",
+   "expect_ckey": "ibuprofen:400mg|tablet"
+  },
+  {
+   "id": "ja-name-ibu-para",
+   "text": "Ibuprofen 400mg and Paracetamol 325mg Tablets IP",
+   "expect": "answer",
+   "ja": "14",
+   "expect_ckey": "ibuprofen:400mg+paracetamol:325mg|tablet"
+  },
+  {
+   "id": "ja-name-aceclo-para",
+   "text": "Aceclofenac 100mg and Paracetamol 325mg Tablets",
+   "expect": "answer",
+   "ja": "1",
+   "expect_ckey": "aceclofenac:100mg+paracetamol:325mg|tablet"
+  },
+  {
+   "id": "ja-name-azithro500",
+   "text": "Azithromycin Tablets IP 500 mg",
+   "expect": "answer",
+   "ja": "72",
+   "expect_ckey": "azithromycin:500mg|tablet"
+  },
+  {
+   "id": "ja-name-monte-levocet",
+   "text": "Montelukast Sodium 10mg and Levocetirizine 5mg Tablets IP",
+   "expect": "answer",
+   "ja": "252",
+   "expect_ckey": "levocetirizine:5mg+montelukast:10mg|tablet"
+  },
+  {
+   "id": "ja-name-vildagliptin50",
+   "text": "Vildagliptin Tablets IP 50mg",
+   "expect": "answer",
+   "ja": "1461",
+   "expect_ckey": "vildagliptin:50mg|tablet"
+  },
+  {
+   "id": "ja-name-vilda-met",
+   "text": "Vildagliptin 50mg and Metformin Hydrochloride 500mg Tablets IP",
+   "expect": "answer",
+   "ja": "1462",
+   "expect_ckey": "metformin:500mg+vildagliptin:50mg|tablet"
+  },
+  {
+   "id": "ja-name-sitagliptin50",
+   "text": "Sitagliptin Phosphate Tablets IP 50mg",
+   "expect": "answer",
+   "ja": "1804",
+   "expect_ckey": "sitagliptin:50mg|tablet"
+  },
+  {
+   "id": "ja-name-bisoprolol5",
+   "text": "Bisoprolol Tablets 5 mg",
+   "expect": "answer",
+   "ja": "423",
+   "expect_ckey": "bisoprolol:5mg|tablet"
+  },
+  {
+   "id": "ja-name-cilnidipine10",
+   "text": "Cilnidipine Tablets IP 10 mg",
+   "expect": "answer",
+   "ja": "1565",
+   "expect_ckey": "cilnidipine:10mg|tablet"
+  },
+  {
+   "id": "ja-name-olmesartan20",
+   "text": "Olmesartan Medoxomil Tablets IP 20mg",
+   "expect": "answer",
+   "ja": "992",
+   "expect_ckey": "olmesartan medoxomil:20mg|tablet"
+  },
+  {
+   "id": "ja-name-fexofenadine120",
+   "text": "Fexofenadine Hydrochloride Tablets IP 120mg",
+   "expect": "answer",
+   "ja": "246",
+   "expect_ckey": "fexofenadine:120mg|tablet"
+  },
+  {
+   "id": "ja-name-esomeprazole40",
+   "text": "Esomeprazole Tablets IP 40 mg",
+   "expect": "answer",
+   "ja": "484",
+   "expect_ckey": "esomeprazole:40mg|tablet"
+  },
+  {
+   "id": "ja-name-escitalopram10",
+   "text": "Escitalopram Tablets IP 10 mg",
+   "expect": "answer",
+   "ja": "321",
+   "expect_ckey": "escitalopram:10mg|tablet"
+  },
+  {
+   "id": "ja-name-alprazolam025",
+   "text": "Alprazolam Tablets IP 0.25 mg",
+   "expect": "answer",
+   "ja": "313",
+   "expect_ckey": "alprazolam:0.25mg|tablet"
+  },
+  {
+   "id": "ja-name-folic5",
+   "text": "Folic Acid Tablets IP 5 mg",
+   "expect": "answer",
+   "ja": "224",
+   "expect_ckey": "folic acid:5mg|tablet"
+  },
+  {
+   "id": "ja-name-metronidazole400",
+   "text": "Metronidazole Tablets IP 400mg",
+   "expect": "answer",
+   "ja": "202",
+   "expect_ckey": "metronidazole:400mg|tablet"
+  },
+  {
+   "id": "ja-name-fluconazole150",
+   "text": "Fluconazole Tablets IP 150 mg",
+   "expect": "answer",
+   "ja": "1246",
+   "expect_ckey": "fluconazole:150mg|tablet"
+  },
+  {
+   "id": "ja-name-albendazole400",
+   "text": "Albendazole Tablets IP 400mg",
+   "expect": "answer",
+   "ja": "1236",
+   "expect_ckey": "albendazole:400mg|tablet"
+  },
+  {
+   "id": "ja-name-gabapentin300",
+   "text": "Gabapentin Capsules IP 300mg",
+   "expect": "answer",
+   "ja": "901",
+   "expect_ckey": "gabapentin:300mg|capsule"
+  },
+  {
+   "id": "ja-name-ranitidine150",
+   "text": "Ranitidine Tablets IP 150 mg",
+   "expect": "answer",
+   "ja": "217",
+   "expect_ckey": "ranitidine:150mg|tablet"
+  },
+  {
+   "id": "ja-name-famotidine20",
+   "text": "Famotidine Tablets IP 20 mg",
+   "expect": "answer",
+   "ja": "191",
+   "expect_ckey": "famotidine:20mg|tablet"
+  },
+  {
+   "id": "ja-name-pregabalin75",
+   "text": "Pregabalin Capsules IP 75 mg",
+   "expect": "answer",
+   "ja": "3",
+   "expect_ckey": "pregabalin:75mg|capsule"
+  },
+  {
+   "id": "ja-name-methylcobalamin500",
+   "text": "Methylcobalamin Tablet 500mcg",
+   "expect": "answer",
+   "ja": "1962",
+   "expect_ckey": "methylcobalamin:0.5mg|tablet"
+  },
+  {
+   "id": "ja-name-pramipexole",
+   "text": "Pramipexole Dihydrochloride Tablets 0.25mg",
+   "expect": "answer",
+   "ja": "2190",
+   "note": "no brand in the 2022 list",
+   "expect_ckey": "pramipexole dihydrochloride:0.25mg|tablet"
+  },
+  {
+   "id": "salt-atorva10",
+   "text": "Atorvastatin 10",
+   "expect": "choice",
+   "ja": "266",
+   "expect_ckey": "atorvastatin:10mg|tablet"
+  },
+  {
+   "id": "salt-atorva20-mg",
+   "text": "Atorvastatin 20 mg",
+   "expect": "choice",
+   "ja": "267",
+   "expect_ckey": "atorvastatin:20mg|tablet"
+  },
+  {
+   "id": "salt-losartan50",
+   "text": "Losartan 50",
+   "expect": "choice",
+   "ja": "289",
+   "expect_ckey": "losartan:50mg|tablet"
+  },
+  {
+   "id": "salt-losartan25-mg",
+   "text": "Losartan 25mg",
+   "expect": "choice",
+   "ja": "288",
+   "expect_ckey": "losartan:25mg|tablet"
+  },
+  {
+   "id": "salt-glimepiride2",
+   "text": "Glimepiride 2",
+   "expect": "choice",
+   "ja": "138",
+   "expect_ckey": "glimepiride:2mg|tablet"
+  },
+  {
+   "id": "salt-rosuva20",
+   "text": "Rosuvastatin 20",
+   "expect": "choice",
+   "ja": "418",
+   "expect_ckey": "rosuvastatin:20mg|tablet"
+  },
+  {
+   "id": "salt-clopidogrel75",
+   "text": "Clopidogrel 75",
+   "expect": "choice",
+   "ja": "269",
+   "expect_ckey": "clopidogrel:75mg|tablet"
+  },
+  {
+   "id": "salt-ondansetron4",
+   "text": "Ondansetron 4",
+   "expect": "choice",
+   "ja": "209",
+   "expect_ckey": "ondansetron:4mg|tablet"
+  },
+  {
+   "id": "salt-rabeprazole20",
+   "text": "Rabeprazole 20",
+   "expect": "choice",
+   "ja": "215",
+   "expect_ckey": "rabeprazole:20mg|tablet"
+  },
+  {
+   "id": "salt-ofloxacin200",
+   "text": "Ofloxacin 200",
+   "expect": "choice",
+   "ja": "101",
+   "expect_ckey": "ofloxacin:200mg|tablet"
+  },
+  {
+   "id": "salt-cefixime200",
+   "text": "Cefixime 200",
+   "expect": "choice",
+   "ja": "55",
+   "expect_ckey": "cefixime:200mg|tablet"
+  },
+  {
+   "id": "salt-ibuprofen400",
+   "text": "Ibuprofen 400",
+   "expect": "choice",
+   "ja": "16",
+   "expect_ckey": "ibuprofen:400mg|tablet"
+  },
+  {
+   "id": "salt-azithro500",
+   "text": "Azithromycin 500",
+   "expect": "choice",
+   "ja": "72",
+   "expect_ckey": "azithromycin:500mg|tablet"
+  },
+  {
+   "id": "salt-montelukast10",
+   "text": "Montelukast 10",
+   "expect": "choice",
+   "ja": "251",
+   "expect_ckey": "montelukast:10mg|tablet"
+  },
+  {
+   "id": "salt-vildagliptin50",
+   "text": "Vildagliptin 50",
+   "expect": "choice",
+   "ja": "1461",
+   "expect_ckey": "vildagliptin:50mg|tablet"
+  },
+  {
+   "id": "salt-sitagliptin100",
+   "text": "Sitagliptin 100",
+   "expect": "choice",
+   "ja": "1803",
+   "expect_ckey": "sitagliptin:100mg|tablet"
+  },
+  {
+   "id": "salt-bisoprolol5",
+   "text": "Bisoprolol 5",
+   "expect": "choice",
+   "ja": "423",
+   "expect_ckey": "bisoprolol:5mg|tablet"
+  },
+  {
+   "id": "salt-cilnidipine10",
+   "text": "Cilnidipine 10",
+   "expect": "choice",
+   "ja": "1565",
+   "expect_ckey": "cilnidipine:10mg|tablet"
+  },
+  {
+   "id": "salt-olmesartan20",
+   "text": "Olmesartan 20",
+   "expect": "choice",
+   "ja": "992",
+   "expect_ckey": "olmesartan medoxomil:20mg|tablet"
+  },
+  {
+   "id": "salt-fexofenadine180",
+   "text": "Fexofenadine 180",
+   "expect": "choice",
+   "ja": "247",
+   "expect_ckey": "fexofenadine:180mg|tablet"
+  },
+  {
+   "id": "salt-esomeprazole40",
+   "text": "Esomeprazole 40",
+   "expect": "choice",
+   "ja": "484",
+   "expect_ckey": "esomeprazole:40mg|tablet"
+  },
+  {
+   "id": "salt-escitalopram10",
+   "text": "Escitalopram 10",
+   "expect": "choice",
+   "ja": "321",
+   "expect_ckey": "escitalopram:10mg|tablet"
+  },
+  {
+   "id": "salt-alprazolam05",
+   "text": "Alprazolam 0.5",
+   "expect": "choice",
+   "ja": "314",
+   "expect_ckey": "alprazolam:0.5mg|tablet"
+  },
+  {
+   "id": "salt-folic5",
+   "text": "Folic acid 5",
+   "expect": "choice",
+   "ja": "224",
+   "expect_ckey": "folic acid:5mg|tablet"
+  },
+  {
+   "id": "salt-metronidazole400",
+   "text": "Metronidazole 400",
+   "expect": "choice",
+   "ja": "202",
+   "expect_ckey": "metronidazole:400mg|tablet"
+  },
+  {
+   "id": "salt-fluconazole150",
+   "text": "Fluconazole 150",
+   "expect": "choice",
+   "ja": "1246",
+   "expect_ckey": "fluconazole:150mg|tablet"
+  },
+  {
+   "id": "salt-gabapentin300",
+   "text": "Gabapentin 300",
+   "expect": "choice",
+   "ja": "901",
+   "expect_ckey": "gabapentin:300mg|capsule"
+  },
+  {
+   "id": "salt-famotidine40",
+   "text": "Famotidine 40",
+   "expect": "choice",
+   "ja": "192",
+   "expect_ckey": "famotidine:40mg|tablet"
+  },
+  {
+   "id": "salt-pregabalin75",
+   "text": "Pregabalin 75",
+   "expect": "choice",
+   "ja": "3",
+   "note": "capsule and tablet: ask",
+   "expect_ckey": "pregabalin:75mg|capsule"
+  },
+  {
+   "id": "salt-itopride50",
+   "text": "Itopride 50",
+   "expect": "choice",
+   "ja": "491",
+   "expect_ckey": "itopride:50mg|tablet"
+  },
+  {
+   "id": "salt-methylcobalamin1500",
+   "text": "Methylcobalamin 1500 mcg",
+   "expect": "choice",
+   "ja": "1961",
+   "expect_ckey": "methylcobalamin:1.5mg|tablet"
+  },
+  {
+   "id": "salt-pramipexole025",
+   "text": "Pramipexole 0.25 mg",
+   "expect": "choice",
+   "ja": "2190",
+   "note": "no brand in the 2022 list",
+   "expect_ckey": "pramipexole dihydrochloride:0.25mg|tablet"
+  },
+  {
+   "id": "salt-metoprolol50",
+   "text": "Metoprolol 50 mg",
+   "expect": "choice",
+   "ja": "291",
+   "expect_ckey": "metoprolol:50mg|tablet|XR"
+  },
+  {
+   "id": "salt-amoxclav",
+   "text": "Amoxicillin 500 Clavulanic acid 125",
+   "expect": "choice",
+   "ja": "39",
+   "expect_ckey": "amoxicillin:500mg+clavulanic acid:125mg|tablet"
+  },
+  {
+   "id": "hi-crocin-advance",
+   "text": "क्रोसिन एडवांस",
+   "expect": "choice",
+   "brand": "Crocin Advance Tablet",
+   "lang": "hi",
+   "expect_ckey": "paracetamol:500mg|tablet"
+  },
+  {
+   "id": "hi-glycomet500sr",
+   "text": "ग्लाइकोमेट 500 एसआर",
+   "expect": "choice",
+   "brand": "Glycomet 500 SR Tablet",
+   "lang": "hi",
+   "expect_ckey": "metformin:500mg|tablet|SR"
+  },
+  {
+   "id": "hi-amlokind5",
+   "text": "एमलोकाइंड 5",
+   "expect": "choice",
+   "brand": "Amlokind 5 Tablet",
+   "lang": "hi",
+   "expect_ckey": "amlodipine:5mg|tablet"
+  },
+  {
+   "id": "hi-ecosprin75",
+   "text": "इकोस्प्रिन 75",
+   "expect": "choice",
+   "brand": "Ecosprin 75 Tablet",
+   "lang": "hi",
+   "expect_ckey": "aspirin:75mg|tablet"
+  },
+  {
+   "id": "hi-azee500",
+   "text": "एज़ी 500",
+   "expect": "choice",
+   "brand": "Azee 500 Tablet",
+   "lang": "hi",
+   "expect_ckey": "azithromycin:500mg|tablet"
+  },
+  {
+   "id": "hi-allegra120",
+   "text": "एलेग्रा 120",
+   "expect": "choice",
+   "brand": "Allegra 120mg Tablet",
+   "lang": "hi",
+   "expect_ckey": "fexofenadine:120mg|tablet"
+  },
+  {
+   "id": "hi-augmentin625",
+   "text": "ऑगमेंटिन 625",
+   "expect": "choice",
+   "brand": "Augmentin 625 Duo Tablet",
+   "lang": "hi",
+   "expect_ckey": "amoxicillin:500mg+clavulanic acid:125mg|tablet"
+  },
+  {
+   "id": "hi-thyronorm25",
+   "text": "थायरोनॉर्म 25",
+   "expect": "choice",
+   "brand": "Thyronorm 25mcg Tablet",
+   "lang": "hi",
+   "expect_ckey": "thyroxine:0.025mg|tablet"
+  },
+  {
+   "id": "hi-ondem4",
+   "text": "ओंडेम 4",
+   "expect": "choice",
+   "brand": "Ondem 4 Tablet",
+   "lang": "hi",
+   "expect_ckey": "ondansetron:4mg|tablet"
+  },
+  {
+   "id": "hi-atorvastatin10",
+   "text": "एटोरवास्टेटिन 10",
+   "expect": "choice",
+   "ja": "266",
+   "lang": "hi",
+   "expect_ckey": "atorvastatin:10mg|tablet"
+  },
+  {
+   "id": "hi-losartan50",
+   "text": "लोसार्टन 50",
+   "expect": "choice",
+   "ja": "289",
+   "lang": "hi",
+   "expect_ckey": "losartan:50mg|tablet"
+  },
+  {
+   "id": "hi-glimepiride1",
+   "text": "ग्लिमेपिराइड 1",
+   "expect": "choice",
+   "ja": "137",
+   "lang": "hi",
+   "expect_ckey": "glimepiride:1mg|tablet"
+  },
+  {
+   "id": "hi-telmisartan40",
+   "text": "टेल्मिसार्टन 40",
+   "expect": "choice",
+   "ja": "300",
+   "lang": "hi",
+   "expect_ckey": "telmisartan:40mg|tablet"
+  },
+  {
+   "id": "hi-cetirizine10",
+   "text": "सेटिरिज़िन 10",
+   "expect": "choice",
+   "ja": "240",
+   "lang": "hi",
+   "expect_ckey": "cetirizine:10mg|tablet"
+  },
+  {
+   "id": "kn-crocin-advance",
+   "text": "ಕ್ರೋಸಿನ್ ಅಡ್ವಾನ್ಸ್",
+   "expect": "choice",
+   "brand": "Crocin Advance Tablet",
+   "lang": "kn",
+   "expect_ckey": "paracetamol:500mg|tablet"
+  },
+  {
+   "id": "kn-telma40",
+   "text": "ಟೆಲ್ಮಾ 40",
+   "expect": "choice",
+   "brand": "Telma 40 Tablet",
+   "lang": "kn",
+   "expect_ckey": "telmisartan:40mg|tablet"
+  },
+  {
+   "id": "kn-pan40",
+   "text": "ಪ್ಯಾನ್ 40",
+   "expect": "choice",
+   "brand": "PAN 40 Tablet",
+   "lang": "kn",
+   "expect_ckey": "pantoprazole:40mg|tablet"
+  },
+  {
+   "id": "kn-atorva10",
+   "text": "ಅಟೊರ್ವಾ 10",
+   "expect": "choice",
+   "brand": "Atorva Tablet",
+   "lang": "kn",
+   "expect_ckey": "atorvastatin:10mg|tablet"
+  },
+  {
+   "id": "kn-glycomet500sr",
+   "text": "ಗ್ಲೈಕೋಮೆಟ್ 500 ಎಸ್ಆರ್",
+   "expect": "choice",
+   "brand": "Glycomet 500 SR Tablet",
+   "lang": "kn",
+   "expect_ckey": "metformin:500mg|tablet|SR"
+  },
+  {
+   "id": "kn-amlokind5",
+   "text": "ಆಮ್ಲೋಕೈಂಡ್ 5",
+   "expect": "choice",
+   "brand": "Amlokind 5 Tablet",
+   "lang": "kn",
+   "expect_ckey": "amlodipine:5mg|tablet"
+  },
+  {
+   "id": "kn-ecosprin75",
+   "text": "ಇಕೋಸ್ಪ್ರಿನ್ 75",
+   "expect": "choice",
+   "brand": "Ecosprin 75 Tablet",
+   "lang": "kn",
+   "expect_ckey": "aspirin:75mg|tablet"
+  },
+  {
+   "id": "kn-allegra120",
+   "text": "ಅಲೆಗ್ರಾ 120",
+   "expect": "choice",
+   "brand": "Allegra 120mg Tablet",
+   "lang": "kn",
+   "expect_ckey": "fexofenadine:120mg|tablet"
+  },
+  {
+   "id": "kn-para650",
+   "text": "ಪ್ಯಾರಸಿಟಮಾಲ್ 650",
+   "expect": "choice",
+   "ja": "511",
+   "lang": "kn",
+   "expect_ckey": "paracetamol:650mg|tablet"
+  },
+  {
+   "id": "kn-metformin500",
+   "text": "ಮೆಟ್‌ಫಾರ್ಮಿನ್ 500",
+   "expect": "choice",
+   "ja": "145",
+   "lang": "kn",
+   "expect_ckey": "metformin:500mg|tablet"
+  },
+  {
+   "id": "kn-telmisartan40",
+   "text": "ಟೆಲ್ಮಿಸಾರ್ಟನ್ 40",
+   "expect": "choice",
+   "ja": "300",
+   "lang": "kn",
+   "expect_ckey": "telmisartan:40mg|tablet"
+  },
+  {
+   "id": "kn-azithro500",
+   "text": "ಅಜಿಥ್ರೋಮೈಸಿನ್ 500",
+   "expect": "choice",
+   "ja": "72",
+   "lang": "kn",
+   "expect_ckey": "azithromycin:500mg|tablet"
+  },
+  {
+   "id": "kn-panto40",
+   "text": "ಪ್ಯಾಂಟೊಪ್ರಜೋಲ್ 40",
+   "expect": "choice",
+   "ja": "212",
+   "lang": "kn",
+   "expect_ckey": "pantoprazole:40mg|tablet"
+  },
+  {
+   "id": "nti-warf5",
+   "text": "Warf 5",
+   "expect": "answer",
+   "brand": "Warf 5 Tablet",
+   "expect_ckey": "warfarin:5mg|tablet"
+  },
+  {
+   "id": "nti-acitrom2",
+   "text": "Acitrom 2",
+   "expect": "answer",
+   "brand": "Acitrom 2 Tablet",
+   "expect_ckey": "acenocoumarol:2mg|tablet"
+  },
+  {
+   "id": "nti-levipil500",
+   "text": "Levipil 500",
+   "expect": "answer",
+   "brand": "Levipil 500 Tablet",
+   "expect_ckey": "levetiracetam:500mg|tablet"
+  },
+  {
+   "id": "nti-oxetol300",
+   "text": "Oxetol 300",
+   "expect": "answer",
+   "brand": "Oxetol 300 Tablet",
+   "expect_ckey": "oxcarbazepine:300mg|tablet"
+  },
+  {
+   "id": "nti-clonotril05",
+   "text": "Clonotril 0.5",
+   "expect": "answer",
+   "brand": "Clonotril 0.5 Tablet",
+   "expect_ckey": "clonazepam:0.5mg|tablet"
+  },
+  {
+   "id": "nti-lonazep05",
+   "text": "Lonazep 0.5",
+   "expect": "answer",
+   "brand": "Lonazep 0.5mg Tablet",
+   "expect_ckey": "clonazepam:0.5mg|tablet"
+  },
+  {
+   "id": "nti-frisium10",
+   "text": "Frisium 10",
+   "expect": "answer",
+   "brand": "Frisium 10mg Tablet",
+   "expect_ckey": "clobazam:10mg|tablet"
+  },
+  {
+   "id": "nti-topamac25",
+   "text": "Topamac 25",
+   "expect": "answer",
+   "brand": "Topamac 25mg Tablet",
+   "expect_ckey": "topiramate:25mg|tablet"
+  },
+  {
+   "id": "nti-pangraf1",
+   "text": "Pangraf 1",
+   "expect": "answer",
+   "brand": "Pangraf 1 Capsule",
+   "expect_ckey": "tacrolimus:1mg|capsule"
+  },
+  {
+   "id": "nti-lithosun300",
+   "text": "Lithosun 300",
+   "expect": "answer",
+   "brand": "Lithosun 300 Tablet",
+   "expect_ckey": "lithium carbonate:300mg|tablet"
+  },
+  {
+   "id": "nti-lithosun-sr",
+   "text": "Lithosun SR",
+   "expect": "answer",
+   "brand": "Lithosun SR Tablet",
+   "expect_ckey": "lithium carbonate:400mg|tablet|SR"
+  },
+  {
+   "id": "nti-eltroxin50",
+   "text": "Eltroxin 50",
+   "expect": "answer",
+   "brand": "Eltroxin 50mcg Tablet",
+   "expect_ckey": "thyroxine:0.05mg|tablet"
+  },
+  {
+   "id": "nti-thyronorm25",
+   "text": "Thyronorm 25",
+   "expect": "answer",
+   "brand": "Thyronorm 25mcg Tablet",
+   "expect_ckey": "thyroxine:0.025mg|tablet"
+  },
+  {
+   "id": "nti-thyronorm75",
+   "text": "Thyronorm 75",
+   "expect": "answer",
+   "brand": "Thyronorm 75mcg Tablet",
+   "expect_ckey": "thyroxine:0.075mg|tablet"
+  },
+  {
+   "id": "nti-thyronorm88",
+   "text": "Thyronorm 88",
+   "expect": "answer",
+   "brand": "Thyronorm 88mcg Tablet",
+   "expect_ckey": "thyroxine:0.088mg|tablet"
+  },
+  {
+   "id": "nti-thyrox50",
+   "text": "Thyrox 50",
+   "expect": "answer",
+   "brand": "Thyrox 50 Tablet",
+   "expect_ckey": "thyroxine:0.05mg|tablet"
+  },
+  {
+   "id": "nti-encorate-chrono500",
+   "text": "Encorate Chrono 500",
+   "expect": "answer",
+   "brand": "Encorate Chrono 500 Tablet CR",
+   "expect_ckey": "sodium valproate:333mg+valproic acid:145mg|tablet|CR"
+  },
+  {
+   "id": "nti-lametec50-od",
+   "text": "Lametec 50 OD",
+   "expect": "answer",
+   "brand": "Lametec 50 OD Tablet SR",
+   "expect_ckey": "lamotrigine:50mg|tablet|SR"
+  },
+  {
+   "id": "nti-lametec50",
+   "text": "Lametec 50",
+   "expect": "choice",
+   "brand": "Lametec 50 DT Tablet",
+   "note": "DT and OD SR: never guess a release for a never-switch medicine",
+   "expect_ckey": "lamotrigine:50mg|tablet"
+  },
+  {
+   "id": "nti-ja-thyroxine50",
+   "text": "Thyroxine Sodium Tablets IP 50mcg",
+   "expect": "answer",
+   "ja": "1221",
+   "expect_ckey": "thyroxine:0.05mg|tablet"
+  },
+  {
+   "id": "nti-ja-levetiracetam500",
+   "text": "Levetiracetam Tablets IP 500 mg",
+   "expect": "answer",
+   "ja": "508",
+   "expect_ckey": "levetiracetam:500mg|tablet"
+  },
+  {
+   "id": "nti-ja-warfarin5",
+   "text": "Warfarin Tablets IP 5 mg",
+   "expect": "answer",
+   "ja": "452",
+   "expect_ckey": "warfarin:5mg|tablet"
+  },
+  {
+   "id": "nti-thyronorm50-glued",
+   "text": "thyronorm50",
+   "expect": "answer",
+   "brand": "Thyronorm 50mcg Tablet",
+   "expect_ckey": "thyroxine:0.05mg|tablet"
+  },
+  {
+   "id": "none-telma60",
+   "text": "Telma 60",
+   "expect": "none",
+   "note": "no such strength",
+   "expect_ckey": null
+  },
+  {
+   "id": "none-pan60",
+   "text": "Pan 60",
+   "expect": "none",
+   "note": "no such strength",
+   "expect_ckey": null
+  },
+  {
+   "id": "none-azee750",
+   "text": "Azee 750",
+   "expect": "none",
+   "note": "no such strength",
+   "expect_ckey": null
+  },
+  {
+   "id": "none-allegra240",
+   "text": "Allegra 240",
+   "expect": "none",
+   "note": "no such strength",
+   "expect_ckey": null
+  },
+  {
+   "id": "none-stamlo7",
+   "text": "Stamlo 7",
+   "expect": "none",
+   "note": "no such strength",
+   "expect_ckey": null
+  },
+  {
+   "id": "none-thyronorm60",
+   "text": "Thyronorm 60",
+   "expect": "none",
+   "note": "never-switch medicine, no such strength",
+   "expect_ckey": null
+  },
+  {
+   "id": "none-warf7",
+   "text": "Warf 7",
+   "expect": "none",
+   "note": "never-switch medicine, no such strength",
+   "expect_ckey": null
+  },
+  {
+   "id": "none-levipil600",
+   "text": "Levipil 600",
+   "expect": "none",
+   "note": "never-switch medicine, no such strength",
+   "expect_ckey": null
+  },
+  {
+   "id": "nti-warf4",
+   "text": "Warf 4",
+   "expect": "answer",
+   "brand": "Warf 4mg Tablet",
+   "expect_ckey": "warfarin:4mg|tablet"
+  },
+  {
+   "id": "none-augmentin1500",
+   "text": "Augmentin 1500",
+   "expect": "none",
+   "note": "no such strength",
+   "expect_ckey": null
+  },
+  {
+   "id": "none-telma40-syrup",
+   "text": "Telma 40 syrup",
+   "expect": "none",
+   "note": "no such form",
+   "expect_ckey": null
+  },
+  {
+   "id": "none-pan40-syrup",
+   "text": "Pan 40 syrup",
+   "expect": "none",
+   "note": "no such form",
+   "expect_ckey": null
+  },
+  {
+   "id": "none-dolo650-injection",
+   "text": "Dolo 650 injection",
+   "expect": "none",
+   "note": "no such form",
+   "expect_ckey": null
+  },
+  {
+   "id": "none-allegra120-syrup",
+   "text": "Allegra 120 syrup",
+   "expect": "none",
+   "note": "no such form",
+   "expect_ckey": null
+  },
+  {
+   "id": "none-atorvastatin15",
+   "text": "Atorvastatin 15",
+   "expect": "none",
+   "note": "no such strength",
+   "expect_ckey": null
+  },
+  {
+   "id": "none-metformin300",
+   "text": "Metformin 300",
+   "expect": "none",
+   "note": "no such strength",
+   "expect_ckey": null
+  },
+  {
+   "id": "none-tablet",
+   "text": "tablet",
+   "expect": "none",
+   "expect_ckey": null
+  },
+  {
+   "id": "none-asdf",
+   "text": "asdf",
+   "expect": "none",
+   "expect_ckey": null
+  },
+  {
+   "id": "none-digits",
+   "text": "12345",
+   "expect": "none",
+   "expect_ckey": null
+  },
+  {
+   "id": "none-bp-medicine",
+   "text": "medicine for BP",
+   "expect": "none",
+   "expect_ckey": null
+  },
+  {
+   "id": "none-sugar-tablet",
+   "text": "sugar tablet",
+   "expect": "none",
+   "expect_ckey": null
+  },
+  {
+   "id": "none-headache",
+   "text": "headache",
+   "expect": "none",
+   "expect_ckey": null
+  },
+  {
+   "id": "none-how-many",
+   "text": "how many tablets can I take",
+   "expect": "none",
+   "note": "a dose question is never answered",
+   "expect_ckey": null
+  },
+  {
+   "id": "none-hi-sentence",
+   "text": "बुखार की दवा",
+   "expect": "none",
+   "lang": "hi",
+   "expect_ckey": null
+  },
+  {
+   "id": "none-kn-sentence",
+   "text": "ಜ್ವರಕ್ಕೆ ಮಾತ್ರೆ",
+   "expect": "none",
+   "lang": "kn",
    "expect_ckey": null
   }
  ]
