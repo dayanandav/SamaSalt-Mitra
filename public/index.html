@@ -218,7 +218,27 @@
     </div>
     <p class="field-note ph-hint" id="phHint" data-t="listHint"></p>
     <button class="primary ph-order" id="phOrder" type="button" hidden data-t="orderFromList">Order these from a Kendra</button>
+    <!-- v2.0.9 P3: a note asking the doctor to write the salt names (no prices, no dosage). -->
+    <button class="secondary ph-doctor" id="phDoctor" type="button" hidden data-t="doctorBtn">Show this to your doctor</button>
     <form method="dialog" class="crop-actions"><button class="secondary" data-t="close">Close</button><button class="link" id="phClear" type="button" value="clear" data-t="listClear">Clear list</button></form>
+  </dialog>
+
+  <!-- v2.0.9 P3 "Show this to your doctor": the medicines by salt, strength and form, in English for
+       the doctor. Never-switch medicines are left out. Nothing is sent or stored. -->
+  <dialog id="doctor" class="pharmacist doctor">
+    <p class="field-note no-print" id="docLead" data-t="doctorLead"></p>
+    <div class="doc-note" lang="en">
+      <p id="docHello"></p>
+      <p id="docAsk"></p>
+      <ol class="doc-list" id="docList"></ol>
+      <p class="doc-foot" id="docFoot"></p>
+    </div>
+    <p class="field-note no-print" id="docLeft" hidden></p>
+    <div class="crop-actions no-print">
+      <button class="secondary" id="docPrint" type="button" data-t="doctorPrint">Print</button>
+      <button class="secondary" id="docShare" type="button" data-t="doctorShare">Share</button>
+    </div>
+    <form method="dialog" class="crop-actions no-print"><button class="secondary" data-t="close">Close</button></form>
   </dialog>
 
   <!-- v1.2 Order for pickup: the medicine list in packs, sent by the patient to a registered Kendra

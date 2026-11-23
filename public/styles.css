@@ -515,3 +515,26 @@ html.big-text main, html.big-text .foot, html.big-text dialog { zoom: 1.18; }
 body.suggesting #chatFab { display: none; }
 #typeForm { scroll-margin-top: 12px; }
 .nf-choices { margin-top: 14px; }
+
+/* v2.0.9 P2 "Is the quality the same?" under the Jan Aushadhi card */
+details.ja-trust { margin-top: 10px; }
+details.ja-trust p { font-size: 14.5px; color: var(--muted); }
+
+/* v2.0.9 P3 "Show this to your doctor" */
+.ph-doctor { margin: 0 0 12px; }
+.ph-doctor[hidden], #docLeft[hidden] { display: none; }
+.doc-note { border: 1px solid var(--line, rgba(0,0,0,.12)); border-radius: 16px; padding: 18px 18px 14px; margin: 10px 0 12px; font-size: 16px; line-height: 1.5; }
+.doc-note p { margin: 0 0 10px; }
+.doc-list { margin: 0 0 12px; padding-left: 22px; font-weight: 600; }
+.doc-list li { margin: 4px 0; }
+.doc-foot { font-size: 13px; color: var(--muted); margin: 0 !important; }
+dialog.doctor .crop-actions { margin-top: 8px; }
+@media print {
+  body.print-doctor > *:not(#doctor) { display: none !important; }
+  body.print-doctor { background: #fff !important; }
+  body.print-doctor #doctor { position: static; display: block; box-shadow: none; border: 0; width: auto; max-height: none; overflow: visible; padding: 0; color: #000; background: #fff; animation: none; }
+  body.print-doctor #doctor::backdrop { display: none; }
+  body.print-doctor #doctor .no-print { display: none !important; }
+  body.print-doctor .doc-note { border: 0; font-size: 14pt; color: #000; }
+  body.print-doctor .doc-foot { color: #333; }
+}

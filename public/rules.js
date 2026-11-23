@@ -403,6 +403,21 @@ export function volunteerWelcome(v, origin) {
  * official prices: the same facts as on screen. A never-switch (NTI) medicine shares its warning
  * only (no generic, no price). Keys: shareJa, waCeiling, shareFooter.
  */
+// v2.0.9 P3 "Show this to your doctor": the medicines in the pharmacist list as salt + strength +
+// form (+ release), from our data, for the doctor to write by salt name. No prices, no dosage.
+// A never-switch medicine is left out (no request to change it), and so is one without salts.
+export function doctorNote(list) {
+  const items = [], left = [];
+  for (const x of Array.isArray(list) ? list : []) {
+    if (!x || typeof x.name !== 'string') continue;
+    const [, form = '', rel = ''] = String(x.ckey || '').split('|');
+    if (x.nti || x.unlisted || !x.composition || !form) { left.push(x.name); continue; }
+    const line = [x.composition, form, rel].filter(Boolean).join(' · ');
+    if (!items.includes(line)) items.push(line);
+  }
+  return { items, left };
+}
+
 export function shareText(r, tr, money, per, link) {
   const m = r?.medicine;
   if (!m || r.status !== 'ok') return '';

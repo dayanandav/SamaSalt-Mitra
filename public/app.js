@@ -1,7 +1,7 @@
 import { LANGS, STRINGS, t, rupees, unitKind } from '/strings.js';
 import { createChat, newChatId } from '/chat.js';
 import { suggestWhileTyping, suggestable } from '/suggest.js';
-import { pharmacistEntry, unlistedEntry, mergeMedList, asksToSwitch, shouldAddToList, listenAllowed, pickVoice, isPhoneBrowser, freshMedList, keptMedList, monthlySaving, kendraCode, showMobile, orderItems, orderQty, orderMessage, waLink, smsLink, ORDER_MAX_PACKS, photoSendSize, askTimeoutMs, savableAnswer, volunteerCode, shareText } from '/rules.js';
+import { pharmacistEntry, unlistedEntry, mergeMedList, asksToSwitch, shouldAddToList, listenAllowed, pickVoice, isPhoneBrowser, freshMedList, keptMedList, monthlySaving, kendraCode, showMobile, orderItems, orderQty, orderMessage, waLink, smsLink, ORDER_MAX_PACKS, photoSendSize, askTimeoutMs, savableAnswer, volunteerCode, shareText, doctorNote } from '/rules.js';
 
 const $ = (s) => document.querySelector(s);
 const store = {
@@ -777,6 +777,45 @@ function renderHomeList() {
   b.textContent = kept() ? t(lang, 'monthlyBtn', { n }) : n === 1 ? t(lang, 'pharmacistBtn') : t(lang, 'pharmacistBtnN', { n });
 }
 const nbspUnits = (s) => s.replace(/(\d) (mg|mcg|ml|IU|%)/g, '$1 $2');
+// v2.0.9 P2 "Is the quality the same?" under the Jan Aushadhi card: fixed text, opened on tap.
+// Never for a never-switch medicine (it must not read as a reason to change).
+function trustHtml() {
+  return `<details class="why ja-trust"><summary><span class="why-link">${esc(t(lang, 'jaTrustTitle'))}</span></summary><p>${esc(t(lang, 'jaTrust'))}</p></details>`;
+}
+
+// v2.0.9 P3 "Show this to your doctor": the note is in English for the doctor; the lead and the
+// buttons are in the patient's language. Nothing is sent or stored.
+function showDoctor() {
+  const { items, left } = doctorNote(medList());
+  if (!items.length) return;
+  $('#docHello').textContent = t('en', 'doctorHello');
+  $('#docAsk').textContent = t('en', 'doctorAsk');
+  $('#docList').innerHTML = items.map((x) => `<li>${esc(nbspUnits(x))}</li>`).join('');
+  $('#docFoot').textContent = t('en', 'doctorFoot');
+  $('#docLeft').hidden = !left.length;
+  $('#docLeft').textContent = left.length ? t(lang, 'doctorLeft', { names: left.join(', ') }) : '';
+  if ($('#pharmacist').open) $('#pharmacist').close();
+  if (!$('#doctor').open) $('#doctor').showModal();
+}
+function doctorPlainText() {
+  const { items } = doctorNote(medList());
+  return [t('en', 'doctorHello'), '', t('en', 'doctorAsk'), '', ...items.map((x, i) => `${i + 1}. ${x}`), '', t('en', 'doctorFoot')].join('\n');
+}
+$('#phDoctor').onclick = showDoctor;
+$('#docPrint').onclick = () => {
+  document.body.classList.add('print-doctor');
+  window.print();
+  setTimeout(() => document.body.classList.remove('print-doctor'), 500);
+};
+$('#docShare').onclick = async () => {
+  const text = doctorPlainText();
+  if (navigator.share) {
+    try { await navigator.share({ text }); return; } catch (e) { if (e?.name === 'AbortError') return; }
+  }
+  if (onPhone) { window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, '_blank', 'noopener'); return; }
+  try { await navigator.clipboard.writeText(text); toast('shareCopied'); } catch {}
+};
+
 function showPharmacist() {
   const list = medList();
   if (!list.length) { if ($('#pharmacist').open) $('#pharmacist').close(); return; }
@@ -830,6 +869,7 @@ function showPharmacist() {
   $('#phClear').hidden = false; // always: the whole list can be cleared at any time
   // v1.2: order the list from a registered Kendra (only when one is known and something can be ordered).
   $('#phOrder').hidden = !(orderKendras().length && orderItems(list).items.length);
+  $('#phDoctor').hidden = !doctorNote(list).items.length;
   if (!$('#pharmacist').open) $('#pharmacist').showModal();
 }
 $('#phOrder').onclick = () => { $('#pharmacist').close(); openOrder(orderKendras()[0]?.code); };
@@ -1094,6 +1134,7 @@ function render(r) {
       <p class="ja-name">${esc(ja.product.generic_name)}</p>
       <p class="ja-price">${rupees(ja.product.mrp)}<small>${esc(ja.product.unit_size || '')}</small></p>
       <p class="med-meta">${esc(t(lang, 'jaMrp'))}${ja.product.unit_price ? ` · ${rupees(ja.product.unit_price)} ${esc(per)}` : ''} · PMBJP ${esc(ja.product.drug_code)}</p>
+      ${!m.nti ? trustHtml() : ''}
 `
     : `<p class="muted" style="margin:0">${esc(t(lang, ja.pending ? 'jaPending' : 'jaNone'))}</p>`;
 
