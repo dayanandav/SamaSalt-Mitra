@@ -1,6 +1,6 @@
 {
   "note": "Fingerprints of the owner-approved tests. Written only by `node tools/test-lock.mjs approve --yes`, run by the owner.",
-  "approved_at": "2026-11-22T19:45:44.257Z",
+  "approved_at": "2026-11-23T00:09:20.378Z",
   "files": {
     "test/admin.test.mjs": "e05dd44ef3382da2c7d122e94aea823f3930b03b6297a4ce424db789f271a8d3",
     "test/askdontguess.test.mjs": "ed74a9374f1afdfa3e9fc041165503272826a0bdc9492553923d9d393f4c9a04",
