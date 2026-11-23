@@ -1,6 +1,6 @@
 # Search test set results
 
-Run 2026-11-23T09:21:55.208Z against https://samasalt-mitra-staging.samasalt-mitra-worker.workers.dev. **67/67 pass.** Answered right 41, offered among the choices 26, missed 0, **wrong matches 0** (must be 0), errors 0. Median 252 ms.
+Run 2026-11-23T13:50:18.365Z against https://samasalt-mitra.samasalt-mitra-worker.workers.dev. **67/67 pass.** Answered right 41, offered among the choices 26, missed 0, **wrong matches 0** (must be 0), errors 0. Median 793 ms.
 
 Cases: evals/search_cases.src.json (expected compositions taken from the data by evals/build_search_cases.mjs).
 
