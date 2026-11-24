@@ -571,7 +571,7 @@
   {
    "id": "brand-pantop40",
    "text": "Pantop 40",
-   "expect": "answer",
+   "expect": "choice",
    "brand": "Pantop 40 Tablet",
    "expect_ckey": "pantoprazole:40mg|tablet"
   },
@@ -620,7 +620,7 @@
   {
    "id": "brand-emeset4",
    "text": "Emeset 4",
-   "expect": "answer",
+   "expect": "choice",
    "brand": "Emeset 4 Tablet",
    "expect_ckey": "ondansetron:4mg|tablet"
   },
@@ -1434,35 +1434,35 @@
   {
    "id": "release-nitrocontin26",
    "text": "Nitrocontin 2.6",
-   "expect": "answer",
+   "expect": "choice",
    "brand": "Nitrocontin 2.6 Tablet CR",
    "expect_ckey": "nitroglycerin:2.6mg|tablet|CR"
   },
   {
    "id": "release-ganaton-od",
    "text": "Ganaton OD",
-   "expect": "answer",
+   "expect": "choice",
    "brand": "Ganaton OD Capsule SR",
    "expect_ckey": "itopride:150mg|capsule|SR"
   },
   {
    "id": "release-alfoo10",
    "text": "Alfoo 10",
-   "expect": "answer",
+   "expect": "choice",
    "brand": "Alfoo 10mg Tablet PR",
    "expect_ckey": "alfuzosin:10mg|tablet|SR"
   },
   {
    "id": "release-urimax04",
    "text": "Urimax 0.4",
-   "expect": "answer",
+   "expect": "choice",
    "brand": "Urimax 0.4 Capsule MR",
    "expect_ckey": "tamsulosin:0.4mg|capsule|MR"
   },
   {
    "id": "release-veltam04",
    "text": "Veltam 0.4",
-   "expect": "answer",
+   "expect": "choice",
    "brand": "Veltam 0.4 Tablet MR",
    "expect_ckey": "tamsulosin:0.4mg|tablet|MR"
   },
@@ -2285,7 +2285,7 @@
   {
    "id": "nti-oxetol300",
    "text": "Oxetol 300",
-   "expect": "answer",
+   "expect": "choice",
    "brand": "Oxetol 300 Tablet",
    "expect_ckey": "oxcarbazepine:300mg|tablet"
   },
@@ -2376,14 +2376,14 @@
   {
    "id": "nti-encorate-chrono500",
    "text": "Encorate Chrono 500",
-   "expect": "answer",
+   "expect": "choice",
    "brand": "Encorate Chrono 500 Tablet CR",
    "expect_ckey": "sodium valproate:333mg+valproic acid:145mg|tablet|CR"
   },
   {
    "id": "nti-lametec50-od",
    "text": "Lametec 50 OD",
-   "expect": "answer",
+   "expect": "choice",
    "brand": "Lametec 50 OD Tablet SR",
    "expect_ckey": "lamotrigine:50mg|tablet|SR"
   },

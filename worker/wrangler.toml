@@ -37,10 +37,6 @@ WA_BOT_NUMBER = ""
 # Needs migration 0007 (wa_chats).
 APP_CHAT = "on"
 
-# v2.0.9 demand by area on /impact: "off" (hidden 23 Nov 2026 by the owner: it counted checks, not
-# different phones) | "on".
-DEMAND_BY_AREA = "off"
-
 # Own domain (docs/DOMAIN.md): once the domain serves this Worker, set it here (e.g. "samasaltmitra.in")
 # and old workers.dev links (QR posters, shared links, the app) move to it. "" = stay on workers.dev.
 CANONICAL_HOST = ""

@@ -7,7 +7,7 @@ import { lookupKendra, staffRegisterKendra, attachContacts, adminListKendras, ad
 import { whoIs, csrfOk, login, logout, listAdmins, createAdmin, updateAdmin, can, permissions } from './admin.js';
 import { kendraContactsVisible, orderItems, orderMessage, waLink } from '../../public/rules.js';
 import { t, rupees } from '../../public/strings.js';
-import { ntiFromKey, describeKey } from './normalize.js';
+import { ntiFromKey } from './normalize.js';
 import { nearestKendra } from './tools.js';
 import { overLimit, photoCapReached, countPrescriptionRead } from './limits.js';
 import { botOn, appChatOn, botNumber, handleWebhook, handleMessage } from './whatsapp.js';
@@ -15,7 +15,7 @@ import { recordMissing, listMissing, previewAdded, addMedicine, decideMedicine, 
 import { registerVolunteer, listVolunteers, decideVolunteer, updateVolunteer, volunteerHistory, activeVolunteer, volunteerLinkStatus } from './volunteers.js';
 
 // Not exported: a Worker's main module may only export handlers.
-const APP_VERSION = '2.0.10';
+const APP_VERSION = '2.0.11';
 
 const MAX_IMAGE_CHARS = 2_500_000; // ~1.8 MB JPEG as a data URL; the app resizes to ~1 MP first
 
@@ -168,10 +168,6 @@ async function handleFeedback(request, env) {
   return json({ ok: true, updated: r.meta?.changes ?? 0 });
 }
 
-// v2.0.9 P5: a medicine is listed for an area only when checked there from this many different phones; the card shows at most
-// DEMAND_PER_AREA medicines for DEMAND_AREAS areas.
-const DEMAND_MIN = 3, DEMAND_PER_AREA = 5, DEMAND_AREAS = 12;
-
 // P1 My monthly medicines: numbers only, per IST month: lists kept, and kept lists opened again.
 // The list itself never reaches the server; test traffic is never counted.
 const MONTHLY_EVENTS = new Set(['kept', 'opened']);
@@ -230,25 +226,6 @@ async function handleImpact(env, url) {
     q(`SELECT medicine, COUNT(*) AS n, ROUND(AVG(saving_pack), 2) AS avg_saving FROM lookups WHERE ${real} AND status = 'ok' AND ${right} GROUP BY medicine ORDER BY n DESC LIMIT 10`),
     q(`SELECT COUNT(*) AS n FROM lookups WHERE is_test = 1`),
   ]);
-  // v2.0.9 P5 demand by area (for Kendras and PMBI stocking): the Jan Aushadhi medicines checked
-  // most in each PIN area (first 3 digits, already in the log). Counts only; a medicine is listed
-  // for an area only once it was checked there from DEMAND_MIN different phones (checks with no phone id do not count towards that).
-  // DEMAND_BY_AREA = "off" (wrangler.toml): not computed, not sent, card hidden.
-  const demandOn = env.DEMAND_BY_AREA !== 'off';
-  const demandRows = !demandOn ? [] : await q(`SELECT l.pin3 AS pin3, l.ckey AS ckey, COUNT(*) AS n,
-      (SELECT j.drug_code FROM ja_products j WHERE j.ckey = l.ckey ORDER BY j.mrp LIMIT 1) AS drug_code,
-      (SELECT j.generic_name FROM ja_products j WHERE j.ckey = l.ckey ORDER BY j.mrp LIMIT 1) AS ja_name
-    FROM lookups l WHERE ${real} AND l.status = 'ok' AND ${right} AND l.ja_unit IS NOT NULL AND l.pin3 IS NOT NULL AND l.ckey IS NOT NULL
-    GROUP BY l.pin3, l.ckey HAVING COUNT(DISTINCT l.device) >= ${DEMAND_MIN} ORDER BY l.pin3, n DESC`);
-  const demand = new Map();
-  for (const r of demandRows) {
-    if (!r.drug_code) continue;
-    const a = demand.get(r.pin3) || { pin3: r.pin3, checks: 0, medicines: [] };
-    a.checks += r.n;
-    if (a.medicines.length < DEMAND_PER_AREA) a.medicines.push({ drug_code: r.drug_code, name: r.ja_name, composition: describeKey(r.ckey), n: r.n });
-    demand.set(r.pin3, a);
-  }
-  const demandByArea = [...demand.values()].sort((a, b) => b.checks - a.checks).slice(0, DEMAND_AREAS);
   const monthlyRows = await q(`SELECT key, value FROM meta WHERE key LIKE 'monthly_%'`);
   const monthlyLists = { kept: 0, opened: 0 };
   for (const r of monthlyRows) {
@@ -266,7 +243,6 @@ async function handleImpact(env, url) {
     top_medicines: topMeds,
     search: { by_way: byInput, by_via: byVia, by_language: byLangFound, unreadable_by_reason: byReason },
     monthly_lists: monthlyLists,
-    demand_by_area: demandOn ? { min_devices: DEMAND_MIN, areas: demandByArea } : null,
     excluded_test_lookups: testCount[0]?.n ?? 0,
   }, 200, { 'cache-control': 'public, max-age=30' });
 }

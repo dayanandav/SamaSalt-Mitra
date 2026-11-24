@@ -7,7 +7,7 @@
 // Every step is recorded in `trace` (tool, input, short output, ms) and returned to the UI,
 // and the eval runner writes the same trace as AgentFoundry run JSONL (.codenow/runs/).
 import { readStrip, understandText, readPrescription } from './vision.js';
-import { identifyMedicine, janAushadhiByName, suggestNames, soundsLikeChoices, saltChoices, findSameSalt, janAushadhiMatch, ceilingPrice, nearestKendra, computeSaving, compositionFromText, brandCandidatesFromText } from './tools.js';
+import { identifyMedicine, janAushadhiByName, suggestNames, soundsLikeChoices, saltChoices, formGuessChoices, findSameSalt, janAushadhiMatch, ceilingPrice, nearestKendra, computeSaving, compositionFromText, brandCandidatesFromText } from './tools.js';
 import { describeKey, extractDosageForm, ntiFromKey, parseSaltComposition } from './normalize.js';
 import { assetMeds, d1Meds } from './medstore.js';
 import { composeAnswer } from '../../public/strings.js';
@@ -150,6 +150,16 @@ export async function runAgent(env, input) {
     if (!id.found && !id.choices?.length) {
       const choices = await step('sounds_like', { text: latin }, () => soundsLikeChoices(ctx, latin), (r) => ({ choices: r.length }));
       if (choices.length) id = { found: false, choices };
+    }
+  }
+
+  // A salt and strength typed with no form must not be answered by a brand named like the salt in one
+  // form ("Tramadol 50 mg" -> "Tramadol 50mg Capsule"): offered as choices when other forms exist.
+  if (id.found && id.via === 'brand' && source === 'text' && text && !hasIndic(text)) {
+    const choices = await formGuessChoices(ctx, query.brand, id);
+    if (choices.length) {
+      trace.push({ tool: 'form_guess', input: { text: query.brand }, output: { choices: choices.length }, ms: 0 });
+      id = { found: false, choices };
     }
   }
 

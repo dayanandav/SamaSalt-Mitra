@@ -1,6 +1,6 @@
 {
   "note": "Fingerprints of the owner-approved tests. Written only by `node tools/test-lock.mjs approve --yes`, run by the owner.",
-  "approved_at": "2026-11-23T17:52:57.944Z",
+  "approved_at": "2026-11-24T08:59:07.920Z",
   "files": {
     "test/admin.test.mjs": "e05dd44ef3382da2c7d122e94aea823f3930b03b6297a4ce424db789f271a8d3",
     "test/askdontguess.test.mjs": "ed74a9374f1afdfa3e9fc041165503272826a0bdc9492553923d9d393f4c9a04",
@@ -8,10 +8,11 @@
     "test/clearcomposition.test.mjs": "8ba9f7b3b347267d94978d92b685a3e1ad611acfbd8b0456fbd1c66201476a15",
     "test/core.contract.test.mjs": "6ab541c9c73403259eda76de0453761dbef0fc53318cc7e85f66215a56d39667",
     "test/d1shim.mjs": "11aa574b27d68f0a9858b9ad5c3c206f698b6b3778c1c9da98f3a7e87fc88531",
-    "test/doctor-demand.test.mjs": "894e51a372005edab6f9b73fa2de87d17f6133d1e1f5f5a64388a780ddfa42ad",
+    "test/doctor-demand.test.mjs": "572d379faa3cf14bc33590cf74959c5ba19aa77431d7afc29a8d824433618cc7",
     "test/features.test.mjs": "908220ff968c1b9d722c13fa08ef3119ba29090be66ad38603140d70ecdfa1b2",
     "test/fixtures/db_sample.json": "9ede168301e369e8b69ffc9eb839661aa7e48a53cff8e2151236574d9461f291",
     "test/fixtures/med_subset.json": "082fb1e44eba5c3d01c6a082095b67f3dcc48004b67ce722e9445e27a4086a67",
+    "test/formguess.test.mjs": "9aa24311c38ec0e7ea17d4e55134a0f74cddbb9f57be2ea3e00e61a1532c8a5c",
     "test/indic.test.mjs": "6b80cf9f65d375a0e4a9b7d8769dc213c916baf1e3e86ba2fc85f07c02686f3b",
     "test/indicsalt.test.mjs": "0d5690a1b1058868ab08229ae371e106fe1e8f1fac384b0ef42b3d0ec9cb0bb3",
     "test/janame.test.mjs": "e4b4413e58097ef127a2a3b4094f4791d7f28a006d5e390e7f42bebfad60a5d8",

@@ -364,6 +364,26 @@ export async function saltChoices(ctx, text, limit = 5) {
   return out;
 }
 
+/**
+ * A typed salt + strength with no form ("Tramadol 50 mg") that matched a brand named like its own salt
+ * ("Tramadol 50mg Capsule"): taking it would choose the form (owner's decision 24 Nov 2026). Returns
+ * every real medicine of that salt and strength as choices, the matched one always among them, or []
+ * to keep the answer: another kind of match, a typed form, the brand's full name (typed or tapped),
+ * or only one composition exists.
+ */
+export async function formGuessChoices(ctx, text, id, limit = 5) {
+  if (!id?.found || id.via !== 'brand' || typedFormOf(text)) return [];
+  const plain = (s) => String(s || '').toLowerCase().split(' ').filter(Boolean).join(' ');
+  if (plain(text) === plain(id.medicine.name)) return [];
+  const word = tokens(text)[0];
+  const salts = String(id.medicine.ckey || '').split('|')[0].split('+');
+  if (!word || !salts.some((s) => tokens(s.split(':')[0]).includes(word))) return [];
+  const choices = await saltChoices(ctx, text, limit);
+  const own = describeKey(id.medicine.ckey);
+  if (!choices.some((c) => c.composition !== own)) return [];
+  return choices.some((c) => c.composition === own) ? choices : [{ name: id.medicine.name, composition: own }, ...choices].slice(0, limit);
+}
+
 /** Tool: identify_medicine. Resolve a brand name (and optional composition read off the strip) to one DB row. */
 export async function identifyMedicine(ctx, { brand = '', composition = '', form = '' } = {}) {
   const { meds } = ctxOf(ctx);
