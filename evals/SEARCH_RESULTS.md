@@ -1,6 +1,6 @@
 # Search test set results
 
-Run 2026-11-24T09:19:20.039Z against https://samasalt-mitra-staging.samasalt-mitra-worker.workers.dev. **347/363 pass.** Answered right 249, offered among the choices 106, missed 8, **wrong matches 0** (must be 0), errors 0. Median 769 ms.
+Run 2026-11-24T11:40:04.652Z against https://samasalt-mitra-staging.samasalt-mitra-worker.workers.dev. **378/394 pass.** Answered right 264, offered among the choices 122, missed 8, **wrong matches 0** (must be 0), errors 0. Median 959 ms.
 
 Cases: evals/search_cases.src.json (expected compositions taken from the data by evals/build_search_cases.mjs).
 
@@ -253,7 +253,7 @@ Cases: evals/search_cases.src.json (expected compositions taken from the data by
 | ja-name-folic5 | Folic Acid Tablets IP 5 mg | answer | right | Folic Acid Tablets IP 5 mg [Folic Acid 5 mg · tablet] |
 | ja-name-metronidazole400 | Metronidazole Tablets IP 400mg | answer | right | Metronidazole Tablets IP 400mg [Metronidazole 400 mg · tablet] |
 | ja-name-fluconazole150 | Fluconazole Tablets IP 150 mg | answer | right | Fluconazole Tablets IP 150 mg [Fluconazole 150 mg · tablet] |
-| ja-name-albendazole400 | Albendazole Tablets IP 400mg | answer | right | Albendazole 400mg Tablet [Albendazole 400 mg · tablet] |
+| ja-name-albendazole400 | Albendazole Tablets IP 400mg | answer | right | Albendazole Tablets IP 400mg [Albendazole 400 mg · tablet] |
 | ja-name-gabapentin300 | Gabapentin Capsules IP 300mg | answer | right | Gabapentin Capsules IP 300mg [Gabapentin 300 mg · capsule] |
 | ja-name-ranitidine150 | Ranitidine Tablets IP 150 mg | answer | right | Ranitidine Tablets IP 150 mg [Ranitidine 150 mg · tablet] |
 | ja-name-famotidine20 | Famotidine Tablets IP 20 mg | answer | right | Famotidine Tablets IP 20 mg [Famotidine 20 mg · tablet] |
@@ -294,6 +294,37 @@ Cases: evals/search_cases.src.json (expected compositions taken from the data by
 | salt-pramipexole025 | Pramipexole 0.25 mg | choice | offered | choices: Pramipexole Dihydrochloride Tablets 0.25mg; Parpex 0.25mg Tablet |
 | salt-metoprolol50 | Metoprolol 50 mg | choice | offered | choices: Metolash 50 Tablet; Mepol 50mg Tablet; Metoprolol Extended release Tablets IP 50mg; Metoprolol Succinate extend |
 | salt-amoxclav | Amoxicillin 500 Clavulanic acid 125 | choice | **missed** | not_found |
+| form-tramadol50 | Tramadol 50 mg | choice | offered | choices: Tramadol Tablets 50mg; Termeg 50mg Capsule; Painadol 50mg Tablet SR; Tramadol HCl Injection 50mg 1 ml |
+| form-tramadol50-plain | tramadol 50 | choice | offered | choices: Tramadol Tablets 50mg; Termeg 50mg Capsule; Painadol 50mg Tablet SR; Tramadol HCl Injection 50mg 1 ml |
+| form-albendazole400 | Albendazole 400 mg | choice | offered | choices: Albendazole Tablets IP 400mg; Abn 400mg Capsule; Abide 400mg Drop; Toko 400mg Syrup; Elbenol 400mg Sachet |
+| form-amikacin250 | Amikacin 250 mg | choice | offered | choices: Amikacin Injection IP 250 mg per 2 ml; LA Mika 250mg Injection |
+| form-cetirizine10 | Cetirizine 10 mg | choice | offered | choices: Cetrizine Hydrochloride Tablets IP 10mg; Histacet 10mg Capsule; Cetramac 10mg Syrup |
+| form-carvedilol125 | Carvedilol 12.5 mg | choice | offered | choices: Carvedilol Tablets IP 12.5 mg; DR Cvdol 12.5mg Tablet |
+| form-leucovorin15 | Leucovorin 15 mg | choice | offered | choices: Leucovorin Calcium Tablets IP 15mg; Leucorin Tablet; Lucal 15mg Injection |
+| form-doxepin25 | Doxepin 25 mg | choice | offered | choices: Doxepin Capsules IP 25mg; Actipin 25mg Tablet |
+| form-dexamethasone4 | Dexamethasone 4 mg | choice | offered | choices: Decdak 4mg Tablet; Dexamethasone Injection IP 4mg per ml |
+| form-linezolid600 | Linezolid 600 mg | choice | offered | choices: Linezolid Tablets IP 600 mg; Linezolid Infusion 600mg per 300ml; Calinolid 600mg Infusion; Capzolid 600mg Syrup |
+| form-methylergometrine0125 | Methylergometrine 0.125 mg | choice | offered | choices: Methyl Ergometrine Tablets IP 0.125 mg; Ergagin 0.125mg Injection |
+| form-nitrazepam10 | Nitrazepam 10 mg | choice | offered | choices: Nitrazepam Tablets I.P 10mg; Hypnonex 10mg Capsule; Nitraz 10mg Tablet SR |
+| form-sevelamer800 | Sevelamer 800 mg | choice | offered | choices: Sevelamer 800mg Tablets; Sevcar 800mg Granules; Renvela 800mg Sachet |
+| form-orlistat120 | Orlistat 120 mg | choice | offered | choices: Orlistat Capsules 120 mg; Wolslim 120mg Tablet |
+| form-ramipril125 | Ramipril 1.25 mg | choice | offered | choices: Ramipril Tablets IP 1.25mg; Ramil 1.25mg Capsule |
+| form-typed-tramadol50-capsule | Tramadol 50 capsule | answer | right | Tramadol 50mg Capsule [Tramadol 50 mg · capsule] |
+| form-typed-ramipril125-tab | Ramipril tab 1.25 | answer | right | Ramipril Tablets IP 1.25mg [Ramipril 1.25 mg · tablet] |
+| form-typed-orlistat120-cap | Orlistat cap 120 | answer | right | Orlistat Capsules 120 mg [Orlistat 120 mg · capsule] |
+| form-ja-ramipril125 | Ramipril Tablets IP 1.25mg | answer | right | Ramipril Tablets IP 1.25mg [Ramipril 1.25 mg · tablet] |
+| form-ja-orlistat120 | Orlistat Capsules 120 mg | answer | right | Orlistat Capsules 120 mg [Orlistat 120 mg · capsule] |
+| form-ja-nimesulide100 | Nimesulide Tablets 100 mg | answer | right | Nimesulide Tablets 100 mg [Nimesulide 100 mg · tablet] |
+| form-ja-tramadol50 | Tramadol Tablets 50mg | answer | right | Tramadol Tablets 50mg [Tramadol 50 mg · tablet] |
+| form-ja-doxepin10 | Doxepin Capsules IP 10mg | answer | right | Doxepin Capsules IP 10mg [Doxepin 10 mg · capsule] |
+| form-ja-nacl | Sodium Chloride Injection IP 0.9%w/v | answer | right | Sodium Chloride Injection IP 0.9%w/v [Sodium Chloride 0.9% w/v · injection] |
+| form-ja-ramipril125-plural | Ramipril tablets 1.25 | answer | right | Ramipril Tablets IP 1.25mg [Ramipril 1.25 mg · tablet] |
+| form-other-paracetamol650 | Paracetamol Capsules 650mg | none | right | choices: Paracetamol Tablets IP 650 mg |
+| form-other-glimepiride2 | Glimepiride capsule 2mg | none | right | choices: Glimepiride Tablets IP 2mg |
+| form-salt-doxepin10 | Doxepin 10 mg | choice | offered | choices: Doxepin Capsules IP 10mg; Dox 10mg Tablet; Doxepin Tablet |
+| form-salt-nacl | Sodium Chloride 0.9% | none | right | choices: Sodium Chloride Infusion |
+| form-salt-ketamine | Ketamine 1500mcg | none | right | choices: Ketamine 1500mcg Injection |
+| form-salt-dopamine | Dopamine 10mg/500mg | none | right | choices: Dopamine 10mg/500mg Tablet |
 | hi-crocin-advance | क्रोसिन एडवांस | choice | offered | choices: Crocin Advance Tablet |
 | hi-glycomet500sr | ग्लाइकोमेट 500 एसआर | choice | **missed** | not_found |
 | hi-amlokind5 | एमलोकाइंड 5 | choice | **missed** | not_found |

@@ -1,7 +1,7 @@
 {
  "name": "search-test-set",
  "description": "Roadmap S3.9: realistic typed searches with their correct result. expect = answer (must be answered with exactly this composition), choice (answered with it, or offered among the choices), none (must not be answered). The composition key of each case comes from the brand database by `brand` (exact name) or from the Jan Aushadhi list by `ja` (drug code), never written by hand. Built by evals/build_search_cases.mjs into evals/search_cases.json.",
- "built": "2026-11-23",
+ "built": "2026-11-24",
  "cases": [
   {
    "id": "exact-dolo650",
@@ -2044,6 +2044,236 @@
    "expect": "choice",
    "ja": "39",
    "expect_ckey": "amoxicillin:500mg+clavulanic acid:125mg|tablet"
+  },
+  {
+   "id": "form-tramadol50",
+   "text": "Tramadol 50 mg",
+   "expect": "choice",
+   "brand": "Painadol 50mg Tablet SR",
+   "note": "capsule, SR tablet and injection: ask",
+   "expect_ckey": "tramadol:50mg|tablet|SR"
+  },
+  {
+   "id": "form-tramadol50-plain",
+   "text": "tramadol 50",
+   "expect": "choice",
+   "brand": "Painadol 50mg Tablet SR",
+   "expect_ckey": "tramadol:50mg|tablet|SR"
+  },
+  {
+   "id": "form-albendazole400",
+   "text": "Albendazole 400 mg",
+   "expect": "choice",
+   "brand": "Abn 400mg Capsule",
+   "expect_ckey": "albendazole:400mg|capsule"
+  },
+  {
+   "id": "form-amikacin250",
+   "text": "Amikacin 250 mg",
+   "expect": "choice",
+   "brand": "LA Mika 250mg Injection",
+   "note": "plain and LA injection: ask",
+   "expect_ckey": "amikacin:250mg|injection|LA"
+  },
+  {
+   "id": "form-cetirizine10",
+   "text": "Cetirizine 10 mg",
+   "expect": "choice",
+   "brand": "Histacet 10mg Capsule",
+   "expect_ckey": "cetirizine:10mg|capsule"
+  },
+  {
+   "id": "form-carvedilol125",
+   "text": "Carvedilol 12.5 mg",
+   "expect": "choice",
+   "brand": "DR Cvdol 12.5mg Tablet",
+   "note": "plain and DR tablet: ask",
+   "expect_ckey": "carvedilol:12.5mg|tablet|DR"
+  },
+  {
+   "id": "form-leucovorin15",
+   "text": "Leucovorin 15 mg",
+   "expect": "choice",
+   "brand": "Lucal 15mg Injection",
+   "expect_ckey": "calcium leucovorin:15mg|injection"
+  },
+  {
+   "id": "form-doxepin25",
+   "text": "Doxepin 25 mg",
+   "expect": "choice",
+   "brand": "Actipin 25mg Tablet",
+   "expect_ckey": "doxepin:25mg|tablet"
+  },
+  {
+   "id": "form-dexamethasone4",
+   "text": "Dexamethasone 4 mg",
+   "expect": "choice",
+   "brand": "Decdak 4mg Tablet",
+   "expect_ckey": "dexamethasone:4mg|tablet"
+  },
+  {
+   "id": "form-linezolid600",
+   "text": "Linezolid 600 mg",
+   "expect": "choice",
+   "brand": "Capzolid 600mg Syrup",
+   "expect_ckey": "linezolid:600mg|liquid"
+  },
+  {
+   "id": "form-methylergometrine0125",
+   "text": "Methylergometrine 0.125 mg",
+   "expect": "choice",
+   "brand": "Ergagin 0.125mg Injection",
+   "expect_ckey": "methylergometrine:0.125mg|injection"
+  },
+  {
+   "id": "form-nitrazepam10",
+   "text": "Nitrazepam 10 mg",
+   "expect": "choice",
+   "brand": "Hypnonex 10mg Capsule",
+   "expect_ckey": "nitrazepam:10mg|capsule"
+  },
+  {
+   "id": "form-sevelamer800",
+   "text": "Sevelamer 800 mg",
+   "expect": "choice",
+   "brand": "Renvela 800mg Sachet",
+   "expect_ckey": "sevelamer:800mg|powder"
+  },
+  {
+   "id": "form-orlistat120",
+   "text": "Orlistat 120 mg",
+   "expect": "choice",
+   "brand": "Zerobes 120 Capsule",
+   "expect_ckey": "orlistat:120mg|capsule"
+  },
+  {
+   "id": "form-ramipril125",
+   "text": "Ramipril 1.25 mg",
+   "expect": "choice",
+   "brand": "Hoperam 1.25mg Tablet",
+   "expect_ckey": "ramipril:1.25mg|tablet"
+  },
+  {
+   "id": "form-typed-tramadol50-capsule",
+   "text": "Tramadol 50 capsule",
+   "expect": "answer",
+   "brand": "Tramadol 50mg Capsule",
+   "note": "form typed: answered",
+   "expect_ckey": "tramadol:50mg|capsule"
+  },
+  {
+   "id": "form-typed-ramipril125-tab",
+   "text": "Ramipril tab 1.25",
+   "expect": "answer",
+   "brand": "Hoperam 1.25mg Tablet",
+   "note": "form typed: answered",
+   "expect_ckey": "ramipril:1.25mg|tablet"
+  },
+  {
+   "id": "form-typed-orlistat120-cap",
+   "text": "Orlistat cap 120",
+   "expect": "answer",
+   "brand": "Zerobes 120 Capsule",
+   "note": "form typed: answered",
+   "expect_ckey": "orlistat:120mg|capsule"
+  },
+  {
+   "id": "form-ja-ramipril125",
+   "text": "Ramipril Tablets IP 1.25mg",
+   "expect": "answer",
+   "ja": "2460",
+   "note": "official name in full",
+   "expect_ckey": "ramipril:1.25mg|tablet"
+  },
+  {
+   "id": "form-ja-orlistat120",
+   "text": "Orlistat Capsules 120 mg",
+   "expect": "answer",
+   "ja": "1225",
+   "note": "official name in full",
+   "expect_ckey": "orlistat:120mg|capsule"
+  },
+  {
+   "id": "form-ja-nimesulide100",
+   "text": "Nimesulide Tablets 100 mg",
+   "expect": "answer",
+   "ja": "20",
+   "note": "official name in full",
+   "expect_ckey": "nimesulide:100mg|tablet"
+  },
+  {
+   "id": "form-ja-tramadol50",
+   "text": "Tramadol Tablets 50mg",
+   "expect": "answer",
+   "ja": "28",
+   "note": "official name in full",
+   "expect_ckey": "tramadol:50mg|tablet"
+  },
+  {
+   "id": "form-ja-doxepin10",
+   "text": "Doxepin Capsules IP 10mg",
+   "expect": "answer",
+   "ja": "1940",
+   "note": "official name in full",
+   "expect_ckey": "doxepin:10mg|capsule"
+  },
+  {
+   "id": "form-ja-nacl",
+   "text": "Sodium Chloride Injection IP 0.9%w/v",
+   "expect": "answer",
+   "ja": "1458",
+   "note": "official name in full",
+   "expect_ckey": "sodium chloride:0.9% w/v|injection"
+  },
+  {
+   "id": "form-ja-ramipril125-plural",
+   "text": "Ramipril tablets 1.25",
+   "expect": "answer",
+   "ja": "2460",
+   "expect_ckey": "ramipril:1.25mg|tablet"
+  },
+  {
+   "id": "form-other-paracetamol650",
+   "text": "Paracetamol Capsules 650mg",
+   "expect": "none",
+   "note": "capsules typed: never the tablet",
+   "expect_ckey": null
+  },
+  {
+   "id": "form-other-glimepiride2",
+   "text": "Glimepiride capsule 2mg",
+   "expect": "none",
+   "note": "capsule typed: never the tablet",
+   "expect_ckey": null
+  },
+  {
+   "id": "form-salt-doxepin10",
+   "text": "Doxepin 10 mg",
+   "expect": "choice",
+   "ja": "1940",
+   "note": "never Doxepin Tablet (doxylamine + vitamin B6)",
+   "expect_ckey": "doxepin:10mg|capsule"
+  },
+  {
+   "id": "form-salt-nacl",
+   "text": "Sodium Chloride 0.9%",
+   "expect": "none",
+   "note": "never dextrose + sodium chloride",
+   "expect_ckey": null
+  },
+  {
+   "id": "form-salt-ketamine",
+   "text": "Ketamine 1500mcg",
+   "expect": "none",
+   "note": "the brand of that name is methylcobalamin: asked",
+   "expect_ckey": null
+  },
+  {
+   "id": "form-salt-dopamine",
+   "text": "Dopamine 10mg/500mg",
+   "expect": "none",
+   "note": "the brand of that name is dapagliflozin + metformin: asked",
+   "expect_ckey": null
   },
   {
    "id": "hi-crocin-advance",

@@ -7,7 +7,7 @@
 // Every step is recorded in `trace` (tool, input, short output, ms) and returned to the UI,
 // and the eval runner writes the same trace as AgentFoundry run JSONL (.codenow/runs/).
 import { readStrip, understandText, readPrescription } from './vision.js';
-import { identifyMedicine, janAushadhiByName, suggestNames, soundsLikeChoices, saltChoices, formGuessChoices, findSameSalt, janAushadhiMatch, ceilingPrice, nearestKendra, computeSaving, compositionFromText, brandCandidatesFromText } from './tools.js';
+import { identifyMedicine, janAushadhiByName, suggestNames, soundsLikeChoices, saltChoices, formGuessChoices, otherSaltChoices, findSameSalt, janAushadhiMatch, ceilingPrice, nearestKendra, computeSaving, compositionFromText, brandCandidatesFromText } from './tools.js';
 import { describeKey, extractDosageForm, ntiFromKey, parseSaltComposition } from './normalize.js';
 import { assetMeds, d1Meds } from './medstore.js';
 import { composeAnswer } from '../../public/strings.js';
@@ -161,6 +161,21 @@ export async function runAgent(env, input) {
       trace.push({ tool: 'form_guess', input: { text: query.brand }, output: { choices: choices.length }, ms: 0 });
       id = { found: false, choices };
     }
+  }
+  // A typed salt must not be answered by a brand that has other salts ("Doxepin 10 mg" -> "Doxepin
+  // Tablet" = doxylamine + vitamin B6): asked, with the salts shown.
+  if (id.found && id.via === 'brand' && source === 'text' && text && !hasIndic(text)) {
+    const choices = await otherSaltChoices(ctx, query.brand, id);
+    if (choices.length) {
+      trace.push({ tool: 'other_salt', input: { text: query.brand }, output: { choices: choices.length }, ms: 0 });
+      id = { found: false, choices };
+    }
+  }
+  // Another form typed than the Jan Aushadhi product has ("Pregabalin tablets 75"): the medicines in the
+  // typed form come first, then that product. Never an answer by itself.
+  if (!id.found && id.formDiffers && source === 'text' && text && !hasIndic(text)) {
+    const typed = await step('salt_choices', { text: query.brand }, () => saltChoices(ctx, query.brand), (r) => ({ choices: r.length }));
+    id = { found: false, choices: [...typed, ...id.choices.filter((c) => !typed.some((x) => x.name === c.name))].slice(0, 5) };
   }
 
   // A salt and strength typed in English letters ("Metoprolol 50 mg") that no brand or Jan Aushadhi

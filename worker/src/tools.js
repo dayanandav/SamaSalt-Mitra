@@ -102,6 +102,9 @@ async function clearComposition(ctx, key) {
   return !!(await meds.hasKey(key)) || !!(await db.prepare('SELECT 1 AS ok FROM ja_products WHERE ckey = ?1 LIMIT 1').bind(key).first());
 }
 
+/** A name as compared with a full name: lower case, single spaces. */
+const fullName = (s) => String(s || '').toLowerCase().replace(/\s+/g, ' ').trim();
+
 /** The dosage form in typed text, plurals and short forms included ("Tablets", "caps", "syp"). */
 function typedFormOf(text) {
   return extractDosageForm(String(text || '').replace(/\b(tablet|capsule|injection)s\b/gi, '$1').replace(/\bsy[pr]\b/gi, 'syrup').replace(/\btabs\b/gi, 'tablet').replace(/\bcaps\b/gi, 'capsule'));
@@ -116,7 +119,8 @@ const JA_HARMLESS = new Set(['calcium', 'sodium', 'potassium', 'magnesium', 'hyd
  * A typed name that is a product in the official Jan Aushadhi list (as printed on a Jan Aushadhi
  * strip, or shorter: "Paracetamol 650"). Strict: every typed word and number is in the product
  * name, every number of the product was typed, and its other words are only salt-form words.
- * Two different compositions fitting = no match. Returns { product, ckey } or null.
+ * Two different compositions fitting = no match. Returns { product, ckey } or null; `formDiffers` is set
+ * when another form was typed ("Paracetamol capsules 650"): that product is offered, never the answer.
  */
 export async function janAushadhiByName(ctx, text) {
   const { db } = ctxOf(ctx);
@@ -133,14 +137,16 @@ export async function janAushadhiByName(ctx, text) {
   });
   let keys = [...new Set(fits.map((r) => r.ckey))];
   // "Tablets" and "capsules" are not compared above: when both fit, the form typed decides.
-  const typedForm = keys.length > 1 ? typedFormOf(text) : null;
-  if (typedForm) {
+  const typedForm = typedFormOf(text);
+  if (typedForm && keys.length > 1) {
     keys = keys.filter((k) => k.split('|')[1] === typedForm);
     for (let i = fits.length - 1; i >= 0; i--) if (fits[i].ckey.split('|')[1] !== typedForm) fits.splice(i, 1);
   }
   if (keys.length !== 1) return null;
   fits.sort((a, b) => (a.unit_price ?? 1e9) - (b.unit_price ?? 1e9));
-  return { product: fits[0], ckey: keys[0] };
+  const form = keys[0].split('|')[1];
+  const formDiffers = !!typedForm && !!form && form !== typedForm && !fits.some((r) => fullName(r.generic_name) === fullName(text));
+  return { product: fits[0], ckey: keys[0], ...(formDiffers ? { formDiffers } : {}) };
 }
 
 // Edit distance (insert, delete, change one letter), stopping early above `max`.
@@ -236,7 +242,7 @@ export function fitsTyped(typed, row) {
   const nameNums = numbersIn(row.name);
   const strengths = keyStrengths(row.ckey);
   if (!numbersIn(typed).every((x) => nameNums.includes(x) || strengths.includes(x))) return false;
-  const typedForm = extractDosageForm(String(typed).replace(/\bsy[pr]\b/gi, 'syrup').replace(/\bsusp\b/gi, 'suspension').replace(/\btabs?\b/gi, 'tablet').replace(/\bcaps?\b/gi, 'capsule'));
+  const typedForm = extractDosageForm(String(typed).replace(/\b(tablet|capsule|injection|syrup|suspension)s\b/gi, '$1').replace(/\bsy[pr]\b/gi, 'syrup').replace(/\bsusp\b/gi, 'suspension').replace(/\btabs?\b/gi, 'tablet').replace(/\bcaps?\b/gi, 'capsule'));
   return !typedForm || !row.form || row.form === typedForm;
 }
 
@@ -384,6 +390,35 @@ export async function formGuessChoices(ctx, text, id, limit = 5) {
   return choices.some((c) => c.composition === own) ? choices : [{ name: id.medicine.name, composition: own }, ...choices].slice(0, limit);
 }
 
+/**
+ * A typed salt that matched a brand with other salts ("Doxepin 10 mg" -> "Doxepin Tablet" = doxylamine;
+ * "Sodium Chloride 0.9%" -> dextrose + sodium chloride): asked, never answered (owner's decision 24 Nov
+ * 2026). Returns the typed salt's medicines and the matched brand as choices with their salts, or [] to
+ * keep the answer: another kind of match, or the brand's full name (typed or tapped).
+ */
+export async function otherSaltChoices(ctx, text, id, limit = 5) {
+  if (!id?.found || id.via !== 'brand' || fullName(text) === fullName(id.medicine.name)) return [];
+  const words = plainWords(text);
+  const word = words[0];
+  if (!word || word.length < 4) return [];
+  const saltsOf = (k) => String(k || '').split('|')[0].split('+').map((s) => s.split(':')[0]);
+  const own = saltsOf(id.medicine.ckey).map((s) => tokens(s));
+  let asks;
+  if (own.some((s) => s.includes(word))) {
+    // Only salts of this brand were typed, and it has another salt too.
+    asks = words.every((w) => own.some((s) => s.includes(w))) && own.some((s) => !s.some((t) => words.includes(t)));
+  } else {
+    // The typed word is a salt's whole name (Jan Aushadhi list, or brands of that name that contain it).
+    const isSalt = (k) => saltsOf(k).some((s) => s === word || s === words.join(' '));
+    const { db, meds } = ctxOf(ctx);
+    const ja = await db.prepare("SELECT ckey FROM ja_products WHERE ckey LIKE ?1 OR ckey LIKE ?2").bind(`${word}%`, `%+${word}%`).all().catch(() => ({ results: [] }));
+    asks = (ja.results || []).some((r) => isSalt(r.ckey)) || (await meds.byNamePrefix(word)).some((r) => isSalt(r.ckey));
+  }
+  if (!asks) return [];
+  const choices = await saltChoices(ctx, text, limit);
+  return [...choices.filter((c) => c.name !== id.medicine.name).slice(0, limit - 1), { name: id.medicine.name, composition: describeKey(id.medicine.ckey) }];
+}
+
 /** Tool: identify_medicine. Resolve a brand name (and optional composition read off the strip) to one DB row. */
 export async function identifyMedicine(ctx, { brand = '', composition = '', form = '' } = {}) {
   const { meds } = ctxOf(ctx);
@@ -404,7 +439,6 @@ export async function identifyMedicine(ctx, { brand = '', composition = '', form
   // Only a brand whose words are exactly the typed words is taken; one with extra words ("Atorva
   // E", "Calpol T": another combination), a longer first word, or another form than typed is
   // offered as a choice with its salts, never picked.
-  const fullName = (s) => String(s || '').toLowerCase().replace(/\s+/g, ' ').trim();
   // A brand's full name exactly as listed (also a name tapped in the choices) is that brand.
   const named = !composition && q.length ? rows.filter((r) => fullName(r.name) === fullName(brand)) : [];
   if (named.length && new Set(named.map((r) => r.ckey)).size === 1) candidates = named.map((r) => ({ ...r, score: 2 }));
@@ -414,12 +448,15 @@ export async function identifyMedicine(ctx, { brand = '', composition = '', form
     const several = new Set(exact.filter((r) => r.ckey).map((r) => r.ckey)).size > 1;
     // No number typed, but the brand's name has one ("Crocin" -> "Crocin 1000mg"): the strength would be a guess.
     const strengthGuess = !numbersIn(brand).length && exact.length > 0 && exact.every((r) => numbersIn(r.name).length > 0);
+    const ja = exact.length || candidates.length ? await janAushadhiByName(ctx, brand) : null;
+    // The official Jan Aushadhi name in full ("Ramipril Tablets IP 1.25mg") is that product, also when a
+    // brand is named like its salt.
+    if (ja && fullName(ja.product.generic_name) === fullName(brand)) return jaNameResult(ja);
     if (exact.length && !several && !strengthGuess) candidates = exact;
     else if (exact.length || candidates.length) {
-      const ja = await janAushadhiByName(ctx, brand);
-      if (ja) return jaNameResult(ja);
-      const seen = new Set();
-      const choices = [];
+      if (ja && !ja.formDiffers) return jaNameResult(ja);
+      const choices = ja ? [{ name: ja.product.generic_name, composition: describeKey(ja.ckey) }] : [];
+      const seen = new Set(choices.map((c) => c.name.toLowerCase()));
       const pool = exact.length && !strengthGuess ? exact : [...exact, ...candidates];
       for (const c of [...pool].sort((a, b) => b.score - a.score || (a.form === 'tablet' ? 0 : 1) - (b.form === 'tablet' ? 0 : 1) || a.name.length - b.name.length)) {
         if (seen.has(c.name.toLowerCase())) continue;
@@ -459,6 +496,7 @@ export async function identifyMedicine(ctx, { brand = '', composition = '', form
   // its composition key comes from the PMBJP list, so the code, MRP and same-salt brands all follow.
   if (!composition && brand) {
     const ja = await janAushadhiByName(ctx, brand);
+    if (ja?.formDiffers) return { found: false, formDiffers: true, choices: [{ name: ja.product.generic_name, composition: describeKey(ja.ckey) }] };
     if (ja) return jaNameResult(ja);
   }
 
