@@ -2276,6 +2276,110 @@
    "expect_ckey": null
   },
   {
+   "id": "strength-ctax7gm",
+   "text": "C Tax 7gm Injection",
+   "expect": "none",
+   "note": "no 7gm brand: never another strength",
+   "expect_ckey": null
+  },
+  {
+   "id": "strength-deviron35000",
+   "text": "Deviron 35000IU Injection",
+   "expect": "none",
+   "note": "never another IU strength",
+   "expect_ckey": null
+  },
+  {
+   "id": "strength-glismet14m",
+   "text": "Glismet-14M PR",
+   "expect": "none",
+   "note": "no 14M brand: never another strength",
+   "expect_ckey": null
+  },
+  {
+   "id": "strength-fragmin2500",
+   "text": "Fragmin 2500IU",
+   "expect": "answer",
+   "brand": "Fragmin 2500IU Injection",
+   "expect_ckey": "dalteparin:2500IU|injection"
+  },
+  {
+   "id": "strength-azenam2gm",
+   "text": "Azenam 2gm",
+   "expect": "answer",
+   "brand": "Azenam 2gm Injection",
+   "expect_ckey": "aztreonam:2000mg|injection"
+  },
+  {
+   "id": "strength-metapro50",
+   "text": "Metapro 50",
+   "expect": "answer",
+   "brand": "Metapro 50 Tablet",
+   "note": "never the 3D combination",
+   "expect_ckey": "metoprolol tartrate:50mg|tablet"
+  },
+  {
+   "id": "formless-fungirap-tablet",
+   "text": "Fungirap 200mg tablet",
+   "expect": "none",
+   "note": "the brand has a capsule (itraconazole) and an infusion (fluconazole)",
+   "expect_ckey": null
+  },
+  {
+   "id": "formless-levokem-capsule",
+   "text": "Levokem 500mg capsule",
+   "expect": "none",
+   "note": "never the infusion",
+   "expect_ckey": null
+  },
+  {
+   "id": "askform-tranexamic500",
+   "text": "Tranexamic acid 500",
+   "expect": "choice",
+   "ja": "302",
+   "note": "tablet and injection are both Jan Aushadhi: ask",
+   "expect_ckey": "tranexamic acid:500mg|injection"
+  },
+  {
+   "id": "askform-pantoprazole40",
+   "text": "Pantoprazole 40",
+   "expect": "choice",
+   "ja": "213",
+   "note": "tablet and injection are both Jan Aushadhi: ask",
+   "expect_ckey": "pantoprazole:40mg|injection"
+  },
+  {
+   "id": "askform-levetiracetam500",
+   "text": "Levetiracetam 500",
+   "expect": "choice",
+   "ja": "2878",
+   "note": "tablet and injection are both Jan Aushadhi: ask",
+   "expect_ckey": "levetiracetam:500mg|injection"
+  },
+  {
+   "id": "askform-typed-tranexamic500",
+   "text": "Tranexamic acid 500 injection",
+   "expect": "choice",
+   "ja": "302",
+   "note": "form typed",
+   "expect_ckey": "tranexamic acid:500mg|injection"
+  },
+  {
+   "id": "of-derm-cream",
+   "text": "OF Derm Cream",
+   "expect": "answer",
+   "brand": "OF Derm Cream",
+   "note": "never Derm Cream (other salts)",
+   "expect_ckey": "clobetasol:0.05% w/w+terbinafine:1% w/w|topical"
+  },
+  {
+   "id": "of-200",
+   "text": "OF 200",
+   "expect": "answer",
+   "brand": "OF 200 Tablet",
+   "expect_ckey": "ofloxacin:200mg|tablet"
+  },
+  {
    "id": "hi-crocin-advance",
    "text": "क्रोसिन एडवांस",
    "expect": "choice",

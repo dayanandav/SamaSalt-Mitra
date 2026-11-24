@@ -35,6 +35,7 @@ How the live service is watched, backed up and kept inside the free plan.
 | Workers requests | 100,000 a day | Per-address limit on checks (`LIMIT_CHECK`) |
 | Workers AI (photo and prescription reading) | Daily free allocation | `DAILY_PHOTO_LIMIT` (1,500 a day on live); the live check warns at 80% |
 | D1 rows written | 100,000 a day | Big loads (Kendra list, PIN locations ~78,000 rows) one per day |
+| D1 rows read | 5 million a day, live and test site together; when used up every check fails until midnight UTC | The Jan Aushadhi list is kept in memory (`jaList`); at most one full search run a day. Today: `npx wrangler d1 info samasalt-mitra` (rows_read_24h) |
 | D1 storage | 5 GB | Today well under 100 MB |
 
 `/api/health` shows today's photo reads (`usage.photo_reads` / `usage.photo_cap`). If the warning

@@ -1,6 +1,6 @@
 # Search test set results
 
-Run 2026-11-24T11:40:04.652Z against https://samasalt-mitra-staging.samasalt-mitra-worker.workers.dev. **378/394 pass.** Answered right 264, offered among the choices 122, missed 8, **wrong matches 0** (must be 0), errors 0. Median 959 ms.
+Run 2026-11-24T13:01:24.111Z against https://samasalt-mitra-staging.samasalt-mitra-worker.workers.dev. **396/408 pass.** Answered right 277, offered among the choices 124, missed 7, **wrong matches 0** (must be 0), errors 0. Median 980 ms.
 
 Cases: evals/search_cases.src.json (expected compositions taken from the data by evals/build_search_cases.mjs).
 
@@ -99,7 +99,7 @@ Cases: evals/search_cases.src.json (expected compositions taken from the data by
 | brand-allegra180 | Allegra 180 | answer | right | Allegra 180mg Tablet [Fexofenadine 180 mg · tablet] |
 | brand-montek-lc | Montek LC | choice | right | Montek LC Tablet [Levocetirizine 5 mg + Montelukast 10 mg · tablet] |
 | brand-azee500 | Azee 500 | answer | right | Azee 500 Tablet [Azithromycin 500 mg · tablet] |
-| brand-azithral500 | Azithral 500 | choice | offered | choices: Azithral 500 Tablet; Azithral 500mg Injection; Azithral 5D Tablet |
+| brand-azithral500 | Azithral 500 | choice | offered | choices: Azithral 500 Tablet; Azithral 500mg Injection |
 | brand-zifi200 | Zifi 200 | answer | right | Zifi 200 Tablet [Cefixime 200 mg · tablet] |
 | brand-cifran500 | Cifran 500 | answer | right | Cifran 500 Tablet [Ciprofloxacin 500 mg · tablet] |
 | brand-ciplox500 | Ciplox 500 | answer | right | Ciplox 500 Tablet [Ciprofloxacin 500 mg · tablet] |
@@ -150,7 +150,7 @@ Cases: evals/search_cases.src.json (expected compositions taken from the data by
 | way-mox500-cap | Mox 500 cap | answer | right | Mox 500mg Capsule [Amoxicillin 500 mg · capsule] |
 | way-omez20-capsule | Omez 20 capsule | answer | right | Omez 20mg Capsule [Omeprazole 20 mg · capsule] |
 | way-azithral500-tablet | Azithral 500 tablet | answer | right | Azithral 500 Tablet [Azithromycin 500 mg · tablet] |
-| way-oflox200-tab | Oflox 200 tab | answer | **offered** | choices: Oflox 200 Tablet; Oflox 200mg Infusion |
+| way-oflox200-tab | Oflox 200 tab | answer | right | Oflox 200 Tablet [Ofloxacin 200 mg · tablet] |
 | typo-amaril1 | Amaril 1 | choice | offered | did you mean: Amaryl 1mg Tablet; Amarin M1 Tablet ER; Amarin PM1 Tablet ER; Amaryl M  1mg Tablet PR; Amaryl MP 1mg Table |
 | typo-rosuvaz10 | Rosuvaz 10 | choice | right | Rosuvaz 10mg Tablet [Rosuvastatin 10 mg · tablet] |
 | typo-pantp40 | Pantp 40 | choice | offered | choices: Pantpro 40mg Tablet |
@@ -199,12 +199,12 @@ Cases: evals/search_cases.src.json (expected compositions taken from the data by
 | liquid-ja-cefixime | Cefixime Oral Suspension IP 50mg per 5ml | answer | right | Cefixime Oral Suspension IP 50mg per 5ml [Cefixime 50mg/5 ml · liquid] |
 | liquid-ja-montelukast-levocet | Montelukast 4mg and Levocetirizine 2.5mg Syrup | answer | right | Montelukast 4mg and Levocetirizine 2.5mg Syrup [Levocetirizine 2.5 mg + Montelukast 4 mg · liquid] |
 | liquid-short-ranitidine | Ranitidine syrup | choice | **missed** | not_found |
-| release-glycomet1g-sr | Glycomet 1g SR | answer | **missed** | choices: Glycomet Trio 1 Tablet SR; Glycomet-GP 1 Forte Tablet SR; Glycomet Trio Forte 1 Tablet SR; Glycomet-GP 1/850 Ta |
+| release-glycomet1g-sr | Glycomet 1g SR | answer | right | Glycomet 1gm Tablet SR [Metformin 1000 mg · tablet · SR] |
 | release-glyciphage-sr500 | Glyciphage SR 500 | answer | right | Glyciphage SR 500mg Tablet [Metformin 500 mg · tablet · SR] |
 | release-gluconorm-sr500 | Gluconorm SR 500 | answer | **offered** | choices: Gluconorm SR 500mg Tablet; Gluconorm-V 0.2 Tablet SR; Gluconorm-V 0.3 Tablet SR |
 | release-diamicron-xr60 | Diamicron XR 60 | answer | right | Diamicron XR 60 Tablet [Gliclazide 60 mg · tablet · XR] |
-| release-metxl25 | Met XL 25 | answer | **offered** | choices: Met XL 25 Tablet; Met XL 3D 25/12.5 |
-| release-metxl50 | Met XL 50 | answer | **offered** | choices: Met XL 50 Tablet; Met XL 3D 50 Tablet; Met XL 3D 50/6.25 Tablet |
+| release-metxl25 | Met XL 25 | answer | right | Met XL 25 Tablet [Metoprolol Succinate 23.75 mg · tablet · XL] |
+| release-metxl50 | Met XL 50 | answer | right | Met XL 50 Tablet [Metoprolol Succinate 47.5 mg · tablet · XL] |
 | release-prolomet-xl50 | Prolomet XL 50 | answer | right | Prolomet XL 50 Tablet [Metoprolol Succinate 47.5 mg · tablet · XL] |
 | release-seloken-xl50 | Seloken XL 50 | answer | right | Seloken XL 50mg Tablet [Metoprolol Succinate 47.5 mg · tablet · XL] |
 | release-nitrocontin26 | Nitrocontin 2.6 | choice | offered | choices: Nitrocontin 2.6 Tablet CR |
@@ -269,7 +269,7 @@ Cases: evals/search_cases.src.json (expected compositions taken from the data by
 | salt-clopidogrel75 | Clopidogrel 75 | choice | right | Clopidogrel Tablets IP 75mg [Clopidogrel 75 mg · tablet] |
 | salt-ondansetron4 | Ondansetron 4 | choice | right | Ondansetron Tablets IP 4 mg [Ondansetron 4 mg · tablet] |
 | salt-rabeprazole20 | Rabeprazole 20 | choice | right | Rabeprazole Gastro Resistant Tablets IP 20 mg [Rabeprazole 20 mg · tablet] |
-| salt-ofloxacin200 | Ofloxacin 200 | choice | right | Ofloxacin Tablets IP 200mg [Ofloxacin 200 mg · tablet] |
+| salt-ofloxacin200 | Ofloxacin 200 | choice | offered | choices: Ofloxacin Tablets IP 200mg; Ofloxacin Infusion IP 200 mg per 100 ml |
 | salt-cefixime200 | Cefixime 200 | choice | right | Cefixime Tablets IP 200 mg [Cefixime 200 mg · tablet] |
 | salt-ibuprofen400 | Ibuprofen 400 | choice | right | Ibuprofen Tablets IP 400 mg [Ibuprofen 400 mg · tablet] |
 | salt-azithro500 | Azithromycin 500 | choice | right | Azithromycin Tablets IP 500 mg [Azithromycin 500 mg · tablet] |
@@ -325,6 +325,20 @@ Cases: evals/search_cases.src.json (expected compositions taken from the data by
 | form-salt-nacl | Sodium Chloride 0.9% | none | right | choices: Sodium Chloride Infusion |
 | form-salt-ketamine | Ketamine 1500mcg | none | right | choices: Ketamine 1500mcg Injection |
 | form-salt-dopamine | Dopamine 10mg/500mg | none | right | choices: Dopamine 10mg/500mg Tablet |
+| strength-ctax7gm | C Tax 7gm Injection | none | right | not_found |
+| strength-deviron35000 | Deviron 35000IU Injection | none | right | not_found |
+| strength-glismet14m | Glismet-14M PR | none | right | not_found |
+| strength-fragmin2500 | Fragmin 2500IU | answer | right | Fragmin 2500IU Injection [Dalteparin 2500 IU · injection] |
+| strength-azenam2gm | Azenam 2gm | answer | right | Azenam 2gm Injection [Aztreonam 2000 mg · injection] |
+| strength-metapro50 | Metapro 50 | answer | right | Metapro 50 Tablet [Metoprolol Tartrate 50 mg · tablet] |
+| formless-fungirap-tablet | Fungirap 200mg tablet | none | right | choices: Fungirap 200mg Capsule; Fungirap 200mg Infusion |
+| formless-levokem-capsule | Levokem 500mg capsule | none | right | choices: Levokem 500mg Tablet; Levokem 500mg Infusion; Levokem OZ 250 mg/500 mg Tablet; Levokem OZ 250mg/500mg Suspensio |
+| askform-tranexamic500 | Tranexamic acid 500 | choice | offered | choices: Tranexamic Acid Tablets IP 500 mg; Tranexamic Acid Injection IP 500 mg (100mg per ml) |
+| askform-pantoprazole40 | Pantoprazole 40 | choice | offered | choices: Pantoprazole Gastro Resistant Tablets IP 40 mg; Pantoprazole Injection 40mg |
+| askform-levetiracetam500 | Levetiracetam 500 | choice | offered | choices: Levetiracetam Tablets IP 500 mg; Levetiracetam 500 Mg Injection |
+| askform-typed-tranexamic500 | Tranexamic acid 500 injection | choice | offered | choices: Tranexamic Acid Injection IP 500 mg (100mg per ml); Clot-XL 500mg Injection |
+| of-derm-cream | OF Derm Cream | answer | right | OF Derm Cream [Clobetasol 0.05% w/w + Terbinafine 1% w/w · topical] |
+| of-200 | OF 200 | answer | right | OF 200 Tablet [Ofloxacin 200 mg · tablet] |
 | hi-crocin-advance | क्रोसिन एडवांस | choice | offered | choices: Crocin Advance Tablet |
 | hi-glycomet500sr | ग्लाइकोमेट 500 एसआर | choice | **missed** | not_found |
 | hi-amlokind5 | एमलोकाइंड 5 | choice | **missed** | not_found |

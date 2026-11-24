@@ -1,9 +1,10 @@
 {
   "note": "Fingerprints of the owner-approved tests. Written only by `node tools/test-lock.mjs approve --yes`, run by the owner.",
-  "approved_at": "2026-11-24T11:23:44.702Z",
+  "approved_at": "2026-11-24T13:34:32.721Z",
   "files": {
     "test/admin.test.mjs": "e05dd44ef3382da2c7d122e94aea823f3930b03b6297a4ce424db789f271a8d3",
     "test/askdontguess.test.mjs": "ed74a9374f1afdfa3e9fc041165503272826a0bdc9492553923d9d393f4c9a04",
+    "test/askform.test.mjs": "3d3bcc77a38f1f90fd428578b99230795bb738d72c3fba7ec27cd8a8be82dea5",
     "test/ceiling.test.mjs": "4073d42eefa07afd08a1dbade54250c6c069c302fc86d27d29408537310f98fd",
     "test/clearcomposition.test.mjs": "8ba9f7b3b347267d94978d92b685a3e1ad611acfbd8b0456fbd1c66201476a15",
     "test/core.contract.test.mjs": "6ab541c9c73403259eda76de0453761dbef0fc53318cc7e85f66215a56d39667",
@@ -39,6 +40,7 @@
     "test/searchstats.test.mjs": "56b060f20b5dd6e5df8d9117cf745d2350c044146832972b52174fa941ea6b54",
     "test/shortforms.test.mjs": "2c17911bad72de3100d7e84919a73a27a667f87bf7770d6c97d68c36c7babd8d",
     "test/site.test.mjs": "b99fef1841b6f7325db3702ec823e85267025d1fc275126e5c5ad2b936b11e38",
+    "test/strengthform.test.mjs": "6fd5365c920ce711091105da851b9208bb65110465f7c409c3b9153ae0931e60",
     "test/suggest.test.mjs": "eb570b05ab888ec4202f54b3d243875620f058a1936eeca8c90a9a0fac176eab",
     "test/test_build_ja.py": "d60d906266ba51aac3a525b847ec2e5a2e4691716c5ea6e36560c2e54772d692",
     "test/tools.test.mjs": "1aa12498c65b8342715c83ded1ce78fe9dcbfa8511aef3da450f812d834c6eb9",

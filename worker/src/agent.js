@@ -14,6 +14,8 @@ import { composeAnswer } from '../../public/strings.js';
 import { expandShortForms } from '../../public/short-forms.js';
 import { hasIndic, transliterate } from '../../public/indic.js';
 
+const RX_FORMS = ['tablet', 'capsule', 'syrup', 'injection', 'cream', 'drops']; // the forms the reader may return
+
 /**
  * v2.0.4 Scan a prescription: read the medicine names (read_prescription), then match each one to
  * the medicine list (identify_medicine, by name). Nothing is priced here: the patient picks each
@@ -27,11 +29,19 @@ export async function readPrescriptionAgent(env, { image }) {
   const items = [];
   for (const it of read.items) {
     const brand = [it.name, it.strength && !it.name.includes(it.strength.replace(/\s+/g, '')) ? it.strength : ''].filter(Boolean).join(' ');
+    // "Ask, don't guess" as for a typed name: the form written on the prescription counts, and a salt
+    // written without a form, or a brand with other salts, is a choice, never one medicine.
+    const form = RX_FORMS.includes(it.form) && !extractDosageForm(brand) ? it.form : '';
+    const asked = [brand, form].filter(Boolean).join(' ');
     let id = { found: false };
-    try { id = await identifyMedicine(ctx, { brand, composition: '', form: it.form || '' }); } catch {}
+    try {
+      id = await identifyMedicine(ctx, { brand: asked });
+      if (id.found && id.via === 'brand' && ((await formGuessChoices(ctx, asked, id)).length || (await otherSaltChoices(ctx, asked, id)).length)) id = { found: false, choices: [id] };
+      if (!id.found && !id.choices?.length && (await saltChoices(ctx, asked)).length) id = { found: false, choices: [id] };
+    } catch { id = { found: false }; }
     items.push(id.found
-      ? { read: brand, found: true, name: id.medicine.name, composition: describeKey(id.medicine.ckey), nti: !!id.medicine.nti || ntiFromKey(id.medicine.ckey) }
-      : { read: brand, found: false, ...(id.choices?.length ? { choose: true } : {}) });
+      ? { read: asked, found: true, name: id.medicine.name, composition: describeKey(id.medicine.ckey), nti: !!id.medicine.nti || ntiFromKey(id.medicine.ckey) }
+      : { read: asked, found: false, ...(id.choices?.length ? { choose: true } : {}) });
   }
   return { status: items.length ? 'ok' : 'unreadable', items, model: read.model };
 }

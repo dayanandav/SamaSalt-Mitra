@@ -28,6 +28,10 @@ jobs:
           code=$(curl -s -o /dev/null -w '%{http_code}' --retry 2 --retry-delay 20 "$SITE/")
           echo "Home page: HTTP $code"
           test "$code" = "200"
+      - name: A medicine check works (the pages can open while checks fail)
+        run: |
+          curl -sf --retry 2 --retry-delay 20 -X POST "$SITE/api/ask" -H 'content-type: application/json' -H 'x-samasalt-mitra-test: 1' -d '{"text":"Dolo 650","test":true,"nolog":true}' -o ask.json
+          node -e 'const r = require("./ask.json"); console.log("check: " + r.status); if (r.status !== "ok" || !r.jan_aushadhi?.available) process.exit(1);'
       - name: Health, data loaded, photo reads under 80% of the daily cap
         run: |
           curl -sf --retry 2 --retry-delay 20 "$SITE/api/health" -o health.json

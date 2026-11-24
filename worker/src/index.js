@@ -8,14 +8,14 @@ import { whoIs, csrfOk, login, logout, listAdmins, createAdmin, updateAdmin, can
 import { kendraContactsVisible, orderItems, orderMessage, waLink } from '../../public/rules.js';
 import { t, rupees } from '../../public/strings.js';
 import { ntiFromKey } from './normalize.js';
-import { nearestKendra } from './tools.js';
+import { resetJaList, nearestKendra } from './tools.js';
 import { overLimit, photoCapReached, countPrescriptionRead } from './limits.js';
 import { botOn, appChatOn, botNumber, handleWebhook, handleMessage } from './whatsapp.js';
 import { recordMissing, listMissing, previewAdded, addMedicine, decideMedicine, ignoreMissing } from './missing.js';
 import { registerVolunteer, listVolunteers, decideVolunteer, updateVolunteer, volunteerHistory, activeVolunteer, volunteerLinkStatus } from './volunteers.js';
 
 // Not exported: a Worker's main module may only export handlers.
-const APP_VERSION = '2.0.12';
+const APP_VERSION = '2.0.13';
 
 const MAX_IMAGE_CHARS = 2_500_000; // ~1.8 MB JPEG as a data URL; the app resizes to ~1 MP first
 
@@ -435,6 +435,7 @@ async function handlePmbiApply(request, env) {
   for (const [k, v] of Object.entries(meta)) stmts.push(env.DB.prepare('INSERT OR REPLACE INTO meta (key, value) VALUES (?1, ?2)').bind(k, v));
   await env.DB.batch(stmts); // one transaction: all of it applies, or none of it
   resetMetaCache();
+  resetJaList(env.DB);
   return json({ ok: true, applied: true, previous_count: current, new_count: items.length, list_date: body.list_date });
 }
 
@@ -456,6 +457,7 @@ async function handleCeilingApply(request, env) {
   }
   await env.DB.batch(stmts); // all or nothing
   resetMetaCache();
+  resetJaList(env.DB);
   return json({ ok: true, applied: true, previous_count: current, new_count: body.items.length, list_date: body.list_date });
 }
 
