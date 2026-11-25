@@ -143,19 +143,37 @@ async function loadJaList(db) {
   return rows;
 }
 
-// The copy deployed with the app (public/meds/ja.json, tools/ja-copy.mjs): { meta, rows }.
-const jaCopies = new WeakMap(); // database -> () => Promise of the copy
-export function setJaCopy(db, assets) {
-  if (!db || !assets || jaCopies.has(db)) return;
-  jaCopies.set(db, async () => {
-    const res = await assets.fetch(new Request('https://assets.invalid/meds/ja.json'));
-    return res.ok && (res.headers.get('content-type') || '').includes('json') ? res.json() : null;
-  });
+// Files deployed with the app (public/meds/, made by tools/ja-copy.mjs and tools/kendra-files.mjs).
+const assetsOf = new WeakMap(); // database -> the Worker's static files
+export function setAssets(db, assets) {
+  if (db && assets) assetsOf.set(db, assets);
 }
+async function assetJson(db, path) {
+  const assets = assetsOf.get(db);
+  if (!assets) return null;
+  try {
+    const res = await assets.fetch(new Request(`https://assets.invalid/${path}`));
+    return res.ok && (res.headers.get('content-type') || '').includes('json') ? await res.json() : null;
+  } catch {
+    return null;
+  }
+}
+// The Jan Aushadhi list as deployed with the app: { meta, rows }.
 export async function jaCopy(db) {
-  const get = jaCopies.get(db);
-  const c = get ? await get().catch(() => null) : null;
+  const c = await assetJson(db, 'meds/ja.json');
   return c && Array.isArray(c.rows) && c.rows.length ? c : null;
+}
+
+// The 3 nearest Kendras of a PIN, worked out when the files were made (tools/kendra-files.mjs). Used only
+// when the files were made from the Kendra list that is loaded; otherwise null and D1 is asked.
+async function kendraFile(db, pin) {
+  const f = await assetJson(db, `meds/kp/${pin.slice(0, 3)}.json`);
+  const near = f?.pins?.[pin];
+  if (!near) return null;
+  const listed = await db.prepare("SELECT value FROM meta WHERE key = 'kendra_list_date'").first().catch(() => ({ value: f.list_date }));
+  if (!listed || listed.value !== f.list_date) return null;
+  const items = near.map(([code, km]) => ({ code, ...f.kendras[code], km, approx: true }));
+  return { by: items[0].pin === pin ? 'pin' : 'nearby-pin', items };
 }
 
 /** A name as compared with a full name: lower case, single spaces. */
@@ -706,7 +724,7 @@ export async function nearestKendra(ctx, { pin = '', lat = null, lng = null, lim
     let found = [];
     for (const box of [d, d * 4, d * 12]) {
       const res = await db
-        .prepare(`SELECT ${cols} FROM kendras WHERE lat BETWEEN ?1 AND ?2 AND lng BETWEEN ?3 AND ?4 LIMIT 400`)
+        .prepare(`SELECT ${cols} FROM kendras WHERE lat BETWEEN ?1 AND ?2 AND lng BETWEEN ?3 AND ?4 LIMIT 5000`)
         .bind(la - box, la + box, lo - box, lo + box)
         .all();
       const rows = (res.results || [])
@@ -724,6 +742,8 @@ export async function nearestKendra(ctx, { pin = '', lat = null, lng = null, lim
   const p = String(pin || '').replace(/\D/g, '');
   // v2.0.4: a PIN code with a known location: the nearest Kendras by distance from its centre.
   if (p.length === 6) {
+    const file = limit === 3 ? await kendraFile(db, p) : null;
+    if (file) return file;
     const c = await db.prepare('SELECT lat, lng FROM pin_locations WHERE pin = ?1').bind(p).first().catch(() => null);
     if (c) {
       const rows = await byPoint(c.lat, c.lng);

@@ -13,7 +13,7 @@
 // WA_VERIFY_TOKEN (webhook setup), WA_HASH_KEY (chat key; falls back to WA_APP_SECRET).
 import { runAgent } from './agent.js';
 import { attachContacts } from './kendra.js';
-import { nearestKendra } from './tools.js';
+import { setAssets, nearestKendra } from './tools.js';
 import { kendraContactsVisible } from '../../public/rules.js';
 import { t } from '../../public/strings.js';
 import { answerText, kendraLines, readText } from './watext.js';
@@ -178,6 +178,7 @@ export async function handleMessage(env, msg, deps = {}, now = Date.now()) {
         out.push(text(t(word, 'waLangSet')));
       } else if (pinOnly) {
         s.pin = pinOnly[1];
+        setAssets(db, env.ASSETS);
         const k = await nearestKendra(db, { pin: s.pin });
         if (k.items?.length && kendraContactsVisible(env.KENDRA_REGISTRY, isTest)) { try { await attachContacts(db, k.items); } catch {} }
         out.push(text([t(lang, 'waPinSaved', { pin: s.pin }), '', ...kendraLines(lang, k, s.pin)].join('\n')));

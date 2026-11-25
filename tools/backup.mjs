@@ -28,6 +28,8 @@ console.log(`Done: ${(statSync(out).size / 1e6).toFixed(1)} MB`);
 
 // The copy of the Jan Aushadhi list deployed with the app (used only while D1 refuses).
 if (!staging) await import('./ja-copy.mjs');
+// The nearest Kendras of every PIN, deployed with the app.
+if (!staging) await import('./kendra-files.mjs');
 
 // Keep the newest 12 backups of this database.
 const mine = readdirSync(dir).filter((f) => f.startsWith(`${db}-2`) && f.endsWith('.sql')).sort();

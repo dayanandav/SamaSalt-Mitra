@@ -8,14 +8,14 @@ import { whoIs, csrfOk, login, logout, listAdmins, createAdmin, updateAdmin, can
 import { kendraContactsVisible, orderItems, orderMessage, waLink } from '../../public/rules.js';
 import { t, rupees } from '../../public/strings.js';
 import { ntiFromKey } from './normalize.js';
-import { resetJaList, nearestKendra } from './tools.js';
+import { resetJaList, setAssets, nearestKendra } from './tools.js';
 import { overLimit, photoCapReached, countPrescriptionRead } from './limits.js';
 import { botOn, appChatOn, botNumber, handleWebhook, handleMessage } from './whatsapp.js';
 import { recordMissing, listMissing, previewAdded, addMedicine, decideMedicine, ignoreMissing } from './missing.js';
 import { registerVolunteer, listVolunteers, decideVolunteer, updateVolunteer, volunteerHistory, activeVolunteer, volunteerLinkStatus } from './volunteers.js';
 
 // Not exported: a Worker's main module may only export handlers.
-const APP_VERSION = '2.0.14';
+const APP_VERSION = '2.0.15';
 
 const MAX_IMAGE_CHARS = 2_500_000; // ~1.8 MB JPEG as a data URL; the app resizes to ~1 MP first
 
@@ -181,7 +181,25 @@ async function handleMonthly(request, env) {
   return json({ ok: true, counted: true });
 }
 
+// v2.0.15: the figures are made from every lookup, so with IMPACT_CACHE_MIN set they are kept as one row and
+// made again only after that many minutes ("generated_at" says when).
 async function handleImpact(env, url) {
+  const headers = { 'cache-control': 'public, max-age=30' };
+  const minutes = Number.parseInt(env.IMPACT_CACHE_MIN || '', 10) || 0;
+  if (!minutes) return json(await impactFigures(env, url), 200, headers);
+  const now = Date.now();
+  const asked = url?.searchParams.get('month') || '';
+  // Only months that can have lookups: any other address must not make (or keep) figures.
+  const month = /^20\d{2}-(0[1-9]|1[0-2])$/.test(asked) && asked >= '2026-10' && asked <= istDay().slice(0, 7) ? asked : '';
+  const key = month || 'all';
+  const kept = await env.DB.prepare('SELECT at, data FROM impact_summary WHERE key = ?1').bind(key).first().catch(() => null);
+  if (kept && now - kept.at < minutes * 60_000) return json(JSON.parse(kept.data), 200, headers);
+  const figures = await impactFigures(env, new URL(`https://x.invalid/${month ? `?month=${month}` : ''}`));
+  await env.DB.prepare('INSERT OR REPLACE INTO impact_summary (key, at, data) VALUES (?1, ?2, ?3)').bind(key, now, JSON.stringify(figures)).run().catch(() => {});
+  return json(figures, 200, headers);
+}
+
+async function impactFigures(env, url) {
   const q = (sql) => env.DB.prepare(sql).all().then((r) => r.results || []);
   // v2.0.5 monthly report: ?month=YYYY-MM limits every figure to that month (IST days).
   const mp = url?.searchParams.get('month') || '';
@@ -232,7 +250,7 @@ async function handleImpact(env, url) {
     const m = /^monthly_(kept|opened)_(\d{4}-\d{2})$/.exec(r.key);
     if (m && (!month || m[2] === month)) monthlyLists[m[1]] += Number.parseInt(r.value, 10) || 0;
   }
-  return json({
+  return {
     generated_at: new Date().toISOString(),
     month,
     note: 'Real usage only: test traffic (evals, demo recordings, developer checks) is flagged is_test=1 and excluded from every figure.',
@@ -244,7 +262,7 @@ async function handleImpact(env, url) {
     search: { by_way: byInput, by_via: byVia, by_language: byLangFound, unreadable_by_reason: byReason },
     monthly_lists: monthlyLists,
     excluded_test_lookups: testCount[0]?.n ?? 0,
-  }, 200, { 'cache-control': 'public, max-age=30' });
+  };
 }
 
 // ── Developer data import (/dev page) ─────────────────────────────────────────
@@ -522,6 +540,7 @@ export default {
       }
       // Nearest Kendras for a PIN, for the PIN box in an answer's Kendra card (no lookup is logged).
       if (url.pathname === '/api/kendras') {
+        setAssets(env.DB, env.ASSETS);
         // v2.0.4 "Use my location": rounded to ~1 km here, used once, never stored.
         const la = Number.parseFloat(url.searchParams.get('lat'));
         const lo = Number.parseFloat(url.searchParams.get('lng'));

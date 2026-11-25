@@ -7,7 +7,7 @@
 // Every step is recorded in `trace` (tool, input, short output, ms) and returned to the UI,
 // and the eval runner writes the same trace as AgentFoundry run JSONL (.codenow/runs/).
 import { readStrip, understandText, readPrescription } from './vision.js';
-import { identifyMedicine, janAushadhiByName, suggestNames, soundsLikeChoices, saltChoices, setJaCopy, jaCopy, formGuessChoices, otherSaltChoices, describeRow, saltCount, findSameSalt, janAushadhiMatch, ceilingPrice, nearestKendra, computeSaving, compositionFromText, brandCandidatesFromText } from './tools.js';
+import { identifyMedicine, janAushadhiByName, suggestNames, soundsLikeChoices, saltChoices, setAssets, jaCopy, formGuessChoices, otherSaltChoices, describeRow, saltCount, findSameSalt, janAushadhiMatch, ceilingPrice, nearestKendra, computeSaving, compositionFromText, brandCandidatesFromText } from './tools.js';
 import { describeKey, extractDosageForm, ntiFromKey, parseSaltComposition } from './normalize.js';
 import { assetMeds, d1Meds } from './medstore.js';
 import { composeAnswer } from '../../public/strings.js';
@@ -24,7 +24,7 @@ const RX_FORMS = ['tablet', 'capsule', 'syrup', 'injection', 'cream', 'drops']; 
 export async function readPrescriptionAgent(env, { image }) {
   const files = env.ASSETS ? await assetMeds(env.ASSETS) : null;
   const ctx = { db: env.DB, meds: files || d1Meds(env.DB) };
-  setJaCopy(env.DB, env.ASSETS);
+  setAssets(env.DB, env.ASSETS);
   const read = await readPrescription(env, image);
   if (!read.ok) return { status: read.unreadable ? 'unreadable' : 'vision_unavailable' };
   const items = [];
@@ -51,7 +51,7 @@ const NON_LATIN = /[^\u0000-ɏ\s\d.,()+\-/]/;
 
 export async function runAgent(env, input) {
   const db = env.DB;
-  setJaCopy(db, env.ASSETS);
+  setAssets(db, env.ASSETS);
   // Brand medicines come from the static files when they are deployed, else from D1 (tests).
   const files = env.ASSETS ? await assetMeds(env.ASSETS) : null;
   const ctx = { db, meds: files || d1Meds(db) };

@@ -45,6 +45,9 @@ CANONICAL_HOST = ""
 # the name instead, so a flood cannot use up the free Workers AI allocation. "" = no cap.
 DAILY_PHOTO_LIMIT = "1500"
 
+# /impact figures are made again after this many minutes (they read every lookup). "" = every time.
+IMPACT_CACHE_MIN = "60"
+
 # Per-address request limits (Cloudflare Rate Limiting; the address is a counter key only, never
 # stored). Checks: /api/ask, /api/chat, /api/feedback, /api/wa/simulate. Login: /api/admin/login.
 [[ratelimits]]
@@ -91,6 +94,7 @@ WHATSAPP_BOT = "on"
 WA_BOT_NUMBER = ""
 APP_CHAT = "on"
 DAILY_PHOTO_LIMIT = "300"
+IMPACT_CACHE_MIN = "60"
 
 [[env.staging.ratelimits]]
 name = "LIMIT_CHECK"
