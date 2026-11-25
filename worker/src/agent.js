@@ -12,7 +12,7 @@ import { describeKey, extractDosageForm, ntiFromKey, parseSaltComposition } from
 import { assetMeds, d1Meds } from './medstore.js';
 import { composeAnswer } from '../../public/strings.js';
 import { expandShortForms } from '../../public/short-forms.js';
-import { hasIndic, transliterate } from '../../public/indic.js';
+import { hasIndic, transliterate, spokenWords } from '../../public/indic.js';
 
 const RX_FORMS = ['tablet', 'capsule', 'syrup', 'injection', 'cream', 'drops']; // the forms the reader may return
 
@@ -154,7 +154,7 @@ export async function runAgent(env, input) {
   // fit is answered, otherwise brands that sound alike are offered as choices with their salts.
   // The language model below is asked only when nothing sounds alike.
   if (!id.found && source === 'text' && text && hasIndic(text)) {
-    const latin = transliterate(text);
+    const latin = spokenWords(transliterate(text));
     query = { brand: latin, composition: '', form: '' };
     id = await step('identify_medicine', { ...query, transliterated: true }, () => identifyMedicine(ctx, query), (r) =>
       r.found ? { name: r.medicine.name, composition: r.label, via: r.via } : { found: false, choices: r.choices?.length || 0 }

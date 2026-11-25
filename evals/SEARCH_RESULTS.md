@@ -1,6 +1,6 @@
 # Search test set results
 
-Run 2026-11-25T05:08:07.051Z against local. **394/408 pass.** Answered right 275, offered among the choices 124, missed 9, **wrong matches 0** (must be 0), errors 0. Median 7 ms.
+Run 2026-11-25T10:32:31.364Z against local. **408/408 pass.** Answered right 280, offered among the choices 128, missed 0, **wrong matches 0** (must be 0), errors 0. Median 9 ms.
 
 Cases: evals/search_cases.src.json (expected compositions taken from the data by evals/build_search_cases.mjs).
 
@@ -33,7 +33,7 @@ Cases: evals/search_cases.src.json (expected compositions taken from the data by
 | variant-augmentin625 | Augmentin 625 | choice | offered | choices: Augmentin 625 Duo Tablet |
 | variant-azithro500 | Azithro 500 | choice | offered | choices: Azithro Max 500mg Tablet; Azithrov 500 Tablet; Azithromat 500 Tablet; Azithron 500mg Tablet; Azithropen 500 Tab |
 | variant-atorva-e | Atorva E | choice | offered | choices: Atorva E 40 Tablet; Atorva E 10mg/10mg Tablet; Atorva Tablet |
-| variant-calpol-syp | Calpol syp | none | right | choices: Calpol T  Tablet |
+| variant-calpol-syp | Calpol syp | none | right | choices: Calpol 120mg Suspension Strawberry; Calpol T  Tablet |
 | typo-dolo-o-for-zero | Dolo 65O | choice | offered | did you mean: Dolo 650 Tablet; Dolopar 650 Tablet; Dololife 650 Tablet; Dolomed 650mg Tablet; Doloxer 650mg Tablet |
 | typo-augmentn | Augmentn 625 | choice | offered | did you mean: Augmentin 625 Duo Tablet |
 | typo-dolp | Dolp 500 | choice | offered | choices: Dolpi 100mg/500mg Tablet; Dolpip TZ 4000mg/500mg Injection |
@@ -58,15 +58,15 @@ Cases: evals/search_cases.src.json (expected compositions taken from the data by
 | kn-dolo650 | ಡೋಲೋ 650 | answer | right | Dolo 650 Tablet [Paracetamol 650 mg · tablet] |
 | hi-dolo650 | डोलो 650 | answer | right | Dolo 650 Tablet [Paracetamol 650 mg · tablet] |
 | hi-telma40 | टेल्मा 40 | choice | offered | choices: Telma 40 Tablet; Telma H Tablet; Telma-AM Tablet; Telma-NB Tablet; Telma-LNC Tablet |
-| hi-atorva10 | एटोर्वा 10 | choice | offered | choices: Atorva Tablet; Atoriv 10mg Tablet; Etorvas 10mg Tablet; Atorva E 40 Tablet; Atorva E 10mg/10mg Tablet |
+| hi-atorva10 | एटोर्वा 10 | choice | offered | choices: Atorva Tablet; Atorva E 40 Tablet; Atorva E 10mg/10mg Tablet; Atorva Asp 75 Capsule; Atorva Asp 150 Capsule |
 | kn-thyronorm50 | ಥೈರೋನಾರ್ಮ್ 50 | choice | offered | choices: Thyronorm 50mcg Tablet |
-| hi-pan40 | पैन 40 टैबलेट | choice | **missed** | not_found |
+| hi-pan40 | पैन 40 टैबलेट | choice | offered | choices: PAN 40 Tablet; Pen 40mg Tablet; Pan Up 40mg Tablet; PAN IV Injection; Pan Tart 40mg Injection |
 | hi-metformin500 | मेटफॉर्मिन 500 | choice | offered | choices: Metformin Hydrochloride Tablets IP 500mg; Metformin Hydrochloride Prolonged release Tablets IP 500 mg; Metformi |
 | hi-amox500 | अमोक्सीसिलिन 500 | choice | offered | choices: Amoxycillin Capsules IP 500mg; Amoxycillin 500mg and Potassium Clavulanate 125mg Tablets IP; Amoxycillin 500mg  |
 | hi-para650 | पैरासिटामोल 650 | choice | offered | choices: Paracetamol Tablets IP 650 mg; Paracetamol 650mg and Caffeine 50mg Tablets IP |
 | kn-amlodipine5 | ಅಮ್ಲೋಡಿಪಿನ್ 5 | choice | offered | choices: Amlodipine Tablets IP 5mg; Amlodipine + Enalapril Tablet (5/5 Mg); Amlodipine + Indapamide Tablet (5/1.5 Mg); A |
 | hi-panto40 | पैंटोप्राजोल 40 | choice | offered | choices: Pantoprazole Gastro Resistant Tablets IP 40 mg; Pantoprazole Injection 40mg; Pantoprazole 40mg and Domperidone  |
-| kn-cetirizine10 | ಸಿಟಿರಿಜಿನ್ 10 | choice | offered | choices: Cetrizine Hydrochloride Tablets IP 10mg; Cetrizine Tablet; Sitrizin 10mg Tablet; Citrazan 10mg Tablet; Citrimin |
+| kn-cetirizine10 | ಸಿಟಿರಿಜಿನ್ 10 | choice | offered | choices: Cetrizine Hydrochloride Tablets IP 10mg; Cetrizine Tablet; Cetirizine 10mg Tablet; Cetirzin M 5mg/10mg Tablet;  |
 | nti-brivapride25 | Brivapride 25 | answer | right | Brivapride 25mg Tablet [Brivaracetam 25 mg · tablet] |
 | nti-thyronorm100 | Thyronorm 100 | answer | right | Thyronorm 100mcg Tablet [Thyroxine 100 mcg · tablet] |
 | none-gaviscon | Gaviscon oral syrup | none | right | not_found |
@@ -82,7 +82,7 @@ Cases: evals/search_cases.src.json (expected compositions taken from the data by
 | brand-olmezest20 | Olmezest 20 | answer | right | Olmezest 20 Tablet [Olmesartan Medoxomil 20 mg · tablet] |
 | brand-concor5 | Concor 5 | answer | right | Concor 5 Tablet [Bisoprolol 5 mg · tablet] |
 | brand-metolar25 | Metolar 25 | answer | right | Metolar 25 Tablet [Metoprolol Tartrate 25 mg · tablet] |
-| brand-nebicard5 | Nebicard 5 | answer | **offered** | choices: Nebicard 5 Tablet; Nebicard-V Tablet |
+| brand-nebicard5 | Nebicard 5 | answer | right | Nebicard 5 Tablet [Nebivolol 5 mg · tablet] |
 | brand-storvas10 | Storvas 10 | answer | right | Storvas 10 Tablet [Atorvastatin 10 mg · tablet] |
 | brand-rosuvas10 | Rosuvas 10 | choice | right | Rosuvas 10 Tablet [Rosuvastatin 10 mg · tablet] |
 | brand-pantop40 | Pantop 40 | choice | offered | choices: Pantop 40 Tablet; Pantop Injection |
@@ -121,7 +121,7 @@ Cases: evals/search_cases.src.json (expected compositions taken from the data by
 | brand-pregaba75 | Pregaba 75 | answer | right | Pregaba 75 Capsule [Pregabalin 75 mg · capsule] |
 | brand-gabapin300 | Gabapin 300 | answer | right | Gabapin 300 Capsule [Gabapentin 300 mg · capsule] |
 | brand-lyrica75 | Lyrica 75 | answer | right | Lyrica 75mg Capsule [Pregabalin 75 mg · capsule] |
-| brand-tryptomer10 | Tryptomer 10 | answer | **offered** | choices: Tryptomer 10mg Tablet; Tryptomer G 300mg/10mg Tablet; Tryptomer G 100 mg/10 mg Tablet |
+| brand-tryptomer10 | Tryptomer 10 | answer | right | Tryptomer 10mg Tablet [Amitriptyline 10 mg · tablet] |
 | brand-nexito10 | Nexito 10 | answer | right | Nexito 10 Tablet [Escitalopram Oxalate 10 mg · tablet] |
 | brand-alprax025 | Alprax 0.25 | answer | right | Alprax 0.25 Tablet [Alprazolam 0.25 mg · tablet] |
 | brand-restyl025 | Restyl 0.25 | answer | right | Restyl 0.25mg Tablet [Alprazolam 0.25 mg · tablet] |
@@ -161,7 +161,7 @@ Cases: evals/search_cases.src.json (expected compositions taken from the data by
 | typo-lyrika75 | Lyrika 75 | choice | offered | did you mean: Lyrica 75mg Capsule |
 | typo-ecospirin75 | Ecospirin 75 | choice | offered | did you mean: Ecosprin 75 Tablet; Ecosprin-AV 75 Capsule; Ecosprin AV 75/20 Capsule; Ecosprin AV 75/40 Capsule |
 | typo-augmentine625 | Augmentine 625 | choice | offered | did you mean: Augmentin 625 Duo Tablet |
-| typo-allegr120 | Alegra 120 | choice | **missed** | did you mean: Alero 120mg Tablet; Alert 120mg Tablet; Aler-FM 10mg/120mg Tablet; Alegrid M 10mg/120mg Tablet |
+| typo-allegr120 | Alegra 120 | choice | offered | did you mean: Allegra 120mg Tablet; Alero 120mg Tablet; Alert 120mg Tablet; Aler-FM 10mg/120mg Tablet; Alegrid M 10mg/12 |
 | typo-nexitto10 | Nexitto 10 | choice | offered | did you mean: Nexito 10 Tablet |
 | typo-cilacr10 | Cilacr 10 | choice | offered | did you mean: Cilacar 10 Tablet; Cilacar-M 10/25 Tablet ER; Cilacar-M 10/50 Tablet ER; Cilacar TM 10mg/25mg/40mg Tablet; |
 | typo-zolfrsh10 | Zolfrsh 10 | choice | offered | did you mean: Zolfresh 10mg Tablet; Zolfirst 0.5mg/10mg Tablet |
@@ -169,7 +169,7 @@ Cases: evals/search_cases.src.json (expected compositions taken from the data by
 | nostrength-losar | Losar | choice | offered | choices: Losar 25 Tablet; Losar 50 Tablet; Losar 100mg Tablet; Losar-A Tablet; Losar-H Tablet |
 | nostrength-pantop | Pantop | choice | offered | choices: Pantop Injection; Pantop 20 Tablet; Pantop 40 Tablet |
 | nostrength-azee | Azee | choice | offered | choices: Azee 250 Tablet; Azee 500 Tablet; Azee 1000 Tablet; Azee 200 DT Tablet; Azee 200mg Dry Syrup |
-| nostrength-allegra | Allegra | choice | offered | choices: Allegra Nasal Spray; Allegra 120mg Tablet; Allegra 180mg Tablet |
+| nostrength-allegra | Allegra | choice | offered | choices: Allegra Nasal Spray; Allegra Suspension Raspberry & Vanilla; Allegra 120mg Tablet; Allegra 180mg Tablet |
 | nostrength-ondem | Ondem | choice | offered | choices: Ondem Syrup; Ondem Injection; Ondem 4 Tablet; Ondem 8 Tablet; Ondem 8mg Injection |
 | nostrength-ecosprin | Ecosprin | choice | offered | choices: Ecosprin 75 Tablet; Ecosprin 150 Tablet; Ecosprin 325 Tablet; Ecosprin-AV 75 Capsule; Ecosprin-AV 150 Capsule |
 | nostrength-amaryl | Amaryl | choice | offered | choices: Amaryl 1mg Tablet; Amaryl 2mg Tablet; Amaryl 3mg Tablet; Amaryl 4mg Tablet; Amaryl M  1mg Tablet PR |
@@ -184,24 +184,24 @@ Cases: evals/search_cases.src.json (expected compositions taken from the data by
 | liquid-calpol250-susp | Calpol 250 suspension | choice | offered | choices: Calpol 250mg Paediatric Oral Suspension Strawberry; Calpol 250mg Tablet |
 | liquid-zifi100-dry | Zifi 100 dry syrup | answer | right | Zifi 100 Dry Syrup [Cefixime 100mg/5 ml · liquid] |
 | liquid-combiflam-susp | Combiflam suspension | answer | right | Combiflam Suspension [Ibuprofen 100 mg + Paracetamol 162.5 mg · liquid] |
-| liquid-ibugesic-plus-susp | Ibugesic Plus suspension | answer | **offered** | choices: Ibugesic Plus Oral Suspension Orange; Ibugesic Plus Tablet; Ibugesic Oral Suspension Orange |
+| liquid-ibugesic-plus-susp | Ibugesic Plus suspension | answer | right | Ibugesic Plus Oral Suspension Orange [Ibuprofen 100 mg + Paracetamol 162.5 mg · liquid] |
 | liquid-augmentin-duo | Augmentin Duo syrup | choice | right | Augmentin Duo Oral Suspension [Amoxicillin 200 mg + Clavulanic Acid 28.5 mg · liquid] |
 | liquid-zentel-susp | Zentel suspension | choice | right | Zentel Oral Suspension [Albendazole 400 mg · liquid] |
 | liquid-montair-lc-kid | Montair LC Kid syrup | answer | right | Montair LC Kid Syrup [Levocetirizine 2.5mg/5 ml + Montelukast 4mg/5 ml · liquid] |
 | liquid-montek-lc-kid | Montek LC Kid syrup | answer | right | Montek LC Kid Syrup [Levocetirizine 2.5mg/5 ml + Montelukast 4mg/5 ml · liquid] |
 | liquid-grilinctus-ls | Grilinctus LS syrup | choice | right | Grilinctus-LS Syrup [Ambroxol 30mg/5 ml + Levosalbutamol 1mg/5 ml · liquid] |
 | liquid-cyclopam-susp | Cyclopam suspension | answer | right | Cyclopam Suspension [Dicyclomine 10 mg + Simethicone 40 mg · liquid] |
-| liquid-zifi100-tablet | Zifi 100 tablet | answer | **offered** | choices: Zifi 100 DT Tablet; Zifi-LBX 100 Tablet; Zifi-O 100 DT Tablet; Zifi CV 100 DT Tablet; Zifi 100 Dry Syrup |
+| liquid-zifi100-tablet | Zifi 100 tablet | answer | right | Zifi 100 DT Tablet [Cefixime 100 mg · tablet] |
 | liquid-ja-ondansetron | Ondansetron Oral Solution IP 2 mg per 5ml | answer | right | Ondansetron Oral Solution IP 2 mg per 5ml [Ondansetron 2mg/5 ml · liquid] |
 | liquid-ja-azithro | Azithromycin Oral Suspension IP 100mg per 5ml | answer | right | Azithromycin Oral Suspension IP 100mg per 5ml [Azithromycin 100mg/5 ml · liquid] |
 | liquid-ja-albendazole | Albendazole Oral Suspension IP 200 mg per 5ml | answer | right | Albendazole Oral Suspension IP 200 mg per 5ml [Albendazole 200mg/5 ml · liquid] |
 | liquid-ja-ranitidine | Ranitidine Syrup IP 75 mg per 5ml | answer | right | Ranitidine Syrup IP 75 mg per 5ml [Ranitidine 75mg/5 ml · liquid] |
 | liquid-ja-cefixime | Cefixime Oral Suspension IP 50mg per 5ml | answer | right | Cefixime Oral Suspension IP 50mg per 5ml [Cefixime 50mg/5 ml · liquid] |
 | liquid-ja-montelukast-levocet | Montelukast 4mg and Levocetirizine 2.5mg Syrup | answer | right | Montelukast 4mg and Levocetirizine 2.5mg Syrup [Levocetirizine 2.5 mg + Montelukast 4 mg · liquid] |
-| liquid-short-ranitidine | Ranitidine syrup | choice | **missed** | not_found |
+| liquid-short-ranitidine | Ranitidine syrup | choice | offered | choices: Ranitidine Syrup IP 75 mg per 5ml |
 | release-glycomet1g-sr | Glycomet 1g SR | answer | right | Glycomet 1gm Tablet SR [Metformin 1000 mg · tablet · SR] |
 | release-glyciphage-sr500 | Glyciphage SR 500 | answer | right | Glyciphage SR 500mg Tablet [Metformin 500 mg · tablet · SR] |
-| release-gluconorm-sr500 | Gluconorm SR 500 | answer | **offered** | choices: Gluconorm SR 500mg Tablet; Gluconorm-V 0.2 Tablet SR; Gluconorm-V 0.3 Tablet SR |
+| release-gluconorm-sr500 | Gluconorm SR 500 | answer | right | Gluconorm SR 500mg Tablet [Metformin 500 mg · tablet · SR] |
 | release-diamicron-xr60 | Diamicron XR 60 | answer | right | Diamicron XR 60 Tablet [Gliclazide 60 mg · tablet · XR] |
 | release-metxl25 | Met XL 25 | answer | right | Met XL 25 Tablet [Metoprolol Succinate 23.75 mg · tablet · XL] |
 | release-metxl50 | Met XL 50 | answer | right | Met XL 50 Tablet [Metoprolol Succinate 47.5 mg · tablet · XL] |
@@ -293,7 +293,7 @@ Cases: evals/search_cases.src.json (expected compositions taken from the data by
 | salt-methylcobalamin1500 | Methylcobalamin 1500 mcg | choice | right | Methylcobalamin Tablet 1500mcg [Methylcobalamin 1.5 mg · tablet] |
 | salt-pramipexole025 | Pramipexole 0.25 mg | choice | offered | choices: Pramipexole Dihydrochloride Tablets 0.25mg; Parpex 0.25mg Tablet |
 | salt-metoprolol50 | Metoprolol 50 mg | choice | offered | choices: Metolash 50 Tablet; Mepol 50mg Tablet; Metoprolol Extended release Tablets IP 50mg; Metoprolol Succinate extend |
-| salt-amoxclav | Amoxicillin 500 Clavulanic acid 125 | choice | **missed** | not_found |
+| salt-amoxclav | Amoxicillin 500 Clavulanic acid 125 | choice | offered | choices: Amoxycillin 500mg and Potassium Clavulanate 125mg Tablets IP |
 | form-tramadol50 | Tramadol 50 mg | choice | offered | choices: Tramadol Tablets 50mg; Termeg 50mg Capsule; Painadol 50mg Tablet SR; Tramadol HCl Injection 50mg 1 ml |
 | form-tramadol50-plain | tramadol 50 | choice | offered | choices: Tramadol Tablets 50mg; Termeg 50mg Capsule; Painadol 50mg Tablet SR; Tramadol HCl Injection 50mg 1 ml |
 | form-albendazole400 | Albendazole 400 mg | choice | offered | choices: Albendazole Tablets IP 400mg; Abn 400mg Capsule; Abide 400mg Drop; Toko 400mg Syrup; Elbenol 400mg Sachet |
@@ -340,31 +340,31 @@ Cases: evals/search_cases.src.json (expected compositions taken from the data by
 | of-derm-cream | OF Derm Cream | answer | right | OF Derm Cream [Clobetasol 0.05% w/w + Terbinafine 1% w/w · topical] |
 | of-200 | OF 200 | answer | right | OF 200 Tablet [Ofloxacin 200 mg · tablet] |
 | hi-crocin-advance | क्रोसिन एडवांस | choice | offered | choices: Crocin Advance Tablet |
-| hi-glycomet500sr | ग्लाइकोमेट 500 एसआर | choice | **missed** | not_found |
-| hi-amlokind5 | एमलोकाइंड 5 | choice | **missed** | not_found |
+| hi-glycomet500sr | ग्लाइकोमेट 500 एसआर | choice | offered | choices: Glycomet 500 SR Tablet; Glycomet-GP 1 Tablet PR; Glycomet-GP 2 Tablet PR; Glycomet Trio 1 Tablet SR; Glycomet T |
+| hi-amlokind5 | एमलोकाइंड 5 | choice | offered | choices: Amlokind 5 Tablet; Amlokind-H Tablet; Amlokind-AT Tablet; Amlokind TM 40mg/5mg Tablet; Amlokind Beta 5mg/25mg T |
 | hi-ecosprin75 | इकोस्प्रिन 75 | choice | offered | choices: Ecosprin 75 Tablet; Ecosprin-AV 75 Capsule; Ecosprin AV 75/20 Capsule; Ecosprin AV 75/40 Capsule; Ecosprin Gold |
-| hi-azee500 | एज़ी 500 | choice | offered | choices: Ezee Pain Plus Tablet; Ozi 500 Tablet; Azee 500 Tablet; Azi 500mg Tablet; Azy 500mg Tablet |
-| hi-allegra120 | एलेग्रा 120 | choice | offered | choices: Eligra 120mg Tablet |
-| hi-augmentin625 | ऑगमेंटिन 625 | choice | **missed** | not_found |
+| hi-azee500 | एज़ी 500 | choice | offered | choices: Azee 500 Tablet; Azi 500mg Tablet; Azy 500mg Tablet; Ajee 500mg Tablet; Azzy 500mg Tablet |
+| hi-allegra120 | एलेग्रा 120 | choice | offered | choices: Allegra 120mg Tablet; Allegra-M Tablet; Eligra 120mg Tablet; Leegra 120mg Tablet; Leegra-MK Tablet |
+| hi-augmentin625 | ऑगमेंटिन 625 | choice | offered | choices: Augmentin 625 Duo Tablet |
 | hi-thyronorm25 | थायरोनॉर्म 25 | choice | offered | choices: Thyronorm 25mcg Tablet |
 | hi-ondem4 | ओंडेम 4 | choice | right | Ondem 4 Tablet [Ondansetron 4 mg · tablet] |
 | hi-atorvastatin10 | एटोरवास्टेटिन 10 | choice | offered | choices: Atorvastatin Tablets IP 10mg; Atorvastatin 10mg + Ezetimibe 10mg Tablets; Atorvastatin 10mg and Aspirin 150mg C |
 | hi-losartan50 | लोसार्टन 50 | choice | offered | choices: Losartan Tablets IP 50mg; Losartan 50mg and Amlodipine 5mg Tablets IP; Losartan + S- Amlodipine Tablet (50/2.5  |
 | hi-glimepiride1 | ग्लिमेपिराइड 1 | choice | offered | choices: Glimepiride Tablets IP 1mg; Glimepye M 1mg/500mg Tablet ER |
 | hi-telmisartan40 | टेल्मिसार्टन 40 | choice | offered | choices: Telmisartan Tablets IP 40mg; Telmisartan + Indapamide Tablet (40/1.5 Mg); Telmisartan 40mg and Metoprolol 25mg  |
-| hi-cetirizine10 | सेटिरिज़िन 10 | choice | offered | choices: Cetrizine Hydrochloride Tablets IP 10mg; Cetrizine Tablet; Cetiriz 10mg Tablet; Sitrizin 10mg Tablet; Cetrilin  |
+| hi-cetirizine10 | सेटिरिज़िन 10 | choice | offered | choices: Cetrizine Hydrochloride Tablets IP 10mg; Cetrizine Tablet; Cetirizine 10mg Tablet; Cetirzin M 5mg/10mg Tablet;  |
 | kn-crocin-advance | ಕ್ರೋಸಿನ್ ಅಡ್ವಾನ್ಸ್ | choice | offered | choices: Crocin Advance Tablet |
 | kn-telma40 | ಟೆಲ್ಮಾ 40 | choice | offered | choices: Telma 40 Tablet; Telma H Tablet; Telma-AM Tablet; Telma-NB Tablet; Telma-LNC Tablet |
 | kn-pan40 | ಪ್ಯಾನ್ 40 | choice | offered | choices: PAN 40 Tablet; Pan Up 40mg Tablet; PAN IV Injection; Pan Tart 40mg Injection; Pan-D Capsule PR |
 | kn-atorva10 | ಅಟೊರ್ವಾ 10 | choice | offered | choices: Atorva Tablet; Atorva E 40 Tablet; Atorva E 10mg/10mg Tablet; Atorva Asp 75 Capsule; Atorva Asp 150 Capsule |
-| kn-glycomet500sr | ಗ್ಲೈಕೋಮೆಟ್ 500 ಎಸ್ಆರ್ | choice | **missed** | not_found |
-| kn-amlokind5 | ಆಮ್ಲೋಕೈಂಡ್ 5 | choice | **missed** | not_found |
+| kn-glycomet500sr | ಗ್ಲೈಕೋಮೆಟ್ 500 ಎಸ್ಆರ್ | choice | offered | choices: Glycomet 500 SR Tablet; Glycomet-GP 1 Tablet PR; Glycomet-GP 2 Tablet PR; Glycomet Trio 1 Tablet SR; Glycomet T |
+| kn-amlokind5 | ಆಮ್ಲೋಕೈಂಡ್ 5 | choice | offered | choices: Amlokind 5 Tablet; Amlokind-H Tablet; Amlokind-AT Tablet; Amlokind TM 40mg/5mg Tablet; Amlokind Beta 5mg/25mg T |
 | kn-ecosprin75 | ಇಕೋಸ್ಪ್ರಿನ್ 75 | choice | offered | choices: Ecosprin 75 Tablet; Ecosprin-AV 75 Capsule; Ecosprin AV 75/20 Capsule; Ecosprin AV 75/40 Capsule; Ecosprin Gold |
-| kn-allegra120 | ಅಲೆಗ್ರಾ 120 | choice | offered | choices: Eligra 120mg Tablet |
+| kn-allegra120 | ಅಲೆಗ್ರಾ 120 | choice | offered | choices: Allegra 120mg Tablet; Allegra-M Tablet; Eligra 120mg Tablet; Leegra 120mg Tablet; Leegra-MK Tablet |
 | kn-para650 | ಪ್ಯಾರಸಿಟಮಾಲ್ 650 | choice | offered | choices: Paracetamol Tablets IP 650 mg; Paracetamol 650mg and Caffeine 50mg Tablets IP |
 | kn-metformin500 | ಮೆಟ್‌ಫಾರ್ಮಿನ್ 500 | choice | offered | choices: MET 500 Tablet; Met 500mg Tablet; MET-SR 500 Tablet; Met DM 500mg Tablet XL; Metcef 500 Tablet |
 | kn-telmisartan40 | ಟೆಲ್ಮಿಸಾರ್ಟನ್ 40 | choice | offered | choices: Telmisartan Tablets IP 40mg; Telmisartan + Indapamide Tablet (40/1.5 Mg); Telmisartan 40mg and Metoprolol 25mg  |
-| kn-azithro500 | ಅಜಿಥ್ರೋಮೈಸಿನ್ 500 | choice | offered | choices: Azithromycin Tablets IP 500 mg |
+| kn-azithro500 | ಅಜಿಥ್ರೋಮೈಸಿನ್ 500 | choice | offered | choices: Azithromycin Tablets IP 500 mg; Zitromycin 500mg Tablet; Zithromycin 500mg Tablet |
 | kn-panto40 | ಪ್ಯಾಂಟೊಪ್ರಜೋಲ್ 40 | choice | offered | choices: Pantoprazole Gastro Resistant Tablets IP 40 mg; Pantoprazole Injection 40mg; Pantoprazole 40mg and Domperidone  |
 | nti-warf5 | Warf 5 | answer | right | Warf 5 Tablet [Warfarin 5 mg · tablet] |
 | nti-acitrom2 | Acitrom 2 | answer | right | Acitrom 2 Tablet [Acenocoumarol 2 mg · tablet] |

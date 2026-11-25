@@ -1,8 +1,8 @@
 // The agent's tools. Each takes a D1-compatible `db` (prepare().bind().all()/first())
 // and returns plain JSON, so they are unit-testable with node:sqlite (see test/).
-import { keyFor, buildCanonicalKey, parseSaltComposition, extractDosageForm, extractReleaseType, describeKey, isNti, ntiFromKey } from './normalize.js';
+import { keyFor, normalizeSpelling, buildCanonicalKey, parseSaltComposition, extractDosageForm, extractReleaseType, describeKey, isNti, ntiFromKey } from './normalize.js';
 import { d1Meds } from './medstore.js';
-import { namePrefixes, soundsAlike, soundKey } from '../../public/indic.js';
+import { namePrefixes, soundsAlike, sameSound, soundKey, consonants } from '../../public/indic.js';
 
 // Tools take a plain D1 `db` (tests) or { db, meds } (the Worker, where brand medicines are
 // read from static files: see medstore.js). Jan Aushadhi and Kendras are always in D1.
@@ -281,7 +281,8 @@ export async function suggestNames(ctx, text, { limit = 5 } = {}) {
   const form = extractDosageForm(fixed);
   const max = word.length <= 4 ? 1 : 2;
   const seen = new Map();
-  for (const p of [...new Set([word, word.slice(0, 4), word.slice(0, 3)])].filter((p) => p.length >= 3)) {
+  const alike = meds.soundWords ? ((await meds.soundWords(word).catch(() => null)) || []).filter((w) => w.slice(0, 3) !== word.slice(0, 3) && soundKey(w) === soundKey(word)).slice(0, 3) : [];
+  for (const p of [...new Set([word, ...alike, word.slice(0, 4), word.slice(0, 3)])].filter((p) => p.length >= 3)) {
     for (const r of await meds.byNamePrefix(p)) {
       const n = tokens(r.name);
       if (!n.length || seen.has(r.name.toLowerCase())) continue;
@@ -334,11 +335,13 @@ function jaNameResult(ja) {
 
 // Words in a brand name that do not make it another medicine: forms, units and pack words.
 // Anything else the patient did not type (E, T, H, AM, Plus, Forte, DS, SR, OD, MD …) may.
-const NEUTRAL_WORDS = new Set(['tablet', 'tablets', 'tab', 'tabs', 'capsule', 'capsules', 'cap', 'caps', 'syrup', 'syp', 'syr', 'suspension', 'susp', 'oral', 'solution', 'drops', 'drop', 'injection', 'inj', 'infusion', 'cream', 'gel', 'ointment', 'oint', 'lotion', 'spray', 'nasal', 'inhaler', 'respules', 'sachet', 'powder', 'granules', 'strip', 'mg', 'mcg', 'gm', 'g', 'ml', 'iu', 'w', 'v', 'ip', 'bp', 'usp', 'film', 'coated', 'uncoated', 'sugar', 'free', 'the', 'of', 'and']);
-const plainWords = (s) => tokens(s).filter((t) => !NEUTRAL_WORDS.has(t) && !/^\d/.test(t));
+const NEUTRAL_WORDS = new Set(['tablet', 'tablets', 'tab', 'tabs', 'capsule', 'capsules', 'cap', 'caps', 'syrup', 'syp', 'syr', 'suspension', 'susp', 'oral', 'solution', 'drops', 'drop', 'injection', 'inj', 'infusion', 'cream', 'gel', 'ointment', 'oint', 'lotion', 'spray', 'nasal', 'inhaler', 'respules', 'sachet', 'powder', 'granules', 'strip', 'mg', 'mcg', 'gm', 'ml', 'iu', 'ip', 'bp', 'usp', 'film', 'coated', 'uncoated', 'sugar', 'free', 'the', 'of', 'and']);
+const plainWords = (s) => tokens(String(s || '').replace(/\b[wv]\s*\/\s*[wv]\b/gi, ' ')).filter((t) => !NEUTRAL_WORDS.has(t) && !/^\d/.test(t));
 const numbersIn = (s) => tokens(s).filter((t) => /^\d/.test(t)).map(Number);
 /** The brand's strengths as numbers ("atorvastatin:10mg+ezetimibe:10mg|tablet" -> [10, 10]). */
 const keyStrengths = (ckey) => String(ckey || '').split('|')[0].split('+').map((p) => parseFloat(p.split(':')[1])).filter((n) => !Number.isNaN(n));
+
+const FLAVOURS = new Set(['orange', 'strawberry', 'mango', 'pineapple', 'raspberry', 'banana', 'vanilla', 'flavour', 'flavor']);
 
 /**
  * Is this brand exactly what was typed? Its words (forms and units aside) are the typed words, the
@@ -353,7 +356,8 @@ export function fitsTyped(typed, row) {
   // "of" is skipped as a word, but not at the start: "OF Derm Cream" is not "Derm Cream".
   const words = (s) => [...(startsWithOf(s) ? ['of'] : []), ...plainWords(s)];
   const q = words(typedText);
-  const n = words(nameText);
+  const dt = /\btab(let)?s?\b/i.test(typedText) && !q.includes('dt');
+  const n = words(nameText).filter((w, i) => i === 0 || q.includes(w) || !(FLAVOURS.has(w) || (dt && w === 'dt')));
   if (!q.length || q.length !== n.length || q.some((w, i) => w !== n[i])) return false;
   const lettered = (s) => tokens(s).filter((t) => /^\d/.test(t) && Number.isNaN(Number(t))).sort().join(' ');
   if (lettered(typedText) !== lettered(nameText)) return false;
@@ -387,7 +391,13 @@ export async function soundsLikeChoices(ctx, latin, limit = 5) {
   if (!word) return [];
   const nums = numbersIn(latin);
   const extra = plainWords(latin).filter((w) => w !== word && /^[a-z]{2,}$/.test(w));
-  const prefixes = namePrefixes(word);
+  const known = meds.soundWords ? await meds.soundWords(word).catch(() => null) : null;
+  const key = soundKey(word);
+  const prefixes = known
+    ? known.filter((w) => soundsAlike(word, w))
+      .map((w) => [w, sameSound(word, w) ? 0 : consonants(soundKey(w)) === consonants(key) ? 1 : 2])
+      .sort((a, b) => a[1] - b[1] || Math.abs(a[0].length - word.length) - Math.abs(b[0].length - word.length)).slice(0, 6).map(([w]) => w)
+    : namePrefixes(word);
   const lists = await Promise.all(prefixes.map(async (p) => [...(await meds.byNamePrefix(p).catch(() => [])), ...(await addedByNamePrefix(db, p))]));
   const out = new Map();
   for (const r of lists.flat()) {
@@ -399,7 +409,7 @@ export async function soundsLikeChoices(ctx, latin, limit = 5) {
     if (!nums.every((x) => nameNums.includes(x) || strengths.includes(x))) continue;
     const k = r.name.toLowerCase();
     if (out.has(k)) continue;
-    out.set(k, { name: r.name, composition: describeRow(r), rank: (soundKey(n[0]) === soundKey(word) ? 0 : 1) + (n.length - 1 - extra.length) * 0.1 + (r.form === 'tablet' ? 0 : 0.05) });
+    out.set(k, { name: r.name, composition: describeRow(r), rank: (sameSound(word, n[0]) ? 0 : 1) + (n.length - 1 - extra.length) * 0.1 + (r.form === 'tablet' ? 0 : 0.05) });
   }
   // Salt names typed in Kannada/Hindi ("मेटफॉर्मिन 500"): official Jan Aushadhi products whose name
   // starts with a word that sounds alike and has the typed strength, offered first under their full
@@ -432,13 +442,38 @@ export async function soundsLikeChoices(ctx, latin, limit = 5) {
  * variant that exists is offered ("Metoprolol 50" plain and extended-release). Each choice carries
  * a name that, when tapped, checks exactly the composition shown (verified here).
  */
+async function jaSaltChoices(ctx, raw, nums, limit) {
+  if (nums.some((x) => !(x > 0))) return [];
+  const { db } = ctxOf(ctx);
+  const typed = plainWords(normalizeSpelling(raw.toLowerCase())).filter((w) => !['plus', 'with'].includes(w));
+  const form = typedFormOf(raw);
+  const out = [];
+  for (const p of await jaList(db).catch(() => [])) {
+    const [salts, f, rel] = p.ckey.split('|');
+    if ((form && f !== form) || (nums.length && rel)) continue; // a release that was not typed is not offered here
+    const parts = salts.split('+').map((s) => s.split(':'));
+    const words = parts.map(([name]) => plainWords(name).filter((w) => !JA_HARMLESS.has(w)));
+    if (words.some((w) => !w.length || !w.some((x) => typed.includes(x)))) continue; // every salt was typed
+    const all = parts.flatMap(([name]) => plainWords(name));
+    if (!typed.every((w) => all.includes(w) || JA_HARMLESS.has(w))) continue; // and nothing else
+    if (nums.length) {
+      const have = parts.map(([, st]) => parseFloat(st)).sort((a, b) => a - b);
+      if (have.length !== nums.length || [...nums].sort((a, b) => a - b).some((x, i) => x !== have[i])) continue;
+    } else if (parts.length > 1) continue;
+    if (!out.some((o) => o.ckey === p.ckey)) out.push(p);
+  }
+  return out.sort((a, b) => (a.unit_price ?? 1e9) - (b.unit_price ?? 1e9)).slice(0, limit).map((p) => ({ name: p.generic_name, composition: describeKey(p.ckey) }));
+}
+
 export async function saltChoices(ctx, text, limit = 5) {
   const { db, meds } = ctxOf(ctx);
   const raw = String(text || '').replace(/\s+/g, ' ').trim();
   const q = tokens(raw);
   const word = q[0];
   const nums = numbersIn(raw);
-  if (!word || !/^[a-z]{4,}$/.test(word) || nums.length !== 1 || !(nums[0] > 0)) return [];
+  if (!word || !/^[a-z]{4,}$/.test(word)) return [];
+  if (nums.length > 1 || (!nums.length && typedFormOf(raw))) return jaSaltChoices(ctx, raw, nums, limit);
+  if (nums.length !== 1 || !(nums[0] > 0)) return [];
   const n = nums[0];
   const unit = (raw.toLowerCase().match(/\d\s*(mcg|mg|gm|g|iu|ml)\b/) || [])[1] || null;
   if (unit === 'ml') return [];

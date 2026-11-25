@@ -27,7 +27,7 @@ export function pinPoints(rows) {
     const pin = String(r.Pincode ?? r.pincode ?? '').trim();
     const lat = parseFloat(r.Latitude ?? r.latitude);
     const lng = parseFloat(r.Longitude ?? r.longitude);
-    if (!/^\d{6}$/.test(pin) || !inIndia(lat, lng)) continue;
+    if (!/^[1-8]\d{5}$/.test(pin) || !inIndia(lat, lng)) continue; // 9xxxxx is army post, not a place
     if (!by.has(pin)) by.set(pin, []);
     by.get(pin).push([lat, lng]);
   }

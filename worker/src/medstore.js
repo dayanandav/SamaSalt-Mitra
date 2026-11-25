@@ -16,6 +16,8 @@
 //   meds/k/<bucket>.json      { [ckey]: same-salt summary }, bucket = fnv1a(ckey) % buckets
 //   meds/n/<hex prefix>.json  { rows: [...], split?: [child prefixes] }: names by lowercase prefix
 
+import { soundGroup } from '../../public/indic.js';
+
 export const ROW_FIELDS = ['id', 'name', 'manufacturer', 'ckey', 'price', 'pack', 'unit_price', 'form', 'rel', 'nti', 'incomplete'];
 export const BUCKETS = 2048;
 export const NAME_PREFIX = 3; // first level of the name index
@@ -174,6 +176,10 @@ export function fileMeds(get, meta) {
       }
       return out.sort(byNameThenId).slice(0, NAME_ROW_LIMIT).map((r) => ({ ...r, salt: null }));
     },
+    /** First words of brand names that may sound like `word` (null: the index is not there). */
+    async soundWords(word) {
+      return json(`meds/s/${soundGroup(word)}.json`);
+    },
     async sameSalt(ckey, limit = 8) {
       const s = (await bucket(ckey))?.[ckey];
       if (!s) return { count: 0, cheapest_unit: null, median_unit: null, max_unit: null, items: [] };
@@ -268,6 +274,15 @@ export function buildMedFiles(rows, { datasetDate = null, builtAt = new Date().t
   const prefixes = [...top.keys()].sort();
   for (const p of prefixes) writeShard(p, top.get(p));
   put('meds/n/index.json', prefixes);
+
+  // Sounds-like index: every first word, grouped by the first two consonants of its sound (public/indic.js).
+  const bySound = new Map();
+  for (const w of new Set(rows.map((r) => (r.name.toLowerCase().match(/^[a-z]{3,}/) || [])[0]).filter(Boolean))) {
+    const g = soundGroup(w);
+    if (!bySound.has(g)) bySound.set(g, []);
+    bySound.get(g).push(w);
+  }
+  for (const [g, words] of bySound) put(`meds/s/${g}.json`, words.sort());
 
   put('meds/meta.json', { rows: rows.length, keys: byKey.size, dataset_date: datasetDate, built_at: builtAt, buckets });
   return files;

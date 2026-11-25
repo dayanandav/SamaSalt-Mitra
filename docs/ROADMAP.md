@@ -33,6 +33,7 @@ Full design: *SamaSalt-Mitra Design Document* (`docs/SamaSalt-Mitra Design Docum
 | 2.0.14 | 25 Nov 2026 | Few database reads (the Jan Aushadhi list as one saved row, then memory; checks go on when D1 refuses; the search set runs on this computer). Safety: the brand list keeps at most two salts. A brand marked incomplete (6,189) is never answered; a typed two-salt brand asks "Does your strip list exactly these two salts?" first; other brands are no longer listed for two-salt medicines; a strip with three or more salts decides by its salts. "C Tax" and other one-letter names no longer fail |
 | 2.0.15 | 25 Nov 2026 | Fewer database rows (C6): today's photo count through a small index, the impact figures as one row made again each hour, the nearest Kendras of a PIN as files deployed with the app (410 PINs near big cities could miss the nearest Kendra: fixed), one row less written per check |
 | 2.0.16 | 25 Nov 2026 | Chat and bot: "No" to "exactly these two salts?" says to photograph the back or ask the pharmacist, as in the app (it said to type the name). Volunteer mode lasts for the visit only, and only while volunteers are on (it stayed on in the browser) |
+| 2.0.17 | 25 Nov 2026 | Found more: the 14 searches that were missed or only asked (search set 408 of 408, 0 wrong): Kannada/Hindi names through a small sounds-like index (253 files read per search at worst, now 38), V/G in names are not units, flavours and DT, several salts typed, salt + form; 3 false PINs removed |
 
 ## Overview
 

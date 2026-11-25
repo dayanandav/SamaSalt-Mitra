@@ -33,7 +33,7 @@ function nearest(p) {
 }
 const out = new Map();
 for (const p of pins) {
-  if (!/^\d{6}$/.test(p.pin)) continue;
+  if (!/^[1-8]\d{5}$/.test(p.pin)) continue; // 9xxxxx is not a place
   const near = nearest(p);
   if (!near) continue; // D1 is asked, as before
   const key = p.pin.slice(0, 3);

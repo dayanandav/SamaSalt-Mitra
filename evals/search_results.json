@@ -1,15 +1,15 @@
 {
   "summary": {
-    "when": "2026-11-25T05:08:07.051Z",
+    "when": "2026-11-25T10:32:31.364Z",
     "target": "local",
     "cases": 408,
-    "passed": 394,
-    "right": 275,
-    "offered": 124,
-    "missed": 9,
+    "passed": 408,
+    "right": 280,
+    "offered": 128,
+    "missed": 0,
     "wrong": 0,
     "errors": 0,
-    "median_ms": 7
+    "median_ms": 9
   },
   "results": [
     {
@@ -20,7 +20,7 @@
       "outcome": "right",
       "pass": true,
       "got": "Dolo 650 Tablet [Paracetamol 650 mg · tablet]",
-      "ms": 91
+      "ms": 144
     },
     {
       "id": "exact-dolo650-lower",
@@ -30,7 +30,7 @@
       "outcome": "right",
       "pass": true,
       "got": "Dolo 650 Tablet [Paracetamol 650 mg · tablet]",
-      "ms": 14
+      "ms": 23
     },
     {
       "id": "exact-dolo650-glued",
@@ -40,7 +40,7 @@
       "outcome": "right",
       "pass": true,
       "got": "Dolo 650 Tablet [Paracetamol 650 mg · tablet]",
-      "ms": 9
+      "ms": 21
     },
     {
       "id": "exact-dolo650-tablet",
@@ -50,7 +50,7 @@
       "outcome": "right",
       "pass": true,
       "got": "Dolo 650 Tablet [Paracetamol 650 mg · tablet]",
-      "ms": 5
+      "ms": 9
     },
     {
       "id": "exact-pan40",
@@ -60,7 +60,7 @@
       "outcome": "right",
       "pass": true,
       "got": "PAN 40 Tablet [Pantoprazole 40 mg · tablet]",
-      "ms": 40
+      "ms": 24
     },
     {
       "id": "exact-telma40",
@@ -80,7 +80,7 @@
       "outcome": "right",
       "pass": true,
       "got": "Thyronorm 50mcg Tablet [Thyroxine 50 mcg · tablet]",
-      "ms": 8
+      "ms": 10
     },
     {
       "id": "exact-ecosprin75",
@@ -90,7 +90,7 @@
       "outcome": "right",
       "pass": true,
       "got": "Ecosprin 75 Tablet [Aspirin 75 mg · tablet]",
-      "ms": 9
+      "ms": 11
     },
     {
       "id": "exact-atorva10",
@@ -110,7 +110,7 @@
       "outcome": "right",
       "pass": true,
       "got": "Atorva 20 Tablet [Atorvastatin 20 mg · tablet]",
-      "ms": 7
+      "ms": 13
     },
     {
       "id": "exact-calpol500",
@@ -120,7 +120,7 @@
       "outcome": "right",
       "pass": true,
       "got": "Calpol 500mg Tablet [Paracetamol 500 mg · tablet]",
-      "ms": 9
+      "ms": 12
     },
     {
       "id": "exact-pcm650",
@@ -140,7 +140,7 @@
       "outcome": "right",
       "pass": true,
       "got": "HCQ 200mg Tablet [Hydroxychloroquine 200 mg · tablet]",
-      "ms": 5
+      "ms": 4
     },
     {
       "id": "exact-glycomet500sr",
@@ -150,7 +150,7 @@
       "outcome": "right",
       "pass": true,
       "got": "Glycomet 500 SR Tablet [Metformin 500 mg · tablet · SR]",
-      "ms": 10
+      "ms": 13
     },
     {
       "id": "exact-crocin-advance",
@@ -160,7 +160,7 @@
       "outcome": "right",
       "pass": true,
       "got": "Crocin Advance Tablet [Paracetamol 500 mg · tablet]",
-      "ms": 7
+      "ms": 9
     },
     {
       "id": "exact-pand",
@@ -170,7 +170,7 @@
       "outcome": "offered",
       "pass": true,
       "got": "choices: Pan-D Capsule PR; Panci D Tablet; Panel D Tablet; Pango D Tablet; Pandot D Tablet",
-      "ms": 9
+      "ms": 34
     },
     {
       "id": "exact-amlokind5",
@@ -190,7 +190,7 @@
       "outcome": "right",
       "pass": true,
       "got": "not_found",
-      "ms": 19
+      "ms": 33
     },
     {
       "id": "nostrength-atorva",
@@ -200,7 +200,7 @@
       "outcome": "offered",
       "pass": true,
       "got": "choices: Atorva Tablet; Atorva 5 Tablet; Atorva 20 Tablet; Atorva 40 Tablet; Atorva 80 Tablet",
-      "ms": 2
+      "ms": 37
     },
     {
       "id": "nostrength-telma",
@@ -210,7 +210,7 @@
       "outcome": "offered",
       "pass": true,
       "got": "choices: Telma 20 Tablet; Telma 40 Tablet; Telma 80 Tablet; Telma H Tablet; Telma-AM Tablet",
-      "ms": 2
+      "ms": 12
     },
     {
       "id": "nostrength-dolo",
@@ -220,7 +220,7 @@
       "outcome": "offered",
       "pass": true,
       "got": "choices: Dolo Drops; Dolo 500 Tablet; Dolo 650 Tablet; Dolo 1000mg Tablet; Dolo 120 Suspension",
-      "ms": 7
+      "ms": 20
     },
     {
       "id": "nostrength-thyronorm",
@@ -230,7 +230,7 @@
       "outcome": "offered",
       "pass": true,
       "got": "choices: Thyronorm 25mcg Tablet; Thyronorm 50mcg Tablet; Thyronorm 75mcg Tablet; Thyronorm 88mcg Tablet; Thyronorm 100mcg Tablet",
-      "ms": 5
+      "ms": 41
     },
     {
       "id": "nostrength-crocin",
@@ -240,7 +240,7 @@
       "outcome": "offered",
       "pass": true,
       "got": "choices: Crocin 1000mg Tablet; Crocin Advance Tablet; Crocin Pain Relief Tablet",
-      "ms": 2
+      "ms": 18
     },
     {
       "id": "variant-telmah",
@@ -250,7 +250,7 @@
       "outcome": "offered",
       "pass": true,
       "got": "choices: Telma H Tablet; Telma 80-H Tablet",
-      "ms": 2
+      "ms": 11
     },
     {
       "id": "variant-augmentin625",
@@ -260,7 +260,7 @@
       "outcome": "offered",
       "pass": true,
       "got": "choices: Augmentin 625 Duo Tablet",
-      "ms": 5
+      "ms": 8
     },
     {
       "id": "variant-azithro500",
@@ -270,7 +270,7 @@
       "outcome": "offered",
       "pass": true,
       "got": "choices: Azithro Max 500mg Tablet; Azithrov 500 Tablet; Azithromat 500 Tablet; Azithron 500mg Tablet; Azithropen 500 Tablet",
-      "ms": 6
+      "ms": 11
     },
     {
       "id": "variant-atorva-e",
@@ -280,7 +280,7 @@
       "outcome": "offered",
       "pass": true,
       "got": "choices: Atorva E 40 Tablet; Atorva E 10mg/10mg Tablet; Atorva Tablet",
-      "ms": 2
+      "ms": 36
     },
     {
       "id": "variant-calpol-syp",
@@ -289,8 +289,8 @@
       "want": null,
       "outcome": "right",
       "pass": true,
-      "got": "choices: Calpol T  Tablet",
-      "ms": 2
+      "got": "choices: Calpol 120mg Suspension Strawberry; Calpol T  Tablet",
+      "ms": 24
     },
     {
       "id": "typo-dolo-o-for-zero",
@@ -300,7 +300,7 @@
       "outcome": "offered",
       "pass": true,
       "got": "did you mean: Dolo 650 Tablet; Dolopar 650 Tablet; Dololife 650 Tablet; Dolomed 650mg Tablet; Doloxer 650mg Tablet",
-      "ms": 9
+      "ms": 23
     },
     {
       "id": "typo-augmentn",
@@ -310,7 +310,7 @@
       "outcome": "offered",
       "pass": true,
       "got": "did you mean: Augmentin 625 Duo Tablet",
-      "ms": 10
+      "ms": 23
     },
     {
       "id": "typo-dolp",
@@ -320,7 +320,7 @@
       "outcome": "offered",
       "pass": true,
       "got": "choices: Dolpi 100mg/500mg Tablet; Dolpip TZ 4000mg/500mg Injection",
-      "ms": 5
+      "ms": 16
     },
     {
       "id": "typo-crocn",
@@ -330,7 +330,7 @@
       "outcome": "offered",
       "pass": true,
       "got": "did you mean: Crocin Advance Tablet; Cron-P Tablet; Crocs 100mg Capsule; Crocin 1000mg Tablet; Crocon 200mg Capsule",
-      "ms": 3
+      "ms": 18
     },
     {
       "id": "typo-thyronrm",
@@ -340,7 +340,7 @@
       "outcome": "offered",
       "pass": true,
       "got": "did you mean: Thyronorm 50mcg Tablet; Thyronex 50 Tablet; Thyronic 50mcg Tablet",
-      "ms": 15
+      "ms": 49
     },
     {
       "id": "short-pcm500",
@@ -350,7 +350,7 @@
       "outcome": "right",
       "pass": true,
       "got": "PCM Tablet [Paracetamol 500 mg · tablet]",
-      "ms": 1
+      "ms": 5
     },
     {
       "id": "short-pcm250-susp",
@@ -360,7 +360,7 @@
       "outcome": "right",
       "pass": true,
       "got": "PCM 250mg Oral Suspension [Paracetamol 250mg/5 ml · liquid]",
-      "ms": 3
+      "ms": 5
     },
     {
       "id": "ja-name-para650",
@@ -370,7 +370,7 @@
       "outcome": "right",
       "pass": true,
       "got": "Paracetamol Tablets IP 650 mg [Paracetamol 650 mg · tablet]",
-      "ms": 6
+      "ms": 8
     },
     {
       "id": "ja-short-para650",
@@ -380,7 +380,7 @@
       "outcome": "right",
       "pass": true,
       "got": "Paracetamol Tablets IP 650 mg [Paracetamol 650 mg · tablet]",
-      "ms": 3
+      "ms": 9
     },
     {
       "id": "ja-name-panto40",
@@ -390,7 +390,7 @@
       "outcome": "right",
       "pass": true,
       "got": "Pantoprazole Gastro Resistant Tablets IP 40 mg [Pantoprazole 40 mg · tablet]",
-      "ms": 7
+      "ms": 9
     },
     {
       "id": "ja-short-telmi40",
@@ -400,7 +400,7 @@
       "outcome": "right",
       "pass": true,
       "got": "Telmisartan Tablets IP 40mg [Telmisartan 40 mg · tablet]",
-      "ms": 6
+      "ms": 8
     },
     {
       "id": "ja-short-metformin500",
@@ -420,7 +420,7 @@
       "outcome": "right",
       "pass": true,
       "got": "Chlorthalidone Tablets IP 12.5mg [Chlortalidone 12.5 mg · tablet]",
-      "ms": 7
+      "ms": 6
     },
     {
       "id": "ja-torsemide20",
@@ -440,7 +440,7 @@
       "outcome": "right",
       "pass": true,
       "got": "Pantoprazole 40mg (Gastro-resistant) and Domperidone 30mg (Prolonged Release) Capsules IP [Domperidone 30 mg + Pantoprazole 40 mg · capsule · SR]",
-      "ms": 5
+      "ms": 7
     },
     {
       "id": "sr-pand",
@@ -450,7 +450,7 @@
       "outcome": "offered",
       "pass": true,
       "got": "choices: Pan-D Capsule PR; Panci D Tablet; Panel D Tablet; Pango D Tablet; Pandot D Tablet",
-      "ms": 6
+      "ms": 27
     },
     {
       "id": "sr-pantocid-dsr",
@@ -460,7 +460,7 @@
       "outcome": "right",
       "pass": true,
       "got": "Pantocid DSR Capsule [Domperidone 30 mg + Pantoprazole 40 mg · capsule · SR]",
-      "ms": 4
+      "ms": 13
     },
     {
       "id": "sr-glycomet-gp1",
@@ -470,7 +470,7 @@
       "outcome": "offered",
       "pass": true,
       "got": "choices: Glycomet-GP 1 Tablet PR; Glycomet-GP 1 Forte Tablet SR; Glycomet-GP 1/850 Tablet SR; Glycomet Trio 1 Tablet SR; Glycomet Trio Forte 1 Tablet SR",
-      "ms": 7
+      "ms": 23
     },
     {
       "id": "liquid-scan-para250",
@@ -480,7 +480,7 @@
       "outcome": "right",
       "pass": true,
       "got": "Paracetamol 250mg/5 ml [Paracetamol 250mg/5 ml · liquid]",
-      "ms": 11
+      "ms": 20
     },
     {
       "id": "liquid-scan-amoxclav",
@@ -490,7 +490,7 @@
       "outcome": "right",
       "pass": true,
       "got": "Amoxicillin 400mg/5 ml + Clavulanic Acid 57mg/5 ml [Amoxicillin 400mg/5 ml + Clavulanic Acid 57mg/5 ml · liquid]",
-      "ms": 16
+      "ms": 14
     },
     {
       "id": "scan-tablet-amoxclav",
@@ -500,7 +500,7 @@
       "outcome": "right",
       "pass": true,
       "got": "Amoxicillin 500 mg + Clavulanic Acid 125 mg [Amoxicillin 500 mg + Clavulanic Acid 125 mg · tablet]",
-      "ms": 5
+      "ms": 11
     },
     {
       "id": "kn-dolo650",
@@ -510,7 +510,7 @@
       "outcome": "right",
       "pass": true,
       "got": "Dolo 650 Tablet [Paracetamol 650 mg · tablet]",
-      "ms": 5
+      "ms": 14
     },
     {
       "id": "hi-dolo650",
@@ -520,7 +520,7 @@
       "outcome": "right",
       "pass": true,
       "got": "Dolo 650 Tablet [Paracetamol 650 mg · tablet]",
-      "ms": 4
+      "ms": 12
     },
     {
       "id": "hi-telma40",
@@ -530,7 +530,7 @@
       "outcome": "offered",
       "pass": true,
       "got": "choices: Telma 40 Tablet; Telma H Tablet; Telma-AM Tablet; Telma-NB Tablet; Telma-LNC Tablet",
-      "ms": 115
+      "ms": 60
     },
     {
       "id": "hi-atorva10",
@@ -539,8 +539,8 @@
       "want": "Atorvastatin 10 mg · tablet",
       "outcome": "offered",
       "pass": true,
-      "got": "choices: Atorva Tablet; Atoriv 10mg Tablet; Etorvas 10mg Tablet; Atorva E 40 Tablet; Atorva E 10mg/10mg Tablet",
-      "ms": 167
+      "got": "choices: Atorva Tablet; Atorva E 40 Tablet; Atorva E 10mg/10mg Tablet; Atorva Asp 75 Capsule; Atorva Asp 150 Capsule",
+      "ms": 94
     },
     {
       "id": "kn-thyronorm50",
@@ -550,17 +550,17 @@
       "outcome": "offered",
       "pass": true,
       "got": "choices: Thyronorm 50mcg Tablet",
-      "ms": 32
+      "ms": 81
     },
     {
       "id": "hi-pan40",
       "text": "पैन 40 टैबलेट",
       "expect": "choice",
       "want": "Pantoprazole 40 mg · tablet",
-      "outcome": "missed",
-      "pass": false,
-      "got": "not_found",
-      "ms": 45
+      "outcome": "offered",
+      "pass": true,
+      "got": "choices: PAN 40 Tablet; Pen 40mg Tablet; Pan Up 40mg Tablet; PAN IV Injection; Pan Tart 40mg Injection",
+      "ms": 78
     },
     {
       "id": "hi-metformin500",
@@ -569,8 +569,8 @@
       "want": "Metformin 500 mg · tablet",
       "outcome": "offered",
       "pass": true,
-      "got": "choices: Metformin Hydrochloride Tablets IP 500mg; Metformin Hydrochloride Prolonged release Tablets IP 500 mg; Metformin Hydrochloride 500mg and Voglibose 0.3mg Tablets; Metform 500mg Tablet; Metfocin 500 Tablet PR",
-      "ms": 62
+      "got": "choices: Metformin Hydrochloride Tablets IP 500mg; Metformin Hydrochloride Prolonged release Tablets IP 500 mg; Metformin Hydrochloride 500mg and Voglibose 0.3mg Tablets; Metormin 500mg Tablet; Metfocin 500 Tablet PR",
+      "ms": 60
     },
     {
       "id": "hi-amox500",
@@ -580,7 +580,7 @@
       "outcome": "offered",
       "pass": true,
       "got": "choices: Amoxycillin Capsules IP 500mg; Amoxycillin 500mg and Potassium Clavulanate 125mg Tablets IP; Amoxycillin 500mg and Potassium Clavulanate 100mg Injection IP; Amoxilin CV 500mg/125mg Tablet; Amoxyllin CV 500mg/125mg Tablet",
-      "ms": 208
+      "ms": 66
     },
     {
       "id": "hi-para650",
@@ -590,7 +590,7 @@
       "outcome": "offered",
       "pass": true,
       "got": "choices: Paracetamol Tablets IP 650 mg; Paracetamol 650mg and Caffeine 50mg Tablets IP",
-      "ms": 64
+      "ms": 66
     },
     {
       "id": "kn-amlodipine5",
@@ -600,7 +600,7 @@
       "outcome": "offered",
       "pass": true,
       "got": "choices: Amlodipine Tablets IP 5mg; Amlodipine + Enalapril Tablet (5/5 Mg); Amlodipine + Indapamide Tablet (5/1.5 Mg); Amlopin 5 Tablet; Amlodip 5mg Tablet",
-      "ms": 59
+      "ms": 53
     },
     {
       "id": "hi-panto40",
@@ -610,7 +610,7 @@
       "outcome": "offered",
       "pass": true,
       "got": "choices: Pantoprazole Gastro Resistant Tablets IP 40 mg; Pantoprazole Injection 40mg; Pantoprazole 40mg and Domperidone 10mg Capsules",
-      "ms": 79
+      "ms": 52
     },
     {
       "id": "kn-cetirizine10",
@@ -619,8 +619,8 @@
       "want": "Cetirizine 10 mg · tablet",
       "outcome": "offered",
       "pass": true,
-      "got": "choices: Cetrizine Hydrochloride Tablets IP 10mg; Cetrizine Tablet; Sitrizin 10mg Tablet; Citrazan 10mg Tablet; Citrimin 10mg Tablet",
-      "ms": 110
+      "got": "choices: Cetrizine Hydrochloride Tablets IP 10mg; Cetrizine Tablet; Cetirizine 10mg Tablet; Cetirzin M 5mg/10mg Tablet; Cetrizen M 5mg/10mg Tablet",
+      "ms": 75
     },
     {
       "id": "nti-brivapride25",
@@ -640,7 +640,7 @@
       "outcome": "right",
       "pass": true,
       "got": "Thyronorm 100mcg Tablet [Thyroxine 100 mcg · tablet]",
-      "ms": 8
+      "ms": 7
     },
     {
       "id": "none-gaviscon",
@@ -650,7 +650,7 @@
       "outcome": "right",
       "pass": true,
       "got": "not_found",
-      "ms": 3
+      "ms": 8
     },
     {
       "id": "none-junk",
@@ -660,7 +660,7 @@
       "outcome": "right",
       "pass": true,
       "got": "not_found",
-      "ms": 11
+      "ms": 17
     },
     {
       "id": "none-dolo999",
@@ -670,7 +670,7 @@
       "outcome": "right",
       "pass": true,
       "got": "not_found",
-      "ms": 20
+      "ms": 31
     },
     {
       "id": "none-sentence",
@@ -680,7 +680,7 @@
       "outcome": "right",
       "pass": true,
       "got": "not_found",
-      "ms": 2
+      "ms": 12
     },
     {
       "id": "brand-amaryl1",
@@ -690,7 +690,7 @@
       "outcome": "right",
       "pass": true,
       "got": "Amaryl 1mg Tablet [Glimepiride 1 mg · tablet]",
-      "ms": 6
+      "ms": 9
     },
     {
       "id": "brand-volibo03",
@@ -700,7 +700,7 @@
       "outcome": "right",
       "pass": true,
       "got": "Volibo 0.3 Tablet [Voglibose 0.3 mg · tablet]",
-      "ms": 9
+      "ms": 13
     },
     {
       "id": "brand-stamlo5",
@@ -730,7 +730,7 @@
       "outcome": "right",
       "pass": true,
       "got": "Losar 50 Tablet [Losartan 50 mg · tablet]",
-      "ms": 9
+      "ms": 10
     },
     {
       "id": "brand-repace50",
@@ -740,7 +740,7 @@
       "outcome": "right",
       "pass": true,
       "got": "Repace 50 Tablet [Losartan 50 mg · tablet]",
-      "ms": 7
+      "ms": 9
     },
     {
       "id": "brand-olmezest20",
@@ -750,7 +750,7 @@
       "outcome": "right",
       "pass": true,
       "got": "Olmezest 20 Tablet [Olmesartan Medoxomil 20 mg · tablet]",
-      "ms": 11
+      "ms": 9
     },
     {
       "id": "brand-concor5",
@@ -760,7 +760,7 @@
       "outcome": "right",
       "pass": true,
       "got": "Concor 5 Tablet [Bisoprolol 5 mg · tablet]",
-      "ms": 10
+      "ms": 9
     },
     {
       "id": "brand-metolar25",
@@ -770,17 +770,17 @@
       "outcome": "right",
       "pass": true,
       "got": "Metolar 25 Tablet [Metoprolol Tartrate 25 mg · tablet]",
-      "ms": 11
+      "ms": 9
     },
     {
       "id": "brand-nebicard5",
       "text": "Nebicard 5",
       "expect": "answer",
       "want": "Nebivolol 5 mg · tablet",
-      "outcome": "offered",
-      "pass": false,
-      "got": "choices: Nebicard 5 Tablet; Nebicard-V Tablet",
-      "ms": 6
+      "outcome": "right",
+      "pass": true,
+      "got": "Nebicard 5 Tablet [Nebivolol 5 mg · tablet]",
+      "ms": 7
     },
     {
       "id": "brand-storvas10",
@@ -790,7 +790,7 @@
       "outcome": "right",
       "pass": true,
       "got": "Storvas 10 Tablet [Atorvastatin 10 mg · tablet]",
-      "ms": 8
+      "ms": 7
     },
     {
       "id": "brand-rosuvas10",
@@ -800,7 +800,7 @@
       "outcome": "right",
       "pass": true,
       "got": "Rosuvas 10 Tablet [Rosuvastatin 10 mg · tablet]",
-      "ms": 13
+      "ms": 11
     },
     {
       "id": "brand-pantop40",
@@ -810,7 +810,7 @@
       "outcome": "offered",
       "pass": true,
       "got": "choices: Pantop 40 Tablet; Pantop Injection",
-      "ms": 3
+      "ms": 10
     },
     {
       "id": "brand-razo20",
@@ -820,7 +820,7 @@
       "outcome": "right",
       "pass": true,
       "got": "Razo 20 Tablet [Rabeprazole 20 mg · tablet]",
-      "ms": 11
+      "ms": 8
     },
     {
       "id": "brand-omez20",
@@ -840,7 +840,7 @@
       "outcome": "right",
       "pass": true,
       "got": "Nexpro 40 Tablet [Esomeprazole 40 mg · tablet]",
-      "ms": 9
+      "ms": 10
     },
     {
       "id": "brand-rantac150",
@@ -850,7 +850,7 @@
       "outcome": "right",
       "pass": true,
       "got": "Rantac 150 Tablet [Ranitidine 150 mg · tablet]",
-      "ms": 10
+      "ms": 12
     },
     {
       "id": "brand-aciloc150",
@@ -860,7 +860,7 @@
       "outcome": "right",
       "pass": true,
       "got": "Aciloc 150 Tablet [Ranitidine 150 mg · tablet]",
-      "ms": 9
+      "ms": 11
     },
     {
       "id": "brand-ondem4",
@@ -870,7 +870,7 @@
       "outcome": "right",
       "pass": true,
       "got": "Ondem 4 Tablet [Ondansetron 4 mg · tablet]",
-      "ms": 8
+      "ms": 10
     },
     {
       "id": "brand-emeset4",
@@ -880,7 +880,7 @@
       "outcome": "offered",
       "pass": true,
       "got": "choices: Emeset 4 Tablet; Emeset Injection 4ml; Emeset Injection 2ml",
-      "ms": 3
+      "ms": 12
     },
     {
       "id": "brand-domstal10",
@@ -900,7 +900,7 @@
       "outcome": "offered",
       "pass": true,
       "got": "choices: Sompraz 40 Tablet; Sompraz 40mg Injection",
-      "ms": 4
+      "ms": 12
     },
     {
       "id": "brand-allegra120",
@@ -910,7 +910,7 @@
       "outcome": "right",
       "pass": true,
       "got": "Allegra 120mg Tablet [Fexofenadine 120 mg · tablet]",
-      "ms": 8
+      "ms": 9
     },
     {
       "id": "brand-allegra180",
@@ -920,7 +920,7 @@
       "outcome": "right",
       "pass": true,
       "got": "Allegra 180mg Tablet [Fexofenadine 180 mg · tablet]",
-      "ms": 6
+      "ms": 8
     },
     {
       "id": "brand-montek-lc",
@@ -930,7 +930,7 @@
       "outcome": "right",
       "pass": true,
       "got": "Montek LC Tablet [Levocetirizine 5 mg + Montelukast 10 mg · tablet]",
-      "ms": 12
+      "ms": 11
     },
     {
       "id": "brand-azee500",
@@ -950,7 +950,7 @@
       "outcome": "offered",
       "pass": true,
       "got": "choices: Azithral 500 Tablet; Azithral 500mg Injection",
-      "ms": 7
+      "ms": 13
     },
     {
       "id": "brand-zifi200",
@@ -970,7 +970,7 @@
       "outcome": "right",
       "pass": true,
       "got": "Cifran 500 Tablet [Ciprofloxacin 500 mg · tablet]",
-      "ms": 9
+      "ms": 7
     },
     {
       "id": "brand-ciplox500",
@@ -980,7 +980,7 @@
       "outcome": "right",
       "pass": true,
       "got": "Ciplox 500 Tablet [Ciprofloxacin 500 mg · tablet]",
-      "ms": 8
+      "ms": 9
     },
     {
       "id": "brand-norflox400",
@@ -990,7 +990,7 @@
       "outcome": "right",
       "pass": true,
       "got": "Norflox 400 Tablet [Lactobacillus 120Million spores + Norfloxacin 400 mg · tablet]",
-      "ms": 10
+      "ms": 8
     },
     {
       "id": "brand-oflox200",
@@ -1000,7 +1000,7 @@
       "outcome": "offered",
       "pass": true,
       "got": "choices: Oflox 200 Tablet; Oflox 200mg Infusion",
-      "ms": 7
+      "ms": 24
     },
     {
       "id": "brand-levoflox500",
@@ -1010,7 +1010,7 @@
       "outcome": "offered",
       "pass": true,
       "got": "choices: Levoflox 500 Tablet; Levoflox 500 Infusion",
-      "ms": 26
+      "ms": 19
     },
     {
       "id": "brand-mox500",
@@ -1020,7 +1020,7 @@
       "outcome": "right",
       "pass": true,
       "got": "Mox 500mg Capsule [Amoxicillin 500 mg · capsule]",
-      "ms": 33
+      "ms": 17
     },
     {
       "id": "brand-novamox500",
@@ -1030,7 +1030,7 @@
       "outcome": "offered",
       "pass": true,
       "got": "choices: Novamox 500 Capsule; Novamox 500mg Injection",
-      "ms": 11
+      "ms": 15
     },
     {
       "id": "brand-clavam625",
@@ -1060,7 +1060,7 @@
       "outcome": "right",
       "pass": true,
       "got": "Flagyl 400 Tablet [Metronidazole 400 mg · tablet]",
-      "ms": 5
+      "ms": 9
     },
     {
       "id": "brand-forcan150",
@@ -1080,7 +1080,7 @@
       "outcome": "right",
       "pass": true,
       "got": "Zocon 150 Tablet [Fluconazole 150 mg · tablet]",
-      "ms": 5
+      "ms": 7
     },
     {
       "id": "brand-brufen400",
@@ -1090,7 +1090,7 @@
       "outcome": "right",
       "pass": true,
       "got": "Brufen 400 Tablet [Ibuprofen 400 mg · tablet]",
-      "ms": 8
+      "ms": 7
     },
     {
       "id": "brand-zerodol-pt",
@@ -1110,7 +1110,7 @@
       "outcome": "right",
       "pass": true,
       "got": "Calpol 650mg Tablet [Paracetamol 650 mg · tablet]",
-      "ms": 9
+      "ms": 8
     },
     {
       "id": "brand-pacimol650",
@@ -1120,7 +1120,7 @@
       "outcome": "right",
       "pass": true,
       "got": "Pacimol 650 Tablet [Paracetamol 650 mg · tablet]",
-      "ms": 6
+      "ms": 9
     },
     {
       "id": "brand-folvite5",
@@ -1130,7 +1130,7 @@
       "outcome": "right",
       "pass": true,
       "got": "Folvite 5mg Tablet [Folic Acid 5 mg · tablet]",
-      "ms": 9
+      "ms": 8
     },
     {
       "id": "brand-pregaba75",
@@ -1140,7 +1140,7 @@
       "outcome": "right",
       "pass": true,
       "got": "Pregaba 75 Capsule [Pregabalin 75 mg · capsule]",
-      "ms": 13
+      "ms": 11
     },
     {
       "id": "brand-gabapin300",
@@ -1150,7 +1150,7 @@
       "outcome": "right",
       "pass": true,
       "got": "Gabapin 300 Capsule [Gabapentin 300 mg · capsule]",
-      "ms": 11
+      "ms": 10
     },
     {
       "id": "brand-lyrica75",
@@ -1160,17 +1160,17 @@
       "outcome": "right",
       "pass": true,
       "got": "Lyrica 75mg Capsule [Pregabalin 75 mg · capsule]",
-      "ms": 5
+      "ms": 6
     },
     {
       "id": "brand-tryptomer10",
       "text": "Tryptomer 10",
       "expect": "answer",
       "want": "Amitriptyline 10 mg · tablet",
-      "outcome": "offered",
-      "pass": false,
-      "got": "choices: Tryptomer 10mg Tablet; Tryptomer G 300mg/10mg Tablet; Tryptomer G 100 mg/10 mg Tablet",
-      "ms": 7
+      "outcome": "right",
+      "pass": true,
+      "got": "Tryptomer 10mg Tablet [Amitriptyline 10 mg · tablet]",
+      "ms": 8
     },
     {
       "id": "brand-nexito10",
@@ -1180,7 +1180,7 @@
       "outcome": "right",
       "pass": true,
       "got": "Nexito 10 Tablet [Escitalopram Oxalate 10 mg · tablet]",
-      "ms": 6
+      "ms": 9
     },
     {
       "id": "brand-alprax025",
@@ -1200,7 +1200,7 @@
       "outcome": "right",
       "pass": true,
       "got": "Restyl 0.25mg Tablet [Alprazolam 0.25 mg · tablet]",
-      "ms": 6
+      "ms": 9
     },
     {
       "id": "brand-etizola05",
@@ -1210,7 +1210,7 @@
       "outcome": "right",
       "pass": true,
       "got": "Etizola 0.5 Tablet [Etizolam 0.5 mg · tablet]",
-      "ms": 9
+      "ms": 7
     },
     {
       "id": "brand-zolfresh10",
@@ -1220,7 +1220,7 @@
       "outcome": "right",
       "pass": true,
       "got": "Zolfresh 10mg Tablet [Zolpidem 10 mg · tablet]",
-      "ms": 10
+      "ms": 9
     },
     {
       "id": "brand-oleanz5",
@@ -1230,7 +1230,7 @@
       "outcome": "right",
       "pass": true,
       "got": "Oleanz 5 Tablet [Olanzapine 5 mg · tablet]",
-      "ms": 8
+      "ms": 6
     },
     {
       "id": "brand-qutipin25",
@@ -1240,7 +1240,7 @@
       "outcome": "right",
       "pass": true,
       "got": "Qutipin 25 Tablet [Quetiapine 25 mg · tablet]",
-      "ms": 7
+      "ms": 6
     },
     {
       "id": "brand-ecosprin150",
@@ -1260,7 +1260,7 @@
       "outcome": "right",
       "pass": true,
       "got": "Janumet 50mg/500mg Tablet [Metformin 500 mg + Sitagliptin 50 mg · tablet]",
-      "ms": 5
+      "ms": 6
     },
     {
       "id": "brand-galvusmet50-500",
@@ -1270,7 +1270,7 @@
       "outcome": "right",
       "pass": true,
       "got": "Galvus Met 50mg/500mg Tablet [Metformin 500 mg + Vildagliptin 50 mg · tablet]",
-      "ms": 9
+      "ms": 8
     },
     {
       "id": "brand-istamet50-1000",
@@ -1280,7 +1280,7 @@
       "outcome": "right",
       "pass": true,
       "got": "Istamet 50mg/1000mg Tablet [Metformin 1000 mg + Sitagliptin 50 mg · tablet]",
-      "ms": 6
+      "ms": 8
     },
     {
       "id": "brand-ecosprin-av75-20",
@@ -1290,7 +1290,7 @@
       "outcome": "right",
       "pass": true,
       "got": "Ecosprin AV 75/20 Capsule [Aspirin 75 mg + Atorvastatin 20 mg · capsule]",
-      "ms": 7
+      "ms": 8
     },
     {
       "id": "brand-ecosprin-av75",
@@ -1300,7 +1300,7 @@
       "outcome": "offered",
       "pass": true,
       "got": "choices: Ecosprin-AV 75 Capsule; Ecosprin AV 75/20 Capsule; Ecosprin AV 75/40 Capsule",
-      "ms": 2
+      "ms": 23
     },
     {
       "id": "way-stamlo5-glued",
@@ -1310,7 +1310,7 @@
       "outcome": "right",
       "pass": true,
       "got": "Stamlo 5 Tablet [Amlodipine 5 mg · tablet]",
-      "ms": 4
+      "ms": 8
     },
     {
       "id": "way-ciplox500-glued",
@@ -1320,7 +1320,7 @@
       "outcome": "right",
       "pass": true,
       "got": "Ciplox 500 Tablet [Ciprofloxacin 500 mg · tablet]",
-      "ms": 5
+      "ms": 11
     },
     {
       "id": "way-nexito10-glued",
@@ -1330,7 +1330,7 @@
       "outcome": "right",
       "pass": true,
       "got": "Nexito 10 Tablet [Escitalopram Oxalate 10 mg · tablet]",
-      "ms": 4
+      "ms": 8
     },
     {
       "id": "way-allegra120-glued",
@@ -1340,7 +1340,7 @@
       "outcome": "right",
       "pass": true,
       "got": "Allegra 120mg Tablet [Fexofenadine 120 mg · tablet]",
-      "ms": 4
+      "ms": 10
     },
     {
       "id": "way-pan40-glued",
@@ -1350,7 +1350,7 @@
       "outcome": "right",
       "pass": true,
       "got": "PAN 40 Tablet [Pantoprazole 40 mg · tablet]",
-      "ms": 29
+      "ms": 16
     },
     {
       "id": "way-pan40-mg",
@@ -1360,7 +1360,7 @@
       "outcome": "right",
       "pass": true,
       "got": "PAN 40 Tablet [Pantoprazole 40 mg · tablet]",
-      "ms": 8
+      "ms": 17
     },
     {
       "id": "way-telma40-mg-tablet",
@@ -1380,7 +1380,7 @@
       "outcome": "right",
       "pass": true,
       "got": "Telma 40 Tablet [Telmisartan 40 mg · tablet]",
-      "ms": 6
+      "ms": 8
     },
     {
       "id": "way-azee500-mg",
@@ -1390,7 +1390,7 @@
       "outcome": "right",
       "pass": true,
       "got": "Azee 500 Tablet [Azithromycin 500 mg · tablet]",
-      "ms": 4
+      "ms": 8
     },
     {
       "id": "way-ondem4-mg",
@@ -1400,7 +1400,7 @@
       "outcome": "right",
       "pass": true,
       "got": "Ondem 4 Tablet [Ondansetron 4 mg · tablet]",
-      "ms": 4
+      "ms": 9
     },
     {
       "id": "way-clavam625-tab",
@@ -1410,7 +1410,7 @@
       "outcome": "right",
       "pass": true,
       "got": "Clavam 625 Tablet [Amoxicillin 500 mg + Clavulanic Acid 125 mg · tablet]",
-      "ms": 5
+      "ms": 10
     },
     {
       "id": "way-calpol650-tablet",
@@ -1420,7 +1420,7 @@
       "outcome": "right",
       "pass": true,
       "got": "Calpol 650mg Tablet [Paracetamol 650 mg · tablet]",
-      "ms": 4
+      "ms": 9
     },
     {
       "id": "way-mox500-cap",
@@ -1430,7 +1430,7 @@
       "outcome": "right",
       "pass": true,
       "got": "Mox 500mg Capsule [Amoxicillin 500 mg · capsule]",
-      "ms": 9
+      "ms": 20
     },
     {
       "id": "way-omez20-capsule",
@@ -1440,7 +1440,7 @@
       "outcome": "right",
       "pass": true,
       "got": "Omez 20mg Capsule [Omeprazole 20 mg · capsule]",
-      "ms": 6
+      "ms": 11
     },
     {
       "id": "way-azithral500-tablet",
@@ -1450,7 +1450,7 @@
       "outcome": "right",
       "pass": true,
       "got": "Azithral 500 Tablet [Azithromycin 500 mg · tablet]",
-      "ms": 1
+      "ms": 4
     },
     {
       "id": "way-oflox200-tab",
@@ -1460,7 +1460,7 @@
       "outcome": "right",
       "pass": true,
       "got": "Oflox 200 Tablet [Ofloxacin 200 mg · tablet]",
-      "ms": 8
+      "ms": 12
     },
     {
       "id": "typo-amaril1",
@@ -1470,7 +1470,7 @@
       "outcome": "offered",
       "pass": true,
       "got": "did you mean: Amaryl 1mg Tablet; Amarin M1 Tablet ER; Amarin PM1 Tablet ER; Amaryl M  1mg Tablet PR; Amaryl MP 1mg Tablet ER",
-      "ms": 17
+      "ms": 24
     },
     {
       "id": "typo-rosuvaz10",
@@ -1480,7 +1480,7 @@
       "outcome": "right",
       "pass": true,
       "got": "Rosuvaz 10mg Tablet [Rosuvastatin 10 mg · tablet]",
-      "ms": 5
+      "ms": 10
     },
     {
       "id": "typo-pantp40",
@@ -1490,7 +1490,7 @@
       "outcome": "offered",
       "pass": true,
       "got": "choices: Pantpro 40mg Tablet",
-      "ms": 22
+      "ms": 19
     },
     {
       "id": "typo-azitral500",
@@ -1500,7 +1500,7 @@
       "outcome": "offered",
       "pass": true,
       "got": "did you mean: Azital 500mg Tablet; Azithral 500 Tablet; Azitrac 500mg Tablet; Azitras 500mg Tablet; Azital-LB 500 Tablet",
-      "ms": 15
+      "ms": 23
     },
     {
       "id": "typo-metrogil400",
@@ -1510,7 +1510,7 @@
       "outcome": "offered",
       "pass": true,
       "got": "did you mean: Metrogyl 400 Tablet; Metrodil M 400mg/500mg Tablet; Metrogyl Compound 400mg/500mg Tablet; Metrozol 400mg Tablet",
-      "ms": 23
+      "ms": 29
     },
     {
       "id": "typo-telmaa40",
@@ -1520,7 +1520,7 @@
       "outcome": "offered",
       "pass": true,
       "got": "did you mean: Telma 40 Tablet; Telmac 40mg Tablet; Telman 40mg Tablet; Telmas 40mg Tablet; Telmat 40mg Tablet",
-      "ms": 25
+      "ms": 27
     },
     {
       "id": "typo-pregabba75",
@@ -1530,7 +1530,7 @@
       "outcome": "offered",
       "pass": true,
       "got": "did you mean: Pregaba 75 Capsule; Pregaba SR 75 Tablet; Pregaba-M 75 Capsule; Pregaba-M SR 75 Tablet; Pregaba NT 75 mg/10 mg Tablet",
-      "ms": 15
+      "ms": 41
     },
     {
       "id": "typo-lyrika75",
@@ -1540,7 +1540,7 @@
       "outcome": "offered",
       "pass": true,
       "got": "did you mean: Lyrica 75mg Capsule",
-      "ms": 12
+      "ms": 21
     },
     {
       "id": "typo-ecospirin75",
@@ -1550,7 +1550,7 @@
       "outcome": "offered",
       "pass": true,
       "got": "did you mean: Ecosprin 75 Tablet; Ecosprin-AV 75 Capsule; Ecosprin AV 75/20 Capsule; Ecosprin AV 75/40 Capsule",
-      "ms": 13
+      "ms": 38
     },
     {
       "id": "typo-augmentine625",
@@ -1560,16 +1560,16 @@
       "outcome": "offered",
       "pass": true,
       "got": "did you mean: Augmentin 625 Duo Tablet",
-      "ms": 14
+      "ms": 20
     },
     {
       "id": "typo-allegr120",
       "text": "Alegra 120",
       "expect": "choice",
       "want": "Fexofenadine 120 mg · tablet",
-      "outcome": "missed",
-      "pass": false,
-      "got": "did you mean: Alero 120mg Tablet; Alert 120mg Tablet; Aler-FM 10mg/120mg Tablet; Alegrid M 10mg/120mg Tablet",
+      "outcome": "offered",
+      "pass": true,
+      "got": "did you mean: Allegra 120mg Tablet; Alero 120mg Tablet; Alert 120mg Tablet; Aler-FM 10mg/120mg Tablet; Alegrid M 10mg/120mg Tablet",
       "ms": 23
     },
     {
@@ -1580,7 +1580,7 @@
       "outcome": "offered",
       "pass": true,
       "got": "did you mean: Nexito 10 Tablet",
-      "ms": 16
+      "ms": 40
     },
     {
       "id": "typo-cilacr10",
@@ -1590,7 +1590,7 @@
       "outcome": "offered",
       "pass": true,
       "got": "did you mean: Cilacar 10 Tablet; Cilacar-M 10/25 Tablet ER; Cilacar-M 10/50 Tablet ER; Cilacar TM 10mg/25mg/40mg Tablet; Cila 10mg Tablet",
-      "ms": 21
+      "ms": 34
     },
     {
       "id": "typo-zolfrsh10",
@@ -1600,7 +1600,7 @@
       "outcome": "offered",
       "pass": true,
       "got": "did you mean: Zolfresh 10mg Tablet; Zolfirst 0.5mg/10mg Tablet",
-      "ms": 15
+      "ms": 24
     },
     {
       "id": "typo-glycomett500sr",
@@ -1610,7 +1610,7 @@
       "outcome": "offered",
       "pass": true,
       "got": "did you mean: Glycomet 500 SR Tablet; Glycimet -SR 500 Tablet",
-      "ms": 22
+      "ms": 36
     },
     {
       "id": "nostrength-losar",
@@ -1620,7 +1620,7 @@
       "outcome": "offered",
       "pass": true,
       "got": "choices: Losar 25 Tablet; Losar 50 Tablet; Losar 100mg Tablet; Losar-A Tablet; Losar-H Tablet",
-      "ms": 3
+      "ms": 8
     },
     {
       "id": "nostrength-pantop",
@@ -1630,7 +1630,7 @@
       "outcome": "offered",
       "pass": true,
       "got": "choices: Pantop Injection; Pantop 20 Tablet; Pantop 40 Tablet",
-      "ms": 2
+      "ms": 9
     },
     {
       "id": "nostrength-azee",
@@ -1640,7 +1640,7 @@
       "outcome": "offered",
       "pass": true,
       "got": "choices: Azee 250 Tablet; Azee 500 Tablet; Azee 1000 Tablet; Azee 200 DT Tablet; Azee 200mg Dry Syrup",
-      "ms": 2
+      "ms": 4
     },
     {
       "id": "nostrength-allegra",
@@ -1649,8 +1649,8 @@
       "want": "Fexofenadine 120 mg · tablet",
       "outcome": "offered",
       "pass": true,
-      "got": "choices: Allegra Nasal Spray; Allegra 120mg Tablet; Allegra 180mg Tablet",
-      "ms": 3
+      "got": "choices: Allegra Nasal Spray; Allegra Suspension Raspberry & Vanilla; Allegra 120mg Tablet; Allegra 180mg Tablet",
+      "ms": 7
     },
     {
       "id": "nostrength-ondem",
@@ -1660,7 +1660,7 @@
       "outcome": "offered",
       "pass": true,
       "got": "choices: Ondem Syrup; Ondem Injection; Ondem 4 Tablet; Ondem 8 Tablet; Ondem 8mg Injection",
-      "ms": 5
+      "ms": 9
     },
     {
       "id": "nostrength-ecosprin",
@@ -1670,7 +1670,7 @@
       "outcome": "offered",
       "pass": true,
       "got": "choices: Ecosprin 75 Tablet; Ecosprin 150 Tablet; Ecosprin 325 Tablet; Ecosprin-AV 75 Capsule; Ecosprin-AV 150 Capsule",
-      "ms": 3
+      "ms": 23
     },
     {
       "id": "nostrength-amaryl",
@@ -1680,7 +1680,7 @@
       "outcome": "offered",
       "pass": true,
       "got": "choices: Amaryl 1mg Tablet; Amaryl 2mg Tablet; Amaryl 3mg Tablet; Amaryl 4mg Tablet; Amaryl M  1mg Tablet PR",
-      "ms": 2
+      "ms": 10
     },
     {
       "id": "nostrength-concor",
@@ -1690,7 +1690,7 @@
       "outcome": "offered",
       "pass": true,
       "got": "choices: Concor 5 Tablet; Concor 10 Tablet; Concor Plus Tablet; Concor AM 5 Tablet; Concor AM 2.5 Tablet",
-      "ms": 5
+      "ms": 13
     },
     {
       "id": "nostrength-galvusmet",
@@ -1700,7 +1700,7 @@
       "outcome": "offered",
       "pass": true,
       "got": "choices: Galvus Met 50mg/500mg Tablet; Galvus Met 50mg/850mg Tablet; Galvus Met 50mg/1000mg Tablet",
-      "ms": 2
+      "ms": 14
     },
     {
       "id": "nostrength-combiflam",
@@ -1710,7 +1710,7 @@
       "outcome": "offered",
       "pass": true,
       "got": "choices: Combiflam Tablet; Combiflam Suspension",
-      "ms": 7
+      "ms": 11
     },
     {
       "id": "nostrength-ultracet",
@@ -1720,7 +1720,7 @@
       "outcome": "offered",
       "pass": true,
       "got": "choices: Ultracet Tablet; Ultracet 500mg/50mg Tablet",
-      "ms": 4
+      "ms": 10
     },
     {
       "id": "nostrength-methycobal",
@@ -1730,7 +1730,7 @@
       "outcome": "offered",
       "pass": true,
       "got": "choices: Methycobal Tablet; Methycobal Injection",
-      "ms": 7
+      "ms": 17
     },
     {
       "id": "liquid-ascoril-ls",
@@ -1740,7 +1740,7 @@
       "outcome": "right",
       "pass": true,
       "got": "Ascoril LS Syrup [Ambroxol 30mg/5 ml + Levosalbutamol 1mg/5 ml · liquid]",
-      "ms": 6
+      "ms": 3
     },
     {
       "id": "liquid-benadryl",
@@ -1750,7 +1750,7 @@
       "outcome": "right",
       "pass": true,
       "got": "Benadryl Syrup [Ammonium Chloride 138mg/5 ml + Diphenhydramine 14.08mg/5 ml · liquid]",
-      "ms": 6
+      "ms": 4
     },
     {
       "id": "liquid-alex",
@@ -1760,7 +1760,7 @@
       "outcome": "right",
       "pass": true,
       "got": "Alex Syrup [Chlorpheniramine Maleate 2mg/5 ml + Phenylephrine 5mg/5 ml · liquid]",
-      "ms": 4
+      "ms": 3
     },
     {
       "id": "liquid-calpol250-susp",
@@ -1770,7 +1770,7 @@
       "outcome": "offered",
       "pass": true,
       "got": "choices: Calpol 250mg Paediatric Oral Suspension Strawberry; Calpol 250mg Tablet",
-      "ms": 3
+      "ms": 23
     },
     {
       "id": "liquid-zifi100-dry",
@@ -1790,17 +1790,17 @@
       "outcome": "right",
       "pass": true,
       "got": "Combiflam Suspension [Ibuprofen 100 mg + Paracetamol 162.5 mg · liquid]",
-      "ms": 3
+      "ms": 5
     },
     {
       "id": "liquid-ibugesic-plus-susp",
       "text": "Ibugesic Plus suspension",
       "expect": "answer",
       "want": "Ibuprofen 100 mg + Paracetamol 162.5 mg · liquid",
-      "outcome": "offered",
-      "pass": false,
-      "got": "choices: Ibugesic Plus Oral Suspension Orange; Ibugesic Plus Tablet; Ibugesic Oral Suspension Orange",
-      "ms": 4
+      "outcome": "right",
+      "pass": true,
+      "got": "Ibugesic Plus Oral Suspension Orange [Ibuprofen 100 mg + Paracetamol 162.5 mg · liquid]",
+      "ms": 9
     },
     {
       "id": "liquid-augmentin-duo",
@@ -1810,7 +1810,7 @@
       "outcome": "right",
       "pass": true,
       "got": "Augmentin Duo Oral Suspension [Amoxicillin 200 mg + Clavulanic Acid 28.5 mg · liquid]",
-      "ms": 7
+      "ms": 8
     },
     {
       "id": "liquid-zentel-susp",
@@ -1820,7 +1820,7 @@
       "outcome": "right",
       "pass": true,
       "got": "Zentel Oral Suspension [Albendazole 400 mg · liquid]",
-      "ms": 7
+      "ms": 8
     },
     {
       "id": "liquid-montair-lc-kid",
@@ -1830,7 +1830,7 @@
       "outcome": "right",
       "pass": true,
       "got": "Montair LC Kid Syrup [Levocetirizine 2.5mg/5 ml + Montelukast 4mg/5 ml · liquid]",
-      "ms": 6
+      "ms": 7
     },
     {
       "id": "liquid-montek-lc-kid",
@@ -1840,7 +1840,7 @@
       "outcome": "right",
       "pass": true,
       "got": "Montek LC Kid Syrup [Levocetirizine 2.5mg/5 ml + Montelukast 4mg/5 ml · liquid]",
-      "ms": 2
+      "ms": 6
     },
     {
       "id": "liquid-grilinctus-ls",
@@ -1850,7 +1850,7 @@
       "outcome": "right",
       "pass": true,
       "got": "Grilinctus-LS Syrup [Ambroxol 30mg/5 ml + Levosalbutamol 1mg/5 ml · liquid]",
-      "ms": 6
+      "ms": 7
     },
     {
       "id": "liquid-cyclopam-susp",
@@ -1860,17 +1860,17 @@
       "outcome": "right",
       "pass": true,
       "got": "Cyclopam Suspension [Dicyclomine 10 mg + Simethicone 40 mg · liquid]",
-      "ms": 5
+      "ms": 3
     },
     {
       "id": "liquid-zifi100-tablet",
       "text": "Zifi 100 tablet",
       "expect": "answer",
       "want": "Cefixime 100 mg · tablet",
-      "outcome": "offered",
-      "pass": false,
-      "got": "choices: Zifi 100 DT Tablet; Zifi-LBX 100 Tablet; Zifi-O 100 DT Tablet; Zifi CV 100 DT Tablet; Zifi 100 Dry Syrup",
-      "ms": 2
+      "outcome": "right",
+      "pass": true,
+      "got": "Zifi 100 DT Tablet [Cefixime 100 mg · tablet]",
+      "ms": 8
     },
     {
       "id": "liquid-ja-ondansetron",
@@ -1890,7 +1890,7 @@
       "outcome": "right",
       "pass": true,
       "got": "Azithromycin Oral Suspension IP 100mg per 5ml [Azithromycin 100mg/5 ml · liquid]",
-      "ms": 8
+      "ms": 5
     },
     {
       "id": "liquid-ja-albendazole",
@@ -1900,7 +1900,7 @@
       "outcome": "right",
       "pass": true,
       "got": "Albendazole Oral Suspension IP 200 mg per 5ml [Albendazole 200mg/5 ml · liquid]",
-      "ms": 6
+      "ms": 5
     },
     {
       "id": "liquid-ja-ranitidine",
@@ -1920,7 +1920,7 @@
       "outcome": "right",
       "pass": true,
       "got": "Cefixime Oral Suspension IP 50mg per 5ml [Cefixime 50mg/5 ml · liquid]",
-      "ms": 9
+      "ms": 7
     },
     {
       "id": "liquid-ja-montelukast-levocet",
@@ -1930,17 +1930,17 @@
       "outcome": "right",
       "pass": true,
       "got": "Montelukast 4mg and Levocetirizine 2.5mg Syrup [Levocetirizine 2.5 mg + Montelukast 4 mg · liquid]",
-      "ms": 4
+      "ms": 9
     },
     {
       "id": "liquid-short-ranitidine",
       "text": "Ranitidine syrup",
       "expect": "choice",
       "want": "Ranitidine 75mg/5 ml · liquid",
-      "outcome": "missed",
-      "pass": false,
-      "got": "not_found",
-      "ms": 3
+      "outcome": "offered",
+      "pass": true,
+      "got": "choices: Ranitidine Syrup IP 75 mg per 5ml",
+      "ms": 16
     },
     {
       "id": "release-glycomet1g-sr",
@@ -1950,7 +1950,7 @@
       "outcome": "right",
       "pass": true,
       "got": "Glycomet 1gm Tablet SR [Metformin 1000 mg · tablet · SR]",
-      "ms": 7
+      "ms": 10
     },
     {
       "id": "release-glyciphage-sr500",
@@ -1960,17 +1960,17 @@
       "outcome": "right",
       "pass": true,
       "got": "Glyciphage SR 500mg Tablet [Metformin 500 mg · tablet · SR]",
-      "ms": 8
+      "ms": 11
     },
     {
       "id": "release-gluconorm-sr500",
       "text": "Gluconorm SR 500",
       "expect": "answer",
       "want": "Metformin 500 mg · tablet · SR",
-      "outcome": "offered",
-      "pass": false,
-      "got": "choices: Gluconorm SR 500mg Tablet; Gluconorm-V 0.2 Tablet SR; Gluconorm-V 0.3 Tablet SR",
-      "ms": 8
+      "outcome": "right",
+      "pass": true,
+      "got": "Gluconorm SR 500mg Tablet [Metformin 500 mg · tablet · SR]",
+      "ms": 11
     },
     {
       "id": "release-diamicron-xr60",
@@ -1990,7 +1990,7 @@
       "outcome": "right",
       "pass": true,
       "got": "Met XL 25 Tablet [Metoprolol Succinate 23.75 mg · tablet · XL]",
-      "ms": 7
+      "ms": 14
     },
     {
       "id": "release-metxl50",
@@ -2000,7 +2000,7 @@
       "outcome": "right",
       "pass": true,
       "got": "Met XL 50 Tablet [Metoprolol Succinate 47.5 mg · tablet · XL]",
-      "ms": 8
+      "ms": 13
     },
     {
       "id": "release-prolomet-xl50",
@@ -2010,7 +2010,7 @@
       "outcome": "right",
       "pass": true,
       "got": "Prolomet XL 50 Tablet [Metoprolol Succinate 47.5 mg · tablet · XL]",
-      "ms": 7
+      "ms": 9
     },
     {
       "id": "release-seloken-xl50",
@@ -2030,7 +2030,7 @@
       "outcome": "offered",
       "pass": true,
       "got": "choices: Nitrocontin 2.6 Tablet CR",
-      "ms": 8
+      "ms": 15
     },
     {
       "id": "release-ganaton-od",
@@ -2040,7 +2040,7 @@
       "outcome": "offered",
       "pass": true,
       "got": "choices: Ganaton OD Capsule SR; Ganaton Tablet; Ganaton Total Capsule SR",
-      "ms": 3
+      "ms": 5
     },
     {
       "id": "release-alfoo10",
@@ -2050,7 +2050,7 @@
       "outcome": "offered",
       "pass": true,
       "got": "choices: Alfoo 10mg Tablet PR",
-      "ms": 4
+      "ms": 10
     },
     {
       "id": "release-urimax04",
@@ -2060,7 +2060,7 @@
       "outcome": "offered",
       "pass": true,
       "got": "choices: Urimax 0.4 Capsule MR; Urimax 0.4 Ecopack Capsule MR",
-      "ms": 5
+      "ms": 11
     },
     {
       "id": "release-veltam04",
@@ -2070,7 +2070,7 @@
       "outcome": "offered",
       "pass": true,
       "got": "choices: Veltam 0.4 Tablet MR",
-      "ms": 5
+      "ms": 17
     },
     {
       "id": "release-voveran-sr100",
@@ -2080,7 +2080,7 @@
       "outcome": "right",
       "pass": true,
       "got": "Voveran SR 100 Tablet [Diclofenac 100 mg · tablet · SR]",
-      "ms": 7
+      "ms": 6
     },
     {
       "id": "release-ja-diclofenac-pr",
@@ -2090,7 +2090,7 @@
       "outcome": "right",
       "pass": true,
       "got": "Diclofenac Sodium Prolonged Release Tablets IP 100 mg [Diclofenac 100 mg · tablet · SR]",
-      "ms": 7
+      "ms": 5
     },
     {
       "id": "release-ja-gliclazide-xr",
@@ -2100,7 +2100,7 @@
       "outcome": "right",
       "pass": true,
       "got": "Gliclazide Extended release Tablets 60 mg [Gliclazide 60 mg · tablet · XR]",
-      "ms": 5
+      "ms": 4
     },
     {
       "id": "release-ja-tamsulosin-pr",
@@ -2110,7 +2110,7 @@
       "outcome": "right",
       "pass": true,
       "got": "Tamsulosin Hydrochloride Prolonged Release Capsules IP 0.4mg [Tamsulosin 0.4 mg · capsule · SR]",
-      "ms": 7
+      "ms": 6
     },
     {
       "id": "release-ja-aceclofenac-sr",
@@ -2120,7 +2120,7 @@
       "outcome": "right",
       "pass": true,
       "got": "Aceclofenac Sustained Release Tablets 200mg [Aceclofenac 200 mg · tablet · SR]",
-      "ms": 7
+      "ms": 6
     },
     {
       "id": "release-ja-metoprolol-er",
@@ -2130,7 +2130,7 @@
       "outcome": "right",
       "pass": true,
       "got": "Metoprolol Extended release Tablets IP 50mg [Metoprolol 50 mg · tablet · XR]",
-      "ms": 5
+      "ms": 7
     },
     {
       "id": "release-salt-gliclazide60xr",
@@ -2150,7 +2150,7 @@
       "outcome": "offered",
       "pass": true,
       "got": "choices: Diclofenac Sodium Prolonged Release Tablets IP 100 mg; Diclofam 100mg Capsule SR",
-      "ms": 46
+      "ms": 48
     },
     {
       "id": "release-salt-metoprolol50xr",
@@ -2170,7 +2170,7 @@
       "outcome": "offered",
       "pass": true,
       "got": "choices: Jotam 0.4mg Tablet; Urinat 0.4mg Capsule; Tamsulosin Hydrochloride Prolonged Release Capsules IP 0.4mg; Uriwell 0.4 Tablet PR; DavaIndia Tamsulosin 0.4mg Tablet MR",
-      "ms": 39
+      "ms": 42
     },
     {
       "id": "release-plain-gliclazide80",
@@ -2190,7 +2190,7 @@
       "outcome": "right",
       "pass": true,
       "got": "Diclofenac Gastro-Resistant Tablets IP 50 mg [Diclofenac 50 mg · tablet]",
-      "ms": 5
+      "ms": 7
     },
     {
       "id": "ja-name-atorva10",
@@ -2200,7 +2200,7 @@
       "outcome": "right",
       "pass": true,
       "got": "Atorvastatin Tablets IP 10mg [Atorvastatin 10 mg · tablet]",
-      "ms": 5
+      "ms": 6
     },
     {
       "id": "ja-name-losartan50",
@@ -2210,7 +2210,7 @@
       "outcome": "right",
       "pass": true,
       "got": "Losartan Tablets IP 50mg [Losartan 50 mg · tablet]",
-      "ms": 3
+      "ms": 5
     },
     {
       "id": "ja-name-glimepiride1",
@@ -2220,7 +2220,7 @@
       "outcome": "right",
       "pass": true,
       "got": "Glimepiride Tablets IP 1mg [Glimepiride 1 mg · tablet]",
-      "ms": 4
+      "ms": 5
     },
     {
       "id": "ja-name-rosuva10",
@@ -2230,7 +2230,7 @@
       "outcome": "right",
       "pass": true,
       "got": "Rosuvastatin Tablets IP 10mg [Rosuvastatin 10 mg · tablet]",
-      "ms": 8
+      "ms": 7
     },
     {
       "id": "ja-name-clopidogrel75",
@@ -2240,7 +2240,7 @@
       "outcome": "right",
       "pass": true,
       "got": "Clopidogrel Tablets IP 75mg [Clopidogrel 75 mg · tablet]",
-      "ms": 8
+      "ms": 5
     },
     {
       "id": "ja-name-clopi-asp",
@@ -2260,7 +2260,7 @@
       "outcome": "right",
       "pass": true,
       "got": "Ondansetron Tablets IP 4 mg [Ondansetron 4 mg · tablet]",
-      "ms": 3
+      "ms": 5
     },
     {
       "id": "ja-name-rabeprazole20",
@@ -2270,7 +2270,7 @@
       "outcome": "right",
       "pass": true,
       "got": "Rabeprazole Gastro Resistant Tablets IP 20 mg [Rabeprazole 20 mg · tablet]",
-      "ms": 9
+      "ms": 4
     },
     {
       "id": "ja-name-ofloxacin200",
@@ -2280,7 +2280,7 @@
       "outcome": "right",
       "pass": true,
       "got": "Ofloxacin Tablets IP 200mg [Ofloxacin 200 mg · tablet]",
-      "ms": 7
+      "ms": 5
     },
     {
       "id": "ja-name-cefixime200",
@@ -2330,7 +2330,7 @@
       "outcome": "right",
       "pass": true,
       "got": "Aceclofenac 100mg and Paracetamol 325mg Tablets [Aceclofenac 100 mg + Paracetamol 325 mg · tablet]",
-      "ms": 2
+      "ms": 6
     },
     {
       "id": "ja-name-azithro500",
@@ -2340,7 +2340,7 @@
       "outcome": "right",
       "pass": true,
       "got": "Azithromycin Tablets IP 500 mg [Azithromycin 500 mg · tablet]",
-      "ms": 4
+      "ms": 6
     },
     {
       "id": "ja-name-monte-levocet",
@@ -2350,7 +2350,7 @@
       "outcome": "right",
       "pass": true,
       "got": "Montelukast Sodium 10mg and Levocetirizine 5mg Tablets IP [Levocetirizine 5 mg + Montelukast 10 mg · tablet]",
-      "ms": 5
+      "ms": 7
     },
     {
       "id": "ja-name-vildagliptin50",
@@ -2360,7 +2360,7 @@
       "outcome": "right",
       "pass": true,
       "got": "Vildagliptin Tablets IP 50mg [Vildagliptin 50 mg · tablet]",
-      "ms": 7
+      "ms": 6
     },
     {
       "id": "ja-name-vilda-met",
@@ -2370,7 +2370,7 @@
       "outcome": "right",
       "pass": true,
       "got": "Vildagliptin 50mg and Metformin Hydrochloride 500mg Tablets IP [Metformin 500 mg + Vildagliptin 50 mg · tablet]",
-      "ms": 4
+      "ms": 6
     },
     {
       "id": "ja-name-sitagliptin50",
@@ -2380,7 +2380,7 @@
       "outcome": "right",
       "pass": true,
       "got": "Sitagliptin Phosphate Tablets IP 50mg [Sitagliptin 50 mg · tablet]",
-      "ms": 6
+      "ms": 4
     },
     {
       "id": "ja-name-bisoprolol5",
@@ -2390,7 +2390,7 @@
       "outcome": "right",
       "pass": true,
       "got": "Bisoprolol Tablets 5 mg [Bisoprolol 5 mg · tablet]",
-      "ms": 3
+      "ms": 4
     },
     {
       "id": "ja-name-cilnidipine10",
@@ -2420,7 +2420,7 @@
       "outcome": "right",
       "pass": true,
       "got": "Fexofenadine Hydrochloride Tablets IP 120mg [Fexofenadine 120 mg · tablet]",
-      "ms": 7
+      "ms": 5
     },
     {
       "id": "ja-name-esomeprazole40",
@@ -2430,7 +2430,7 @@
       "outcome": "right",
       "pass": true,
       "got": "Esomeprazole Tablets IP 40 mg [Esomeprazole 40 mg · tablet]",
-      "ms": 6
+      "ms": 4
     },
     {
       "id": "ja-name-escitalopram10",
@@ -2440,7 +2440,7 @@
       "outcome": "right",
       "pass": true,
       "got": "Escitalopram Tablets IP 10 mg [Escitalopram 10 mg · tablet]",
-      "ms": 6
+      "ms": 4
     },
     {
       "id": "ja-name-alprazolam025",
@@ -2450,7 +2450,7 @@
       "outcome": "right",
       "pass": true,
       "got": "Alprazolam Tablets IP 0.25 mg [Alprazolam 0.25 mg · tablet]",
-      "ms": 8
+      "ms": 4
     },
     {
       "id": "ja-name-folic5",
@@ -2460,7 +2460,7 @@
       "outcome": "right",
       "pass": true,
       "got": "Folic Acid Tablets IP 5 mg [Folic Acid 5 mg · tablet]",
-      "ms": 6
+      "ms": 3
     },
     {
       "id": "ja-name-metronidazole400",
@@ -2470,7 +2470,7 @@
       "outcome": "right",
       "pass": true,
       "got": "Metronidazole Tablets IP 400mg [Metronidazole 400 mg · tablet]",
-      "ms": 7
+      "ms": 4
     },
     {
       "id": "ja-name-fluconazole150",
@@ -2480,7 +2480,7 @@
       "outcome": "right",
       "pass": true,
       "got": "Fluconazole Tablets IP 150 mg [Fluconazole 150 mg · tablet]",
-      "ms": 7
+      "ms": 5
     },
     {
       "id": "ja-name-albendazole400",
@@ -2530,7 +2530,7 @@
       "outcome": "right",
       "pass": true,
       "got": "Pregabalin Capsules IP 75 mg [Pregabalin 75 mg · capsule]",
-      "ms": 11
+      "ms": 7
     },
     {
       "id": "ja-name-methylcobalamin500",
@@ -2550,7 +2550,7 @@
       "outcome": "right",
       "pass": true,
       "got": "Pramipexole Dihydrochloride Tablets 0.25mg [Pramipexole Dihydrochloride 0.25 mg · tablet]",
-      "ms": 7
+      "ms": 5
     },
     {
       "id": "salt-atorva10",
@@ -2560,7 +2560,7 @@
       "outcome": "right",
       "pass": true,
       "got": "Atorvastatin Tablets IP 10mg [Atorvastatin 10 mg · tablet]",
-      "ms": 2
+      "ms": 7
     },
     {
       "id": "salt-atorva20-mg",
@@ -2570,7 +2570,7 @@
       "outcome": "right",
       "pass": true,
       "got": "Atorvastatin Tablets IP 20mg [Atorvastatin 20 mg · tablet]",
-      "ms": 3
+      "ms": 7
     },
     {
       "id": "salt-losartan50",
@@ -2590,7 +2590,7 @@
       "outcome": "right",
       "pass": true,
       "got": "Losartan Tablets IP 25mg [Losartan 25 mg · tablet]",
-      "ms": 5
+      "ms": 7
     },
     {
       "id": "salt-glimepiride2",
@@ -2610,7 +2610,7 @@
       "outcome": "right",
       "pass": true,
       "got": "Rosuvastatin Tablets IP 20 mg [Rosuvastatin 20 mg · tablet]",
-      "ms": 4
+      "ms": 6
     },
     {
       "id": "salt-clopidogrel75",
@@ -2620,7 +2620,7 @@
       "outcome": "right",
       "pass": true,
       "got": "Clopidogrel Tablets IP 75mg [Clopidogrel 75 mg · tablet]",
-      "ms": 2
+      "ms": 5
     },
     {
       "id": "salt-ondansetron4",
@@ -2630,7 +2630,7 @@
       "outcome": "right",
       "pass": true,
       "got": "Ondansetron Tablets IP 4 mg [Ondansetron 4 mg · tablet]",
-      "ms": 3
+      "ms": 7
     },
     {
       "id": "salt-rabeprazole20",
@@ -2640,7 +2640,7 @@
       "outcome": "right",
       "pass": true,
       "got": "Rabeprazole Gastro Resistant Tablets IP 20 mg [Rabeprazole 20 mg · tablet]",
-      "ms": 2
+      "ms": 5
     },
     {
       "id": "salt-ofloxacin200",
@@ -2650,7 +2650,7 @@
       "outcome": "offered",
       "pass": true,
       "got": "choices: Ofloxacin Tablets IP 200mg; Ofloxacin Infusion IP 200 mg per 100 ml",
-      "ms": 16
+      "ms": 32
     },
     {
       "id": "salt-cefixime200",
@@ -2670,7 +2670,7 @@
       "outcome": "right",
       "pass": true,
       "got": "Ibuprofen Tablets IP 400 mg [Ibuprofen 400 mg · tablet]",
-      "ms": 4
+      "ms": 6
     },
     {
       "id": "salt-azithro500",
@@ -2680,7 +2680,7 @@
       "outcome": "right",
       "pass": true,
       "got": "Azithromycin Tablets IP 500 mg [Azithromycin 500 mg · tablet]",
-      "ms": 5
+      "ms": 6
     },
     {
       "id": "salt-montelukast10",
@@ -2690,7 +2690,7 @@
       "outcome": "right",
       "pass": true,
       "got": "Montelukast Sodium Tablets IP 10mg [Montelukast 10 mg · tablet]",
-      "ms": 8
+      "ms": 7
     },
     {
       "id": "salt-vildagliptin50",
@@ -2700,7 +2700,7 @@
       "outcome": "right",
       "pass": true,
       "got": "Vildagliptin Tablets IP 50mg [Vildagliptin 50 mg · tablet]",
-      "ms": 2
+      "ms": 7
     },
     {
       "id": "salt-sitagliptin100",
@@ -2710,7 +2710,7 @@
       "outcome": "right",
       "pass": true,
       "got": "Sitagliptin Phosphate Tablets IP 100mg [Sitagliptin 100 mg · tablet]",
-      "ms": 4
+      "ms": 5
     },
     {
       "id": "salt-bisoprolol5",
@@ -2720,7 +2720,7 @@
       "outcome": "right",
       "pass": true,
       "got": "Bisoprolol Tablets 5 mg [Bisoprolol 5 mg · tablet]",
-      "ms": 4
+      "ms": 5
     },
     {
       "id": "salt-cilnidipine10",
@@ -2730,7 +2730,7 @@
       "outcome": "right",
       "pass": true,
       "got": "Cilnidipine Tablets IP 10 mg [Cilnidipine 10 mg · tablet]",
-      "ms": 3
+      "ms": 5
     },
     {
       "id": "salt-olmesartan20",
@@ -2740,7 +2740,7 @@
       "outcome": "offered",
       "pass": true,
       "got": "choices: Olmesartan Medoxomil Tablets IP 20mg",
-      "ms": 18
+      "ms": 33
     },
     {
       "id": "salt-fexofenadine180",
@@ -2760,7 +2760,7 @@
       "outcome": "right",
       "pass": true,
       "got": "Esomeprazole Tablets IP 40 mg [Esomeprazole 40 mg · tablet]",
-      "ms": 3
+      "ms": 6
     },
     {
       "id": "salt-escitalopram10",
@@ -2770,7 +2770,7 @@
       "outcome": "right",
       "pass": true,
       "got": "Escitalopram Tablets IP 10 mg [Escitalopram 10 mg · tablet]",
-      "ms": 2
+      "ms": 5
     },
     {
       "id": "salt-alprazolam05",
@@ -2790,7 +2790,7 @@
       "outcome": "right",
       "pass": true,
       "got": "Folic Acid Tablets IP 5 mg [Folic Acid 5 mg · tablet]",
-      "ms": 3
+      "ms": 6
     },
     {
       "id": "salt-metronidazole400",
@@ -2800,7 +2800,7 @@
       "outcome": "right",
       "pass": true,
       "got": "Metronidazole Tablets IP 400mg [Metronidazole 400 mg · tablet]",
-      "ms": 2
+      "ms": 6
     },
     {
       "id": "salt-fluconazole150",
@@ -2810,7 +2810,7 @@
       "outcome": "right",
       "pass": true,
       "got": "Fluconazole Tablets IP 150 mg [Fluconazole 150 mg · tablet]",
-      "ms": 2
+      "ms": 7
     },
     {
       "id": "salt-gabapentin300",
@@ -2820,7 +2820,7 @@
       "outcome": "right",
       "pass": true,
       "got": "Gabapentin Capsules IP 300mg [Gabapentin 300 mg · capsule]",
-      "ms": 3
+      "ms": 7
     },
     {
       "id": "salt-famotidine40",
@@ -2830,7 +2830,7 @@
       "outcome": "right",
       "pass": true,
       "got": "Famotidine Tablets IP 40 mg [Famotidine 40 mg · tablet]",
-      "ms": 5
+      "ms": 7
     },
     {
       "id": "salt-pregabalin75",
@@ -2840,7 +2840,7 @@
       "outcome": "offered",
       "pass": true,
       "got": "choices: Pregabalin Tablets 75 mg; Pregabalin Capsules IP 75 mg; DavaIndia 75mg Tablet SR; Maigesic 75mg Tablet ER; Gabrica Capsule SR",
-      "ms": 53
+      "ms": 59
     },
     {
       "id": "salt-itopride50",
@@ -2850,7 +2850,7 @@
       "outcome": "right",
       "pass": true,
       "got": "Itopride Tablets IP 50 mg [Itopride 50 mg · tablet]",
-      "ms": 4
+      "ms": 5
     },
     {
       "id": "salt-methylcobalamin1500",
@@ -2860,7 +2860,7 @@
       "outcome": "right",
       "pass": true,
       "got": "Methylcobalamin Tablet 1500mcg [Methylcobalamin 1.5 mg · tablet]",
-      "ms": 4
+      "ms": 6
     },
     {
       "id": "salt-pramipexole025",
@@ -2870,7 +2870,7 @@
       "outcome": "offered",
       "pass": true,
       "got": "choices: Pramipexole Dihydrochloride Tablets 0.25mg; Parpex 0.25mg Tablet",
-      "ms": 18
+      "ms": 36
     },
     {
       "id": "salt-metoprolol50",
@@ -2880,17 +2880,17 @@
       "outcome": "offered",
       "pass": true,
       "got": "choices: Metolash 50 Tablet; Mepol 50mg Tablet; Metoprolol Extended release Tablets IP 50mg; Metoprolol Succinate extended release capsules IP 50mg; Cgrol 50mg Tablet XL",
-      "ms": 38
+      "ms": 41
     },
     {
       "id": "salt-amoxclav",
       "text": "Amoxicillin 500 Clavulanic acid 125",
       "expect": "choice",
       "want": "Amoxicillin 500 mg + Clavulanic Acid 125 mg · tablet",
-      "outcome": "missed",
-      "pass": false,
-      "got": "not_found",
-      "ms": 17
+      "outcome": "offered",
+      "pass": true,
+      "got": "choices: Amoxycillin 500mg and Potassium Clavulanate 125mg Tablets IP",
+      "ms": 42
     },
     {
       "id": "form-tramadol50",
@@ -2900,7 +2900,7 @@
       "outcome": "offered",
       "pass": true,
       "got": "choices: Tramadol Tablets 50mg; Termeg 50mg Capsule; Painadol 50mg Tablet SR; Tramadol HCl Injection 50mg 1 ml",
-      "ms": 34
+      "ms": 58
     },
     {
       "id": "form-tramadol50-plain",
@@ -2910,7 +2910,7 @@
       "outcome": "offered",
       "pass": true,
       "got": "choices: Tramadol Tablets 50mg; Termeg 50mg Capsule; Painadol 50mg Tablet SR; Tramadol HCl Injection 50mg 1 ml",
-      "ms": 14
+      "ms": 54
     },
     {
       "id": "form-albendazole400",
@@ -2920,7 +2920,7 @@
       "outcome": "offered",
       "pass": true,
       "got": "choices: Albendazole Tablets IP 400mg; Abn 400mg Capsule; Abide 400mg Drop; Toko 400mg Syrup; Elbenol 400mg Sachet",
-      "ms": 27
+      "ms": 33
     },
     {
       "id": "form-amikacin250",
@@ -2930,7 +2930,7 @@
       "outcome": "offered",
       "pass": true,
       "got": "choices: Amikacin Injection IP 250 mg per 2 ml; LA Mika 250mg Injection",
-      "ms": 34
+      "ms": 52
     },
     {
       "id": "form-cetirizine10",
@@ -2940,7 +2940,7 @@
       "outcome": "offered",
       "pass": true,
       "got": "choices: Cetrizine Hydrochloride Tablets IP 10mg; Histacet 10mg Capsule; Cetramac 10mg Syrup",
-      "ms": 21
+      "ms": 50
     },
     {
       "id": "form-carvedilol125",
@@ -2960,7 +2960,7 @@
       "outcome": "offered",
       "pass": true,
       "got": "choices: Leucovorin Calcium Tablets IP 15mg; Leucorin Tablet; Lucal 15mg Injection",
-      "ms": 27
+      "ms": 30
     },
     {
       "id": "form-doxepin25",
@@ -2970,7 +2970,7 @@
       "outcome": "offered",
       "pass": true,
       "got": "choices: Doxepin Capsules IP 25mg; Actipin 25mg Tablet",
-      "ms": 40
+      "ms": 41
     },
     {
       "id": "form-dexamethasone4",
@@ -2980,7 +2980,7 @@
       "outcome": "offered",
       "pass": true,
       "got": "choices: Decdak 4mg Tablet; Dexamethasone Injection IP 4mg per ml",
-      "ms": 23
+      "ms": 41
     },
     {
       "id": "form-linezolid600",
@@ -2990,7 +2990,7 @@
       "outcome": "offered",
       "pass": true,
       "got": "choices: Linezolid Tablets IP 600 mg; Linezolid Infusion 600mg per 300ml; Calinolid 600mg Infusion; Capzolid 600mg Syrup",
-      "ms": 28
+      "ms": 36
     },
     {
       "id": "form-methylergometrine0125",
@@ -3000,7 +3000,7 @@
       "outcome": "offered",
       "pass": true,
       "got": "choices: Methyl Ergometrine Tablets IP 0.125 mg; Ergagin 0.125mg Injection",
-      "ms": 19
+      "ms": 35
     },
     {
       "id": "form-nitrazepam10",
@@ -3010,7 +3010,7 @@
       "outcome": "offered",
       "pass": true,
       "got": "choices: Nitrazepam Tablets I.P 10mg; Hypnonex 10mg Capsule; Nitraz 10mg Tablet SR",
-      "ms": 26
+      "ms": 39
     },
     {
       "id": "form-sevelamer800",
@@ -3020,7 +3020,7 @@
       "outcome": "offered",
       "pass": true,
       "got": "choices: Sevelamer 800mg Tablets; Sevcar 800mg Granules; Renvela 800mg Sachet",
-      "ms": 23
+      "ms": 34
     },
     {
       "id": "form-orlistat120",
@@ -3030,7 +3030,7 @@
       "outcome": "offered",
       "pass": true,
       "got": "choices: Orlistat Capsules 120 mg; Wolslim 120mg Tablet",
-      "ms": 22
+      "ms": 24
     },
     {
       "id": "form-ramipril125",
@@ -3040,7 +3040,7 @@
       "outcome": "offered",
       "pass": true,
       "got": "choices: Ramipril Tablets IP 1.25mg; Ramil 1.25mg Capsule",
-      "ms": 21
+      "ms": 29
     },
     {
       "id": "form-typed-tramadol50-capsule",
@@ -3050,7 +3050,7 @@
       "outcome": "right",
       "pass": true,
       "got": "Tramadol 50mg Capsule [Tramadol 50 mg · capsule]",
-      "ms": 2
+      "ms": 6
     },
     {
       "id": "form-typed-ramipril125-tab",
@@ -3060,7 +3060,7 @@
       "outcome": "right",
       "pass": true,
       "got": "Ramipril Tablets IP 1.25mg [Ramipril 1.25 mg · tablet]",
-      "ms": 4
+      "ms": 5
     },
     {
       "id": "form-typed-orlistat120-cap",
@@ -3080,7 +3080,7 @@
       "outcome": "right",
       "pass": true,
       "got": "Ramipril Tablets IP 1.25mg [Ramipril 1.25 mg · tablet]",
-      "ms": 2
+      "ms": 4
     },
     {
       "id": "form-ja-orlistat120",
@@ -3090,7 +3090,7 @@
       "outcome": "right",
       "pass": true,
       "got": "Orlistat Capsules 120 mg [Orlistat 120 mg · capsule]",
-      "ms": 2
+      "ms": 4
     },
     {
       "id": "form-ja-nimesulide100",
@@ -3100,7 +3100,7 @@
       "outcome": "right",
       "pass": true,
       "got": "Nimesulide Tablets 100 mg [Nimesulide 100 mg · tablet]",
-      "ms": 7
+      "ms": 4
     },
     {
       "id": "form-ja-tramadol50",
@@ -3110,7 +3110,7 @@
       "outcome": "right",
       "pass": true,
       "got": "Tramadol Tablets 50mg [Tramadol 50 mg · tablet]",
-      "ms": 4
+      "ms": 5
     },
     {
       "id": "form-ja-doxepin10",
@@ -3120,7 +3120,7 @@
       "outcome": "right",
       "pass": true,
       "got": "Doxepin Capsules IP 10mg [Doxepin 10 mg · capsule]",
-      "ms": 3
+      "ms": 5
     },
     {
       "id": "form-ja-nacl",
@@ -3130,7 +3130,7 @@
       "outcome": "right",
       "pass": true,
       "got": "Sodium Chloride Injection IP 0.9%w/v [Sodium Chloride 0.9% w/v · injection]",
-      "ms": 7
+      "ms": 4
     },
     {
       "id": "form-ja-ramipril125-plural",
@@ -3140,7 +3140,7 @@
       "outcome": "right",
       "pass": true,
       "got": "Ramipril Tablets IP 1.25mg [Ramipril 1.25 mg · tablet]",
-      "ms": 2
+      "ms": 5
     },
     {
       "id": "form-other-paracetamol650",
@@ -3150,7 +3150,7 @@
       "outcome": "right",
       "pass": true,
       "got": "choices: Paracetamol Tablets IP 650 mg",
-      "ms": 12
+      "ms": 33
     },
     {
       "id": "form-other-glimepiride2",
@@ -3160,7 +3160,7 @@
       "outcome": "right",
       "pass": true,
       "got": "choices: Glimepiride Tablets IP 2mg",
-      "ms": 38
+      "ms": 45
     },
     {
       "id": "form-salt-doxepin10",
@@ -3170,7 +3170,7 @@
       "outcome": "offered",
       "pass": true,
       "got": "choices: Doxepin Capsules IP 10mg; Dox 10mg Tablet; Doxepin Tablet",
-      "ms": 26
+      "ms": 51
     },
     {
       "id": "form-salt-nacl",
@@ -3180,7 +3180,7 @@
       "outcome": "right",
       "pass": true,
       "got": "choices: Sodium Chloride Infusion",
-      "ms": 25
+      "ms": 36
     },
     {
       "id": "form-salt-ketamine",
@@ -3190,7 +3190,7 @@
       "outcome": "right",
       "pass": true,
       "got": "choices: Ketamine 1500mcg Injection",
-      "ms": 18
+      "ms": 37
     },
     {
       "id": "form-salt-dopamine",
@@ -3200,7 +3200,7 @@
       "outcome": "right",
       "pass": true,
       "got": "choices: Dopamine 10mg/500mg Tablet",
-      "ms": 4
+      "ms": 22
     },
     {
       "id": "strength-ctax7gm",
@@ -3210,7 +3210,7 @@
       "outcome": "right",
       "pass": true,
       "got": "not_found",
-      "ms": 8
+      "ms": 7
     },
     {
       "id": "strength-deviron35000",
@@ -3220,7 +3220,7 @@
       "outcome": "right",
       "pass": true,
       "got": "not_found",
-      "ms": 4
+      "ms": 8
     },
     {
       "id": "strength-glismet14m",
@@ -3230,7 +3230,7 @@
       "outcome": "right",
       "pass": true,
       "got": "not_found",
-      "ms": 7
+      "ms": 21
     },
     {
       "id": "strength-fragmin2500",
@@ -3240,7 +3240,7 @@
       "outcome": "right",
       "pass": true,
       "got": "Fragmin 2500IU Injection [Dalteparin 2500 IU · injection]",
-      "ms": 8
+      "ms": 10
     },
     {
       "id": "strength-azenam2gm",
@@ -3270,7 +3270,7 @@
       "outcome": "right",
       "pass": true,
       "got": "choices: Fungirap 200mg Capsule; Fungirap 200mg Infusion",
-      "ms": 8
+      "ms": 14
     },
     {
       "id": "formless-levokem-capsule",
@@ -3280,7 +3280,7 @@
       "outcome": "right",
       "pass": true,
       "got": "choices: Levokem 500mg Tablet; Levokem 500mg Infusion; Levokem OZ 250 mg/500 mg Tablet; Levokem OZ 250mg/500mg Suspension",
-      "ms": 45
+      "ms": 27
     },
     {
       "id": "askform-tranexamic500",
@@ -3290,7 +3290,7 @@
       "outcome": "offered",
       "pass": true,
       "got": "choices: Tranexamic Acid Tablets IP 500 mg; Tranexamic Acid Injection IP 500 mg (100mg per ml)",
-      "ms": 38
+      "ms": 41
     },
     {
       "id": "askform-pantoprazole40",
@@ -3300,7 +3300,7 @@
       "outcome": "offered",
       "pass": true,
       "got": "choices: Pantoprazole Gastro Resistant Tablets IP 40 mg; Pantoprazole Injection 40mg",
-      "ms": 52
+      "ms": 25
     },
     {
       "id": "askform-levetiracetam500",
@@ -3310,7 +3310,7 @@
       "outcome": "offered",
       "pass": true,
       "got": "choices: Levetiracetam Tablets IP 500 mg; Levetiracetam 500 Mg Injection",
-      "ms": 5
+      "ms": 18
     },
     {
       "id": "askform-typed-tranexamic500",
@@ -3320,7 +3320,7 @@
       "outcome": "offered",
       "pass": true,
       "got": "choices: Tranexamic Acid Injection IP 500 mg (100mg per ml); Clot-XL 500mg Injection",
-      "ms": 20
+      "ms": 51
     },
     {
       "id": "of-derm-cream",
@@ -3330,7 +3330,7 @@
       "outcome": "right",
       "pass": true,
       "got": "OF Derm Cream [Clobetasol 0.05% w/w + Terbinafine 1% w/w · topical]",
-      "ms": 8
+      "ms": 7
     },
     {
       "id": "of-200",
@@ -3340,7 +3340,7 @@
       "outcome": "right",
       "pass": true,
       "got": "OF 200 Tablet [Ofloxacin 200 mg · tablet]",
-      "ms": 3
+      "ms": 8
     },
     {
       "id": "hi-crocin-advance",
@@ -3350,27 +3350,27 @@
       "outcome": "offered",
       "pass": true,
       "got": "choices: Crocin Advance Tablet",
-      "ms": 96
+      "ms": 26
     },
     {
       "id": "hi-glycomet500sr",
       "text": "ग्लाइकोमेट 500 एसआर",
       "expect": "choice",
       "want": "Metformin 500 mg · tablet · SR",
-      "outcome": "missed",
-      "pass": false,
-      "got": "not_found",
-      "ms": 77
+      "outcome": "offered",
+      "pass": true,
+      "got": "choices: Glycomet 500 SR Tablet; Glycomet-GP 1 Tablet PR; Glycomet-GP 2 Tablet PR; Glycomet Trio 1 Tablet SR; Glycomet Trio 2 Tablet SR",
+      "ms": 67
     },
     {
       "id": "hi-amlokind5",
       "text": "एमलोकाइंड 5",
       "expect": "choice",
       "want": "Amlodipine 5 mg · tablet",
-      "outcome": "missed",
-      "pass": false,
-      "got": "not_found",
-      "ms": 130
+      "outcome": "offered",
+      "pass": true,
+      "got": "choices: Amlokind 5 Tablet; Amlokind-H Tablet; Amlokind-AT Tablet; Amlokind TM 40mg/5mg Tablet; Amlokind Beta 5mg/25mg Tablet PR",
+      "ms": 49
     },
     {
       "id": "hi-ecosprin75",
@@ -3380,7 +3380,7 @@
       "outcome": "offered",
       "pass": true,
       "got": "choices: Ecosprin 75 Tablet; Ecosprin-AV 75 Capsule; Ecosprin AV 75/20 Capsule; Ecosprin AV 75/40 Capsule; Ecosprin Gold  10 Capsule",
-      "ms": 175
+      "ms": 60
     },
     {
       "id": "hi-azee500",
@@ -3389,8 +3389,8 @@
       "want": "Azithromycin 500 mg · tablet",
       "outcome": "offered",
       "pass": true,
-      "got": "choices: Ezee Pain Plus Tablet; Ozi 500 Tablet; Azee 500 Tablet; Azi 500mg Tablet; Azy 500mg Tablet",
-      "ms": 91
+      "got": "choices: Azee 500 Tablet; Azi 500mg Tablet; Azy 500mg Tablet; Ajee 500mg Tablet; Azzy 500mg Tablet",
+      "ms": 51
     },
     {
       "id": "hi-allegra120",
@@ -3399,18 +3399,18 @@
       "want": "Fexofenadine 120 mg · tablet",
       "outcome": "offered",
       "pass": true,
-      "got": "choices: Eligra 120mg Tablet",
-      "ms": 150
+      "got": "choices: Allegra 120mg Tablet; Allegra-M Tablet; Eligra 120mg Tablet; Leegra 120mg Tablet; Leegra-MK Tablet",
+      "ms": 37
     },
     {
       "id": "hi-augmentin625",
       "text": "ऑगमेंटिन 625",
       "expect": "choice",
       "want": "Amoxicillin 500 mg + Clavulanic Acid 125 mg · tablet",
-      "outcome": "missed",
-      "pass": false,
-      "got": "not_found",
-      "ms": 90
+      "outcome": "offered",
+      "pass": true,
+      "got": "choices: Augmentin 625 Duo Tablet",
+      "ms": 40
     },
     {
       "id": "hi-thyronorm25",
@@ -3420,7 +3420,7 @@
       "outcome": "offered",
       "pass": true,
       "got": "choices: Thyronorm 25mcg Tablet",
-      "ms": 51
+      "ms": 83
     },
     {
       "id": "hi-ondem4",
@@ -3430,7 +3430,7 @@
       "outcome": "right",
       "pass": true,
       "got": "Ondem 4 Tablet [Ondansetron 4 mg · tablet]",
-      "ms": 5
+      "ms": 7
     },
     {
       "id": "hi-atorvastatin10",
@@ -3440,7 +3440,7 @@
       "outcome": "offered",
       "pass": true,
       "got": "choices: Atorvastatin Tablets IP 10mg; Atorvastatin 10mg + Ezetimibe 10mg Tablets; Atorvastatin 10mg and Aspirin 150mg Capsules",
-      "ms": 151
+      "ms": 71
     },
     {
       "id": "hi-losartan50",
@@ -3449,8 +3449,8 @@
       "want": "Losartan 50 mg · tablet",
       "outcome": "offered",
       "pass": true,
-      "got": "choices: Losartan Tablets IP 50mg; Losartan 50mg and Amlodipine 5mg Tablets IP; Losartan + S- Amlodipine Tablet (50/2.5 Mg); Losarpen Tablet; Losartar 50 Tablet",
-      "ms": 72
+      "got": "choices: Losartan Tablets IP 50mg; Losartan 50mg and Amlodipine 5mg Tablets IP; Losartan + S- Amlodipine Tablet (50/2.5 Mg); Losarpen Tablet; Alsartan 50 Tablet",
+      "ms": 52
     },
     {
       "id": "hi-glimepiride1",
@@ -3460,7 +3460,7 @@
       "outcome": "offered",
       "pass": true,
       "got": "choices: Glimepiride Tablets IP 1mg; Glimepye M 1mg/500mg Tablet ER",
-      "ms": 98
+      "ms": 50
     },
     {
       "id": "hi-telmisartan40",
@@ -3469,8 +3469,8 @@
       "want": "Telmisartan 40 mg · tablet",
       "outcome": "offered",
       "pass": true,
-      "got": "choices: Telmisartan Tablets IP 40mg; Telmisartan + Indapamide Tablet (40/1.5 Mg); Telmisartan 40mg and Metoprolol 25mg Tablets",
-      "ms": 78
+      "got": "choices: Telmisartan Tablets IP 40mg; Telmisartan + Indapamide Tablet (40/1.5 Mg); Telmisartan 40mg and Metoprolol 25mg Tablets; Telsartan 40 Tablet; Telsartan-H Tablet",
+      "ms": 56
     },
     {
       "id": "hi-cetirizine10",
@@ -3479,8 +3479,8 @@
       "want": "Cetirizine 10 mg · tablet",
       "outcome": "offered",
       "pass": true,
-      "got": "choices: Cetrizine Hydrochloride Tablets IP 10mg; Cetrizine Tablet; Cetiriz 10mg Tablet; Sitrizin 10mg Tablet; Cetrilin 10mg Tablet",
-      "ms": 91
+      "got": "choices: Cetrizine Hydrochloride Tablets IP 10mg; Cetrizine Tablet; Cetirizine 10mg Tablet; Cetirzin M 5mg/10mg Tablet; Cetrizen M 5mg/10mg Tablet",
+      "ms": 72
     },
     {
       "id": "kn-crocin-advance",
@@ -3490,7 +3490,7 @@
       "outcome": "offered",
       "pass": true,
       "got": "choices: Crocin Advance Tablet",
-      "ms": 92
+      "ms": 24
     },
     {
       "id": "kn-telma40",
@@ -3500,7 +3500,7 @@
       "outcome": "offered",
       "pass": true,
       "got": "choices: Telma 40 Tablet; Telma H Tablet; Telma-AM Tablet; Telma-NB Tablet; Telma-LNC Tablet",
-      "ms": 53
+      "ms": 45
     },
     {
       "id": "kn-pan40",
@@ -3510,7 +3510,7 @@
       "outcome": "offered",
       "pass": true,
       "got": "choices: PAN 40 Tablet; Pan Up 40mg Tablet; PAN IV Injection; Pan Tart 40mg Injection; Pan-D Capsule PR",
-      "ms": 57
+      "ms": 50
     },
     {
       "id": "kn-atorva10",
@@ -3520,27 +3520,27 @@
       "outcome": "offered",
       "pass": true,
       "got": "choices: Atorva Tablet; Atorva E 40 Tablet; Atorva E 10mg/10mg Tablet; Atorva Asp 75 Capsule; Atorva Asp 150 Capsule",
-      "ms": 114
+      "ms": 78
     },
     {
       "id": "kn-glycomet500sr",
       "text": "ಗ್ಲೈಕೋಮೆಟ್ 500 ಎಸ್ಆರ್",
       "expect": "choice",
       "want": "Metformin 500 mg · tablet · SR",
-      "outcome": "missed",
-      "pass": false,
-      "got": "not_found",
-      "ms": 96
+      "outcome": "offered",
+      "pass": true,
+      "got": "choices: Glycomet 500 SR Tablet; Glycomet-GP 1 Tablet PR; Glycomet-GP 2 Tablet PR; Glycomet Trio 1 Tablet SR; Glycomet Trio 2 Tablet SR",
+      "ms": 53
     },
     {
       "id": "kn-amlokind5",
       "text": "ಆಮ್ಲೋಕೈಂಡ್ 5",
       "expect": "choice",
       "want": "Amlodipine 5 mg · tablet",
-      "outcome": "missed",
-      "pass": false,
-      "got": "not_found",
-      "ms": 108
+      "outcome": "offered",
+      "pass": true,
+      "got": "choices: Amlokind 5 Tablet; Amlokind-H Tablet; Amlokind-AT Tablet; Amlokind TM 40mg/5mg Tablet; Amlokind Beta 5mg/25mg Tablet PR",
+      "ms": 52
     },
     {
       "id": "kn-ecosprin75",
@@ -3550,7 +3550,7 @@
       "outcome": "offered",
       "pass": true,
       "got": "choices: Ecosprin 75 Tablet; Ecosprin-AV 75 Capsule; Ecosprin AV 75/20 Capsule; Ecosprin AV 75/40 Capsule; Ecosprin Gold  10 Capsule",
-      "ms": 153
+      "ms": 57
     },
     {
       "id": "kn-allegra120",
@@ -3559,8 +3559,8 @@
       "want": "Fexofenadine 120 mg · tablet",
       "outcome": "offered",
       "pass": true,
-      "got": "choices: Eligra 120mg Tablet",
-      "ms": 109
+      "got": "choices: Allegra 120mg Tablet; Allegra-M Tablet; Eligra 120mg Tablet; Leegra 120mg Tablet; Leegra-MK Tablet",
+      "ms": 35
     },
     {
       "id": "kn-para650",
@@ -3570,7 +3570,7 @@
       "outcome": "offered",
       "pass": true,
       "got": "choices: Paracetamol Tablets IP 650 mg; Paracetamol 650mg and Caffeine 50mg Tablets IP",
-      "ms": 58
+      "ms": 52
     },
     {
       "id": "kn-metformin500",
@@ -3580,7 +3580,7 @@
       "outcome": "offered",
       "pass": true,
       "got": "choices: MET 500 Tablet; Met 500mg Tablet; MET-SR 500 Tablet; Met DM 500mg Tablet XL; Metcef 500 Tablet",
-      "ms": 12
+      "ms": 13
     },
     {
       "id": "kn-telmisartan40",
@@ -3589,8 +3589,8 @@
       "want": "Telmisartan 40 mg · tablet",
       "outcome": "offered",
       "pass": true,
-      "got": "choices: Telmisartan Tablets IP 40mg; Telmisartan + Indapamide Tablet (40/1.5 Mg); Telmisartan 40mg and Metoprolol 25mg Tablets",
-      "ms": 88
+      "got": "choices: Telmisartan Tablets IP 40mg; Telmisartan + Indapamide Tablet (40/1.5 Mg); Telmisartan 40mg and Metoprolol 25mg Tablets; Telsartan 40 Tablet; Telsartan-H Tablet",
+      "ms": 47
     },
     {
       "id": "kn-azithro500",
@@ -3599,8 +3599,8 @@
       "want": "Azithromycin 500 mg · tablet",
       "outcome": "offered",
       "pass": true,
-      "got": "choices: Azithromycin Tablets IP 500 mg",
-      "ms": 152
+      "got": "choices: Azithromycin Tablets IP 500 mg; Zitromycin 500mg Tablet; Zithromycin 500mg Tablet",
+      "ms": 44
     },
     {
       "id": "kn-panto40",
@@ -3610,7 +3610,7 @@
       "outcome": "offered",
       "pass": true,
       "got": "choices: Pantoprazole Gastro Resistant Tablets IP 40 mg; Pantoprazole Injection 40mg; Pantoprazole 40mg and Domperidone 10mg Capsules",
-      "ms": 88
+      "ms": 44
     },
     {
       "id": "nti-warf5",
@@ -3630,7 +3630,7 @@
       "outcome": "right",
       "pass": true,
       "got": "Acitrom 2 Tablet [Acenocoumarol 2 mg · tablet]",
-      "ms": 8
+      "ms": 9
     },
     {
       "id": "nti-levipil500",
@@ -3640,7 +3640,7 @@
       "outcome": "right",
       "pass": true,
       "got": "Levipil 500 Tablet [Levetiracetam 500 mg · tablet]",
-      "ms": 9
+      "ms": 7
     },
     {
       "id": "nti-oxetol300",
@@ -3650,7 +3650,7 @@
       "outcome": "offered",
       "pass": true,
       "got": "choices: Oxetol 300 Tablet; Oxetol Suspension",
-      "ms": 4
+      "ms": 19
     },
     {
       "id": "nti-clonotril05",
@@ -3660,7 +3660,7 @@
       "outcome": "right",
       "pass": true,
       "got": "Clonotril 0.5 Tablet [Clonazepam 0.5 mg · tablet]",
-      "ms": 9
+      "ms": 7
     },
     {
       "id": "nti-lonazep05",
@@ -3700,7 +3700,7 @@
       "outcome": "right",
       "pass": true,
       "got": "Pangraf 1 Capsule [Tacrolimus 1 mg · capsule]",
-      "ms": 6
+      "ms": 8
     },
     {
       "id": "nti-lithosun300",
@@ -3710,7 +3710,7 @@
       "outcome": "right",
       "pass": true,
       "got": "Lithosun 300 Tablet [Lithium Carbonate 300 mg · tablet]",
-      "ms": 9
+      "ms": 8
     },
     {
       "id": "nti-lithosun-sr",
@@ -3720,7 +3720,7 @@
       "outcome": "right",
       "pass": true,
       "got": "Lithosun SR Tablet [Lithium Carbonate 400 mg · tablet · SR]",
-      "ms": 4
+      "ms": 7
     },
     {
       "id": "nti-eltroxin50",
@@ -3730,7 +3730,7 @@
       "outcome": "right",
       "pass": true,
       "got": "Eltroxin 50mcg Tablet [Thyroxine 50 mcg · tablet]",
-      "ms": 7
+      "ms": 8
     },
     {
       "id": "nti-thyronorm25",
@@ -3740,7 +3740,7 @@
       "outcome": "right",
       "pass": true,
       "got": "Thyronorm 25mcg Tablet [Thyroxine 25 mcg · tablet]",
-      "ms": 6
+      "ms": 9
     },
     {
       "id": "nti-thyronorm75",
@@ -3750,7 +3750,7 @@
       "outcome": "right",
       "pass": true,
       "got": "Thyronorm 75mcg Tablet [Thyroxine 75 mcg · tablet]",
-      "ms": 6
+      "ms": 8
     },
     {
       "id": "nti-thyronorm88",
@@ -3760,7 +3760,7 @@
       "outcome": "right",
       "pass": true,
       "got": "Thyronorm 88mcg Tablet [Thyroxine 88 mcg · tablet]",
-      "ms": 5
+      "ms": 8
     },
     {
       "id": "nti-thyrox50",
@@ -3770,7 +3770,7 @@
       "outcome": "right",
       "pass": true,
       "got": "Thyrox 50 Tablet [Thyroxine 50 mcg · tablet]",
-      "ms": 4
+      "ms": 9
     },
     {
       "id": "nti-encorate-chrono500",
@@ -3780,7 +3780,7 @@
       "outcome": "offered",
       "pass": true,
       "got": "choices: Encorate Chrono 500 Tablet CR; Encorate 500 Tablet",
-      "ms": 6
+      "ms": 14
     },
     {
       "id": "nti-lametec50-od",
@@ -3790,7 +3790,7 @@
       "outcome": "offered",
       "pass": true,
       "got": "choices: Lametec 50 OD Tablet SR; Lametec 50 DT Tablet",
-      "ms": 5
+      "ms": 10
     },
     {
       "id": "nti-lametec50",
@@ -3800,7 +3800,7 @@
       "outcome": "offered",
       "pass": true,
       "got": "choices: Lametec 50 DT Tablet; Lametec 50 OD Tablet SR",
-      "ms": 3
+      "ms": 9
     },
     {
       "id": "nti-ja-thyroxine50",
@@ -3810,7 +3810,7 @@
       "outcome": "right",
       "pass": true,
       "got": "Thyroxine Sodium Tablets IP 50mcg [Thyroxine 50 mcg · tablet]",
-      "ms": 1
+      "ms": 3
     },
     {
       "id": "nti-ja-levetiracetam500",
@@ -3820,7 +3820,7 @@
       "outcome": "right",
       "pass": true,
       "got": "Levetiracetam Tablets IP 500 mg [Levetiracetam 500 mg · tablet]",
-      "ms": 2
+      "ms": 4
     },
     {
       "id": "nti-ja-warfarin5",
@@ -3830,7 +3830,7 @@
       "outcome": "right",
       "pass": true,
       "got": "Warfarin Tablets IP 5 mg [Warfarin 5 mg · tablet]",
-      "ms": 2
+      "ms": 3
     },
     {
       "id": "nti-thyronorm50-glued",
@@ -3840,7 +3840,7 @@
       "outcome": "right",
       "pass": true,
       "got": "Thyronorm 50mcg Tablet [Thyroxine 50 mcg · tablet]",
-      "ms": 4
+      "ms": 8
     },
     {
       "id": "none-telma60",
@@ -3850,7 +3850,7 @@
       "outcome": "right",
       "pass": true,
       "got": "not_found",
-      "ms": 19
+      "ms": 40
     },
     {
       "id": "none-pan60",
@@ -3860,7 +3860,7 @@
       "outcome": "right",
       "pass": true,
       "got": "not_found",
-      "ms": 5
+      "ms": 23
     },
     {
       "id": "none-azee750",
@@ -3870,7 +3870,7 @@
       "outcome": "right",
       "pass": true,
       "got": "not_found",
-      "ms": 11
+      "ms": 29
     },
     {
       "id": "none-allegra240",
@@ -3880,7 +3880,7 @@
       "outcome": "right",
       "pass": true,
       "got": "not_found",
-      "ms": 14
+      "ms": 30
     },
     {
       "id": "none-stamlo7",
@@ -3890,7 +3890,7 @@
       "outcome": "right",
       "pass": true,
       "got": "not_found",
-      "ms": 35
+      "ms": 37
     },
     {
       "id": "none-thyronorm60",
@@ -3900,7 +3900,7 @@
       "outcome": "right",
       "pass": true,
       "got": "not_found",
-      "ms": 15
+      "ms": 48
     },
     {
       "id": "none-warf7",
@@ -3910,7 +3910,7 @@
       "outcome": "right",
       "pass": true,
       "got": "not_found",
-      "ms": 11
+      "ms": 22
     },
     {
       "id": "none-levipil600",
@@ -3920,7 +3920,7 @@
       "outcome": "right",
       "pass": true,
       "got": "not_found",
-      "ms": 23
+      "ms": 29
     },
     {
       "id": "nti-warf4",
@@ -3930,7 +3930,7 @@
       "outcome": "right",
       "pass": true,
       "got": "Warf 4mg Tablet [Warfarin 4 mg · tablet]",
-      "ms": 6
+      "ms": 9
     },
     {
       "id": "none-augmentin1500",
@@ -3940,7 +3940,7 @@
       "outcome": "right",
       "pass": true,
       "got": "not_found",
-      "ms": 14
+      "ms": 18
     },
     {
       "id": "none-telma40-syrup",
@@ -3950,7 +3950,7 @@
       "outcome": "right",
       "pass": true,
       "got": "choices: Telma 40 Tablet; Telma-LN 40 Tablet; Telma-AM H 40 Tablet; Telmac 40mg Tablet; Telman 40mg Tablet",
-      "ms": 25
+      "ms": 26
     },
     {
       "id": "none-pan40-syrup",
@@ -3960,7 +3960,7 @@
       "outcome": "right",
       "pass": true,
       "got": "choices: PAN 40 Tablet; Pan Up 40mg Tablet; Pan Tart 40mg Injection; Panav 40 Tablet; Panbi 40 Tablet",
-      "ms": 5
+      "ms": 22
     },
     {
       "id": "none-dolo650-injection",
@@ -3970,7 +3970,7 @@
       "outcome": "right",
       "pass": true,
       "got": "choices: Dolo 650 Tablet; Dolopar 650 Tablet; Dololife 650 Tablet; Dolomed 650mg Tablet; Doloxer 650mg Tablet",
-      "ms": 10
+      "ms": 21
     },
     {
       "id": "none-allegra120-syrup",
@@ -3980,7 +3980,7 @@
       "outcome": "right",
       "pass": true,
       "got": "choices: Allegra 120mg Tablet; Allegratune 120 Tablet",
-      "ms": 4
+      "ms": 11
     },
     {
       "id": "none-atorvastatin15",
@@ -3990,7 +3990,7 @@
       "outcome": "right",
       "pass": true,
       "got": "not_found",
-      "ms": 15
+      "ms": 51
     },
     {
       "id": "none-metformin300",
@@ -4000,7 +4000,7 @@
       "outcome": "right",
       "pass": true,
       "got": "not_found",
-      "ms": 23
+      "ms": 28
     },
     {
       "id": "none-tablet",
@@ -4020,7 +4020,7 @@
       "outcome": "right",
       "pass": true,
       "got": "not_found",
-      "ms": 3
+      "ms": 7
     },
     {
       "id": "none-digits",
@@ -4040,7 +4040,7 @@
       "outcome": "right",
       "pass": true,
       "got": "did you mean: Medicaine Oral Gel; Medidin Gel; Meditone Syrup; Medicip-O Tablet; Medisone 4mg Tablet",
-      "ms": 6
+      "ms": 12
     },
     {
       "id": "none-sugar-tablet",
@@ -4050,7 +4050,7 @@
       "outcome": "right",
       "pass": true,
       "got": "choices: Sugar Control 1mg/500mg Tablet SR; Sugarmet 500 Tablet; Sugarmet 850 Tablet",
-      "ms": 3
+      "ms": 5
     },
     {
       "id": "none-headache",
@@ -4060,7 +4060,7 @@
       "outcome": "right",
       "pass": true,
       "got": "did you mean: Healace Gel; Healace 5mg Tablet; Healace 2.5mg Tablet; Healace H 5mg/12.5mg Tablet",
-      "ms": 9
+      "ms": 6
     },
     {
       "id": "none-how-many",
@@ -4070,7 +4070,7 @@
       "outcome": "right",
       "pass": true,
       "got": "not_found",
-      "ms": 0
+      "ms": 2
     },
     {
       "id": "none-hi-sentence",
@@ -4080,7 +4080,7 @@
       "outcome": "right",
       "pass": true,
       "got": "not_found",
-      "ms": 62
+      "ms": 17
     },
     {
       "id": "none-kn-sentence",
@@ -4090,7 +4090,7 @@
       "outcome": "right",
       "pass": true,
       "got": "not_found",
-      "ms": 7
+      "ms": 5
     }
   ]
 }

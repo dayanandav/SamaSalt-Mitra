@@ -93,6 +93,30 @@ export function soundsAlike(a, b) {
   return prev[kb.length] <= max;
 }
 
+/** Same sound: the keys are equal, also with "ai" said as "a" ("पैन" = Pan) or "i" ("ग्लाइ" = Gly). */
+export const sameSound = (typed, name) => {
+  const k = soundKey(name);
+  const t = String(typed || '');
+  const first = t.replace(/^e/, 'a'); // "एटोर्वा" = Atorva
+  return [t, first].flatMap((w) => [w, w.replace(/ai/g, 'a'), w.replace(/a+i/g, 'i')]).some((w) => soundKey(w) === k);
+};
+
+/** The file of the sounds-like index a word is in: the first two consonants of its sound ("glycomet", "ग्लाइकोमेट" -> "gl"). */
+export const soundGroup = (word) => consonants(soundKey(word)).slice(0, 2) || '_';
+
+// Release letters and forms as they are said and written in Kannada / Hindi ("एसआर" -> "sr", "टैबलेट" -> "tablet").
+const SPOKEN = { esar: 'sr', eksar: 'xr', eksel: 'xl', emar: 'mr', siar: 'cr', piar: 'pr', diar: 'dr', odi: 'od', diesar: 'dsr', diesr: 'dsr', ele: 'la' };
+const FORM_WORDS = ['tablet', 'capsule', 'syrup', 'injection', 'drops', 'cream'];
+/** Transliterated text with spoken release letters and form words in English ("glaaikomet 500 esaaar" -> "glaaikomet 500 sr"). */
+export function spokenWords(latin) {
+  return String(latin || '').split(/\s+/).filter(Boolean).map((w, i) => {
+    if (i === 0 || !/^[a-z]+$/.test(w)) return w;
+    const letters = SPOKEN[w.replace(/aa+/g, 'a').replace(/ee+|ii+/g, 'i')];
+    if (letters) return letters;
+    return FORM_WORDS.find((f) => w[0] === f[0] && soundsAlike(w, f)) || w;
+  }).join(' ');
+}
+
 // How a sound may be spelled at the start of a brand name.
 const SPELL = { k: ['k', 'c', 'q', 'ch'], s: ['s', 'c', 'sh'], t: ['t', 'th'], f: ['f', 'ph'], j: ['j', 'z', 'g'], v: ['v', 'w'], g: ['g', 'gh'], d: ['d', 'dh'], b: ['b', 'bh'], c: ['ch', 'c', 'k'] };
 const VOWEL_LETTERS = ['a', 'e', 'i', 'o', 'u', 'y'];
