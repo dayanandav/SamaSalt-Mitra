@@ -1,6 +1,6 @@
 {
   "note": "Fingerprints of the owner-approved tests. Written only by `node tools/test-lock.mjs approve --yes`, run by the owner.",
-  "approved_at": "2026-11-25T07:20:48.651Z",
+  "approved_at": "2026-11-25T07:38:39.814Z",
   "files": {
     "test/admin.test.mjs": "e05dd44ef3382da2c7d122e94aea823f3930b03b6297a4ce424db789f271a8d3",
     "test/askdontguess.test.mjs": "ed74a9374f1afdfa3e9fc041165503272826a0bdc9492553923d9d393f4c9a04",
@@ -48,6 +48,8 @@
     "test/test_build_ja.py": "d60d906266ba51aac3a525b847ec2e5a2e4691716c5ea6e36560c2e54772d692",
     "test/tools.test.mjs": "1aa12498c65b8342715c83ded1ce78fe9dcbfa8511aef3da450f812d834c6eb9",
     "test/twosalts.test.mjs": "8ec3cbf519c369300d070d46bb3414d6ae8f28f6bc2c55156f8368cdfd8254ec",
+    "test/twosaltsno.test.mjs": "e74ebcaabaa82159b9784c6d9fc41ff33843fc88a607e72056e6642932464332",
+    "test/volunteermode.test.mjs": "b29af105e8b6ad3ca54b281e777dc08a89c798296326569d562c4ba60d99a20c",
     "test/volunteers.test.mjs": "9ccde0d1bf5ac2f9f39a9a8b0d3d582a17ec214d6953bd85be6e12401f1b4bcc",
     "test/whatsapp.test.mjs": "336bfff322bca555742d53331db09a358cd04c41eca6e36a96ec9a2fe921dd2e"
   }

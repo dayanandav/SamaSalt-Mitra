@@ -9,6 +9,11 @@ const store = {
   set(k, v) { try { v == null ? localStorage.removeItem(k) : localStorage.setItem(k, v); } catch {} },
 };
 
+const session = {
+  get(k) { try { return sessionStorage.getItem(k); } catch { return null; } },
+  set(k, v) { try { v == null ? sessionStorage.removeItem(k) : sessionStorage.setItem(k, v); } catch {} },
+};
+
 // ── State: language, test flag, volunteer mode, developer mode, anonymous device token ─
 const params = new URLSearchParams(location.search);
 // Developer mode only while the address has ?dev=1 (never remembered): the plain address is
@@ -27,18 +32,23 @@ if (devMode) {
     a.setAttribute('href', u.pathname + u.search + u.hash);
   }
 }
+// Volunteer mode: only for this visit, and only while volunteers are on (/api/health, below). Old builds
+// remembered it in this browser until it was turned off: cleared here.
+store.set('ss_vol', null);
+store.set('ss_vol_code', null);
 if (params.has('volunteer')) {
-  store.set('ss_vol', params.get('volunteer') === '0' ? null : '1');
+  session.set('ss_vol', params.get('volunteer') === '0' ? null : '1');
   // v1.3: a registered volunteer's personal link (/v/SV-XXXXX → ?volunteer=SV-XXXXX) also keeps their code.
-  store.set('ss_vol_code', volunteerCode(params.get('volunteer')));
+  session.set('ss_vol_code', volunteerCode(params.get('volunteer')));
 }
 if (params.has('lang') && STRINGS[params.get('lang')]) store.set('ss_lang', params.get('lang'));
 
 // English unless the person has picked another language from the menu (top right).
 let lang = STRINGS[store.get('ss_lang')] ? store.get('ss_lang') : 'en';
 const isTest = devMode || params.get('test') === '1';
-const volunteer = store.get('ss_vol') === '1';
-const volCode = volunteer ? volunteerCode(store.get('ss_vol_code')) : null;
+const volAsked = session.get('ss_vol') === '1';
+const volCode = volAsked ? volunteerCode(session.get('ss_vol_code')) : null;
+let volunteer = false; // on only when /api/health says volunteers are on
 let volActive = true; // checked once on load (below)
 let device = store.get('ss_dev');
 if (!device) {
@@ -70,7 +80,7 @@ function applyStrings() {
   for (const el of document.querySelectorAll('[data-tp]')) el.placeholder = t(lang, el.dataset.tp);
   for (const el of document.querySelectorAll('[data-ta]')) { el.setAttribute('aria-label', t(lang, el.dataset.ta)); el.title = t(lang, el.dataset.ta); }
   $('#volBanner').hidden = !volunteer;
-  if (volCode) $('#volBanner').textContent = `${t(lang, 'volunteerOn')} · ${volCode}${volActive ? '' : ` · ${t(lang, 'volunteerInactive')}`}`;
+  if (volunteer && volCode) $('#volBanner').textContent = `${t(lang, 'volunteerOn')} · ${volCode}${volActive ? '' : ` · ${t(lang, 'volunteerInactive')}`}`;
   const jaDate = last?.data?.ja_list_date;
   const note = t(lang, 'dataNote', { date: jaDate ? fmtDate(jaDate) : '' });
   // The data sources and list dates are stated once, here at the bottom (not on each card).
@@ -263,10 +273,6 @@ const crop = { ...DEFAULT_CROP };
 // The phone's separate camera app (<input capture>) makes Android close this tab on many
 // phones to free memory: the page reloads and the photo is lost. The in-app camera keeps the
 // page open; the phone camera and the gallery remain as fallbacks.
-const session = {
-  get(k) { try { return sessionStorage.getItem(k); } catch { return null; } },
-  set(k, v) { try { v == null ? sessionStorage.removeItem(k) : sessionStorage.setItem(k, v); } catch {} },
-};
 const camVideo = $('#camVideo');
 let camStream = null;
 
@@ -652,7 +658,7 @@ async function ask({ text, image, ocr, via, relog = true }) {
     pin: pinInput.value.length === 6 ? pinInput.value : undefined,
     lat: coords?.lat, lng: coords?.lng,
     mode: volunteer ? 'volunteer' : 'self',
-    volunteer: volCode || undefined,
+    volunteer: (volunteer && volCode) || undefined,
     device,
     test: isTest ? true : undefined,
     nolog: relog ? undefined : true,
@@ -1390,6 +1396,7 @@ $('#chatChips').addEventListener('click', (e) => {
   }
 });
 fetch('/api/health').then((r) => r.json()).then((h) => {
+  if (volAsked && h.volunteer_registry === 'on') { volunteer = true; applyStrings(); }
   // Own domain: on the old workers.dev address, move to it (same page, same ?k= / ?volunteer= etc.).
   if (h.canonical_host && location.hostname !== h.canonical_host && location.hostname.endsWith('.workers.dev')) {
     location.replace(`https://${h.canonical_host}${location.pathname}${location.search}${location.hash}`);

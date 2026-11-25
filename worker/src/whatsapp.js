@@ -101,6 +101,8 @@ function langFromWord(s) {
 }
 
 // ── One message → replies ───────────────────────────────────────────────────
+const TWO = 'two:'; // a pending medicine whose two salts are being asked about (no medicine name starts so)
+
 /**
  * Handle one incoming message; returns the replies (not yet sent).
  * deps: { log(body, result) } to write the anonymous impact row; { image(msg) } to fetch a photo as a data URL;
@@ -132,10 +134,11 @@ export async function handleMessage(env, msg, deps = {}, now = Date.now()) {
   const answerOrWhy = (r) => {
     // Two salts in our list: asked before anything is priced (the list can leave out a third salt).
     if (r.status === 'ok' && r.confirm === 'two_salts') {
-      s.pending = r.medicine.name;
+      s.pending = TWO + r.medicine.name; // "No" then means another salt, not another medicine
       return { kind: 'buttons', body: `${r.medicine.name}: ${String(r.medicine.composition).split(' · ')[0]}\n\n${t(lang, 'confirmTwoTitle')} ${t(lang, 'confirmTwoHint')}`, buttons: [{ id: 'confirm:yes', title: t(lang, 'waYes') }, { id: 'confirm:no', title: t(lang, 'waNo') }] };
     }
-    if (r.status === 'incomplete') return text(`${t(lang, 'incompleteTitle')} ${t(lang, 'incompleteBody')}`);
+    if (r.status === 'incomplete') return text(`${t(lang, 'incompleteTitle')}
+${t(lang, 'incompleteBody')}`);
     if (r.status === 'ok') return text(answerText(lang, r, s.pin, deps.origin));
     if (r.status === 'not_found' && r.choices?.length) return text(t(lang, 'waChoose', { names: r.choices.slice(0, 4).map((c) => `${c.name} (${String(c.composition).split(' · ')[0]})`).join('; ') }));
     if (r.status === 'not_found') return text([t(lang, 'notFound'), r.suggestions?.length ? t(lang, 'waDidYouMean', { names: r.suggestions.slice(0, 3).join(', ') }) : ''].filter(Boolean).join(' '));
@@ -153,14 +156,16 @@ export async function handleMessage(env, msg, deps = {}, now = Date.now()) {
       } else if (b === 'confirm:yes') {
         if (!s.pending) out.push(text(t(lang, 'waNothingPending')));
         else {
-          const name = s.pending;
+          const name = s.pending.startsWith(TWO) ? s.pending.slice(TWO.length) : s.pending;
           s.pending = null;
           // Confirmed by the patient: check it by name (the typed-name path: no second confirmation).
           out.push(answerOrWhy(await check({ text: name, saltsConfirmed: true })));
         }
       } else if (b === 'confirm:no') {
+        const otherSalts = s.pending?.startsWith(TWO);
         s.pending = null;
-        out.push(text(t(lang, 'waRetype')));
+        out.push(text(otherSalts ? `${t(lang, 'incompleteTitle')}
+${t(lang, 'incompleteBody')}` : t(lang, 'waRetype')));
       } else out.push(text(t(lang, 'waUnsupported')));
     } else if (msg.kind === 'text') {
       const body = msg.text.trim().slice(0, 300);
