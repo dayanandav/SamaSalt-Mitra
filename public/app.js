@@ -690,7 +690,7 @@ async function ask({ text, image, ocr, via, relog = true }) {
   }
   // Photo reading is down (quota used up or model error). The on-phone OCR fallback was removed:
   // on real strips it read junk and matched wrong medicines. Ask for typing / keyboard scan.
-  if (r.status === 'vision_unavailable') r = { status: 'vision_down' };
+  if (r.status === 'vision_unavailable') r = r.reason === 'device_photo_limit' ? { status: 'photo_limit', limit: r.limit } : { status: 'vision_down' };
   // A language change on a medicine whose two salts were confirmed: not asked again.
   if (!relog && r.confirm === 'two_salts' && last?.confirmed && last.medicine?.ckey === r.medicine?.ckey) r.confirmed = true;
   if (!relog && last?.lookup_id) r.lookup_id = last.lookup_id; // keep feedback tied to the original lookup
@@ -1079,17 +1079,18 @@ function render(r) {
   countUnread(r);
   if (r.status !== 'ok') {
     // Say what actually went wrong: not in the database, photo unreadable, or the check failed.
-    const why = r.status === 'not_found' ? (r.choices?.length ? 'chooseOne' : 'notFound') : r.status === 'incomplete' ? 'incompleteTitle' : r.status === 'unreadable' ? 'photoUnreadable' : r.status === 'vision_down' ? 'visionDown' : r.status === 'offline' ? 'offlineWait' : r.status === 'slow' ? 'slowNet' : r.status === 'busy' ? 'tooMany' : 'checkFailed';
+    const why = r.status === 'not_found' ? (r.choices?.length ? 'chooseOne' : 'notFound') : r.status === 'incomplete' ? 'incompleteTitle' : r.status === 'unreadable' ? 'photoUnreadable' : r.status === 'vision_down' ? 'visionDown' : r.status === 'photo_limit' ? 'photoLimit' : r.status === 'offline' ? 'offlineWait' : r.status === 'slow' ? 'slowNet' : r.status === 'busy' ? 'tooMany' : 'checkFailed';
     // Read check failed: say why, show what was read, and offer a retake or typing.
     const whyRead = { no_composition: 'readNoComposition', brand_mismatch: 'readMismatch', low_confidence: 'readBlurry' }[r.reason];
     const readText = [r.read?.brand, r.read?.composition].filter(Boolean).join(' · ');
     out.innerHTML = `
-      <div class="card"><p class="med-name" style="font-size:22px;line-height:1.35">${esc(t(lang, why))}</p>
+      <div class="card"><p class="med-name" style="font-size:22px;line-height:1.35">${esc(t(lang, why, { n: r.limit || '' }))}</p>
       ${r.status === 'unreadable' && r.choices?.length ? `<p class="read-why">${esc(t(lang, 'photoChoose', { brand: r.read?.brand || '' }))}</p>
       <ul class="rx-list nf-choices">${r.choices.slice(0, 5).map((c) => `<li><button type="button" class="nf-sugg" data-via="photochoice" data-name="${esc(c.name)}"><b>${esc(c.name)}</b><span>${esc(c.composition)}</span></button></li>`).join('')}</ul>
       <p class="med-meta">${esc(t(lang, 'chooseCheck'))}</p>` : ''}
       ${r.status === 'unreadable' && whyRead && !r.choices?.length ? `<p class="read-why">${esc(t(lang, whyRead))}</p>` : ''}
       ${readText ? `<p class="med-meta">${esc(t(lang, 'readOnStrip', { text: readText }))}</p>` : ''}
+      ${r.status === 'photo_limit' ? `<div class="crop-actions" style="margin-top:14px"><button class="primary" id="typeBtn" type="button">${esc(t(lang, 'confirmType'))}</button></div>` : ''}
       ${r.status === 'incomplete' ? `${r.brand ? `<p class="med-meta">${esc(r.brand)}</p>` : ''}<p class="read-why">${esc(t(lang, 'incompleteBody'))}</p><div class="crop-actions" style="margin-top:14px"><button class="primary" id="nfScan" type="button">${esc(t(lang, 'nfScanBack'))}</button></div>` : ''}
       ${r.status === 'not_found' ? notFoundHelp(r) : ''}
       ${(r.status === 'offline' || r.status === 'slow' || r.status === 'busy') && pending ? `<div class="crop-actions" style="margin-top:14px"><button class="primary" id="retryBtn" type="button">${esc(t(lang, 'tryAgain'))}</button></div>${r.status === 'offline' ? `<p class="med-meta">${esc(t(lang, 'offlineAuto'))}</p>` : ''}` : ''}
@@ -1466,16 +1467,16 @@ $('#rxPhoto').addEventListener('change', async (e) => {
   show('busy');
   let r;
   try {
-    const res = await fetch('/api/prescription', { method: 'POST', headers: { 'content-type': 'application/json', ...(isTest ? { 'x-samasalt-mitra-test': '1' } : {}) }, body: JSON.stringify({ image, lang, test: isTest ? true : undefined }) });
+    const res = await fetch('/api/prescription', { method: 'POST', headers: { 'content-type': 'application/json', ...(isTest ? { 'x-samasalt-mitra-test': '1' } : {}) }, body: JSON.stringify({ image, lang, device, test: isTest ? true : undefined }) });
     r = await res.json();
   } catch {
     r = { status: navigator.onLine ? 'error' : 'offline' };
   }
   if (r.status === 'ok') { rxList = r.items; renderRx(); return; }
   rxList = null;
-  const key = r.status === 'unreadable' ? 'rxNone' : r.status === 'vision_unavailable' ? 'visionDown' : r.status === 'busy' ? 'tooMany' : r.status === 'offline' ? 'offlineWait' : 'checkFailed';
+  const key = r.status === 'unreadable' ? 'rxNone' : r.reason === 'device_photo_limit' ? 'photoLimit' : r.status === 'vision_unavailable' ? 'visionDown' : r.status === 'busy' ? 'tooMany' : r.status === 'offline' ? 'offlineWait' : 'checkFailed';
   last = { status: 'rx_failed' };
-  $('#result').innerHTML = `<div class="card"><p class="med-name" style="font-size:22px;line-height:1.35">${esc(t(lang, key))}</p></div><button class="secondary" id="againBtn">${esc(t(lang, 'another'))}</button>`;
+  $('#result').innerHTML = `<div class="card"><p class="med-name" style="font-size:22px;line-height:1.35">${esc(t(lang, key, { n: r.limit || '' }))}</p></div><button class="secondary" id="againBtn">${esc(t(lang, 'another'))}</button>`;
   $('#againBtn').onclick = () => show('home');
   show('result');
 });

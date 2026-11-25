@@ -6,7 +6,7 @@
 //    type the name (the app's existing "photo reading not available" message).
 
 /** Which limiter guards which kind of request. */
-export const LIMITER = { check: 'LIMIT_CHECK', login: 'LIMIT_LOGIN' };
+export const LIMITER = { check: 'LIMIT_CHECK', login: 'LIMIT_LOGIN', photo: 'LIMIT_PHOTO' };
 
 /** true when this address has gone over the limit for `kind` ('check' or 'login'). */
 export async function overLimit(env, request, kind) {
@@ -18,6 +18,28 @@ export async function overLimit(env, request, kind) {
     return !success;
   } catch {
     return false; // the limiter itself failing must never block patients
+  }
+}
+
+const DEVICE = /^[a-z0-9:-]{8,80}$/i;
+/** How many photos this device may have read in a day (PHOTO_PER_DEVICE; 0 = no limit). */
+export const photosPerDevice = (env) => Number.parseInt(env.PHOTO_PER_DEVICE || '', 10) || 0;
+
+/**
+ * Count one photo of this device today; true when it is over the limit (the photo is then not read; typing
+ * a name is never limited). Photos with no device code are counted together. A database fault never
+ * blocks a patient: the daily cap for everyone still holds.
+ */
+export async function photoLimitReached(env, device, day) {
+  const limit = photosPerDevice(env);
+  if (!limit) return false;
+  const id = typeof device === 'string' && DEVICE.test(device) ? device : 'none';
+  try {
+    const r = await env.DB.prepare('INSERT INTO photo_uses (device, day, n) VALUES (?1, ?2, 1) ON CONFLICT(device, day) DO UPDATE SET n = n + 1 RETURNING n').bind(id, day).first();
+    if (r?.n === 1) await env.DB.prepare('DELETE FROM photo_uses WHERE day < ?1').bind(new Date(Date.parse(day) - 2 * 86_400_000).toISOString().slice(0, 10)).run().catch(() => {});
+    return (r?.n || 0) > limit;
+  } catch {
+    return false;
   }
 }
 

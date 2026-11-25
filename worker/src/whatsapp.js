@@ -17,7 +17,7 @@ import { setAssets, nearestKendra } from './tools.js';
 import { kendraContactsVisible } from '../../public/rules.js';
 import { t } from '../../public/strings.js';
 import { answerText, kendraLines, readText } from './watext.js';
-import { photoCapReached } from './limits.js';
+import { photoCapReached, photoLimitReached, photosPerDevice } from './limits.js';
 
 const GRAPH = 'https://graph.facebook.com/v21.0';
 const DAY_MS = 24 * 3600_000;
@@ -194,7 +194,8 @@ ${t(lang, 'incompleteBody')}` : t(lang, 'waRetype')));
       } else out.push(text(t(lang, 'waUnsupported')));
     } else if (msg.kind === 'image') {
       const image = await deps.image?.(msg);
-      if (!image) out.push(text(t(lang, 'waSlow')));
+      if (image === 'limit') out.push(text(t(lang, 'photoLimit', { n: photosPerDevice(env) })));
+      else if (!image) out.push(text(t(lang, 'waSlow')));
       else {
         const r = await check({ image });
         if (r.status === 'ok' && r.needs_confirmation) {
@@ -264,7 +265,7 @@ export async function handleWebhook(request, env, ctx, log) {
       if (!(await firstTime(env.DB, msg.id, Date.now()))) continue;
       // Past the day's photo cap (limits.js) a photo is not read; the bot asks to try again / type the name.
       const day = new Date(Date.now() + 5.5 * 3600_000).toISOString().slice(0, 10);
-      const replies = await handleMessage(env, msg, { log, origin: url.origin, image: async (m) => ((await photoCapReached(env, day)) ? null : fetchImage(env, m)) });
+      const replies = await handleMessage(env, msg, { log, origin: url.origin, image: async (m) => ((await photoCapReached(env, day)) ? null : (await photoLimitReached(env, `wa:${await chatKey(env, m.from)}`, day)) ? 'limit' : fetchImage(env, m)) });
       await sendReplies(env, msg.from, replies).catch(() => {});
     }
   })();

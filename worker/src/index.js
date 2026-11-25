@@ -9,13 +9,13 @@ import { kendraContactsVisible, orderItems, orderMessage, waLink } from '../../p
 import { t, rupees } from '../../public/strings.js';
 import { ntiFromKey } from './normalize.js';
 import { resetJaList, setAssets, nearestKendra } from './tools.js';
-import { overLimit, photoCapReached, countPrescriptionRead } from './limits.js';
+import { overLimit, photoCapReached, photoLimitReached, photosPerDevice, countPrescriptionRead } from './limits.js';
 import { botOn, appChatOn, botNumber, handleWebhook, handleMessage } from './whatsapp.js';
 import { recordMissing, listMissing, previewAdded, addMedicine, decideMedicine, ignoreMissing } from './missing.js';
 import { registerVolunteer, listVolunteers, decideVolunteer, updateVolunteer, volunteerHistory, activeVolunteer, volunteerLinkStatus } from './volunteers.js';
 
 // Not exported: a Worker's main module may only export handlers.
-const APP_VERSION = '2.0.17';
+const APP_VERSION = '2.0.18';
 
 const MAX_IMAGE_CHARS = 2_500_000; // ~1.8 MB JPEG as a data URL; the app resizes to ~1 MP first
 
@@ -102,6 +102,7 @@ async function handleAsk(request, env, ctx) {
   const isTest = isTestRequest(request, body);
   // Abuse protection: past the day's photo cap, ask for the name instead (the app's existing message).
   if (body.image && (await photoCapReached(env, istDay()))) return json({ status: 'vision_unavailable', reason: 'daily_photo_limit' });
+  if (body.image && (await photoLimitReached(env, body.device, istDay()))) return json({ status: 'vision_unavailable', reason: 'device_photo_limit', limit: photosPerDevice(env) });
   const result = await runAgent(env, body);
   // v1.1: registered Kendra numbers, only where KENDRA_REGISTRY allows (pilot: test traffic only).
   if (result.kendras?.items?.length && kendraContactsVisible(env.KENDRA_REGISTRY, isTest)) {
@@ -130,6 +131,7 @@ export function canonicalRedirect(env, url, method = 'GET') {
 }
 
 // Requests that run a check (or record feedback) count towards the per-address limit.
+const PHOTO_PATHS = new Set(['/api/ask', '/api/chat', '/api/prescription']); // a body over 20 KB there is a photo
 const CHECK_PATHS = new Set(['/api/ask', '/api/feedback', '/api/monthly', '/api/chat', '/api/wa/simulate', '/api/prescription']);
 // Over the limit: a calm "wait a minute" in the patient's language. The app shows it as an answer
 // (status "busy"); the chat boxes show it as a bot message.
@@ -148,6 +150,7 @@ async function handlePrescription(request, env) {
   if (!b || typeof b.image !== 'string' || !b.image.startsWith('data:image/') || b.image.length > MAX_IMAGE_CHARS) return json({ error: 'image_too_large_or_invalid' }, 413);
   const day = istDay();
   if (await photoCapReached(env, day)) return json({ status: 'vision_unavailable', reason: 'daily_photo_limit' });
+  if (await photoLimitReached(env, b.device, day)) return json({ status: 'vision_unavailable', reason: 'device_photo_limit', limit: photosPerDevice(env) });
   await countPrescriptionRead(env, day);
   return json(await readPrescriptionAgent(env, { image: b.image }));
 }
@@ -518,6 +521,9 @@ export default {
     if (vl) return Response.redirect(`${url.origin}/?volunteer=${encodeURIComponent(vl[1].toUpperCase())}`, 302);
     try {
       // Abuse protection: per-address limits on checks and on staff sign-in (worker/src/limits.js).
+      if (request.method === 'POST' && PHOTO_PATHS.has(url.pathname) && Number(request.headers.get('content-length') || 0) > 20_000 && (await overLimit(env, request, 'photo'))) {
+        return await tooMany(request, url);
+      }
       if (request.method === 'POST' && CHECK_PATHS.has(url.pathname) && (await overLimit(env, request, 'check'))) {
         return await tooMany(request, url);
       }
@@ -588,6 +594,7 @@ export default {
         const from = `app-${id}`;
         const image = typeof b.image === 'string' && b.image.startsWith('data:image/') && b.image.length <= MAX_IMAGE_CHARS ? b.image : null;
         if (image && (await photoCapReached(env, istDay()))) return json({ replies: [{ kind: 'text', body: t(['en', 'kn', 'hi'].includes(b.lang) ? b.lang : 'en', 'visionDown') }] });
+        if (image && (await photoLimitReached(env, typeof b.device === 'string' ? b.device : from, istDay()))) return json({ replies: [{ kind: 'text', body: t(['en', 'kn', 'hi'].includes(b.lang) ? b.lang : 'en', 'photoLimit', { n: photosPerDevice(env) }) }] });
         const msg = b.button ? { kind: 'button', from, button: String(b.button) } : image ? { kind: 'image', from } : { kind: 'text', from, text: String(b.text || '') };
         const device = typeof b.device === 'string' ? b.device : undefined;
         const replies = await handleMessage(env, msg, {

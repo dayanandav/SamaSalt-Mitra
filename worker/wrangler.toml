@@ -45,6 +45,9 @@ CANONICAL_HOST = ""
 # the name instead, so a flood cannot use up the free Workers AI allocation. "" = no cap.
 DAILY_PHOTO_LIMIT = "1500"
 
+# Photos (strips and prescriptions) read per device per day; typing is never limited. "" = no limit.
+PHOTO_PER_DEVICE = "10"
+
 # /impact figures are made again after this many minutes (they read every lookup). "" = every time.
 IMPACT_CACHE_MIN = "60"
 
@@ -54,6 +57,12 @@ IMPACT_CACHE_MIN = "60"
 name = "LIMIT_CHECK"
 namespace_id = "1001"
 simple = { limit = 30, period = 60 }
+
+# Photos: a few a minute per address (many phones share one address: no daily limit by address).
+[[ratelimits]]
+name = "LIMIT_PHOTO"
+namespace_id = "1003"
+simple = { limit = 12, period = 60 }
 
 [[ratelimits]]
 name = "LIMIT_LOGIN"
@@ -94,12 +103,18 @@ WHATSAPP_BOT = "on"
 WA_BOT_NUMBER = ""
 APP_CHAT = "on"
 DAILY_PHOTO_LIMIT = "300"
+PHOTO_PER_DEVICE = "10"
 IMPACT_CACHE_MIN = "60"
 
 [[env.staging.ratelimits]]
 name = "LIMIT_CHECK"
 namespace_id = "2001"
 simple = { limit = 30, period = 60 }
+
+[[env.staging.ratelimits]]
+name = "LIMIT_PHOTO"
+namespace_id = "2003"
+simple = { limit = 12, period = 60 }
 
 [[env.staging.ratelimits]]
 name = "LIMIT_LOGIN"
