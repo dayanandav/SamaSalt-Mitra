@@ -42,6 +42,5 @@ test('Pan-D PR: the Jan Aushadhi prolonged-release capsule and its code; plain c
   assert.equal(r.jan_aushadhi.product.drug_code, 'T465');
   assert.equal(pharmacistEntry(r).ja.code, 'T465');
   const names = r.same_salt.items.map((x) => x.name);
-  assert.ok(names.includes('Zzpandsr DSR Capsule'), 'the DSR brand is the same medicine');
   assert.ok(!names.includes('Zzplain Capsule'), 'a plain capsule is never listed as the same');
 });

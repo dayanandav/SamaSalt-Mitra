@@ -49,6 +49,7 @@ export function answerText(lang, r, pin, origin = null) {
     const per = t(lang, 'perUnit')[unitKind(m.form)];
     if (r.ceiling?.available) L.push('', t(lang, 'waCeiling', { price: rupees(r.ceiling.unit_price), per }));
     const cheaper = (r.same_salt?.items || []).filter((b) => b.name.toLowerCase() !== m.name.toLowerCase() && b.unit_price != null && (m.unit_price == null || b.unit_price < m.unit_price)).slice(0, 3);
+    if (r.same_salt?.hidden) L.push('', t(lang, 'brandsHidden'));
     if (cheaper.length) {
       L.push('', t(lang, 'waBrands'));
       cheaper.forEach((b, i) => L.push(`${i + 1}. ${one(b.name)}: ${rupees(b.unit_price)} ${per}`));

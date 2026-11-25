@@ -251,6 +251,12 @@ export const STRINGS = {
     confirmYes: 'Yes, show prices',
     confirmNo: 'No, take the photo again',
     confirmType: 'Type the name instead',
+    incompleteTitle: "We do not have all the salts of this medicine",
+    incompleteBody: "Our brand list is missing some of its salts, so we cannot compare it safely. Take a photo of the back of the strip, where all the salts are printed, or ask your pharmacist.",
+    confirmTwoTitle: "Does your strip list exactly these two salts?",
+    confirmTwoHint: "Our brand list can leave out a third salt. Check the salts printed on the back of the strip. Prices are shown only after you confirm.",
+    confirmTwoNo: "No, it has other salts",
+    brandsHidden: "Other brands are not listed for a medicine with two salts, because our brand list can leave out a third salt. Please ask your pharmacist.",
     visionDown: 'Photo reading is not available right now. Please type the name, or use your keyboard’s “Scan text”.',
     camTitle: "Point the camera at “Each tablet contains…” on the back of the strip",
     camShoot: 'Take photo',
@@ -601,6 +607,12 @@ export const STRINGS = {
     confirmYes: 'ಹೌದು, ಬೆಲೆಗಳನ್ನು ತೋರಿಸಿ',
     confirmNo: 'ಇಲ್ಲ, ಮತ್ತೆ ಫೋಟೋ ತೆಗೆಯುತ್ತೇನೆ',
     confirmType: 'ಬದಲಿಗೆ ಹೆಸರನ್ನು ಟೈಪ್ ಮಾಡಿ',
+    incompleteTitle: "ಈ ಔಷಧಿಯ ಎಲ್ಲಾ ಸಾಲ್ಟ್‌ಗಳು ನಮ್ಮ ಪಟ್ಟಿಯಲ್ಲಿ ಇಲ್ಲ",
+    incompleteBody: "ನಮ್ಮ ಬ್ರ್ಯಾಂಡ್ ಪಟ್ಟಿಯಲ್ಲಿ ಇದರ ಕೆಲವು ಸಾಲ್ಟ್‌ಗಳು ಇಲ್ಲ, ಆದ್ದರಿಂದ ಸುರಕ್ಷಿತವಾಗಿ ಹೋಲಿಸಲು ಸಾಧ್ಯವಿಲ್ಲ. ಎಲ್ಲಾ ಸಾಲ್ಟ್‌ಗಳು ಮುದ್ರಿತವಾಗಿರುವ ಸ್ಟ್ರಿಪ್‌ನ ಹಿಂಭಾಗದ ಫೋಟೋ ತೆಗೆಯಿರಿ, ಅಥವಾ ನಿಮ್ಮ ಫಾರ್ಮಸಿಸ್ಟ್ ಅವರನ್ನು ಕೇಳಿ.",
+    confirmTwoTitle: "ನಿಮ್ಮ ಸ್ಟ್ರಿಪ್‌ನಲ್ಲಿ ಸರಿಯಾಗಿ ಈ ಎರಡೇ ಸಾಲ್ಟ್‌ಗಳಿವೆಯೇ?",
+    confirmTwoHint: "ನಮ್ಮ ಬ್ರ್ಯಾಂಡ್ ಪಟ್ಟಿಯಲ್ಲಿ ಮೂರನೇ ಸಾಲ್ಟ್ ಬಿಟ್ಟುಹೋಗಿರಬಹುದು. ಸ್ಟ್ರಿಪ್‌ನ ಹಿಂಭಾಗದಲ್ಲಿ ಮುದ್ರಿತವಾಗಿರುವ ಸಾಲ್ಟ್‌ಗಳನ್ನು ನೋಡಿ. ನೀವು ಖಚಿತಪಡಿಸಿದ ನಂತರವೇ ಬೆಲೆಗಳನ್ನು ತೋರಿಸಲಾಗುತ್ತದೆ.",
+    confirmTwoNo: "ಇಲ್ಲ, ಬೇರೆ ಸಾಲ್ಟ್‌ಗಳೂ ಇವೆ",
+    brandsHidden: "ಎರಡು ಸಾಲ್ಟ್‌ಗಳ ಔಷಧಿಗೆ ಬೇರೆ ಬ್ರ್ಯಾಂಡ್‌ಗಳನ್ನು ತೋರಿಸುವುದಿಲ್ಲ, ಏಕೆಂದರೆ ನಮ್ಮ ಬ್ರ್ಯಾಂಡ್ ಪಟ್ಟಿಯಲ್ಲಿ ಮೂರನೇ ಸಾಲ್ಟ್ ಬಿಟ್ಟುಹೋಗಿರಬಹುದು. ದಯವಿಟ್ಟು ನಿಮ್ಮ ಫಾರ್ಮಸಿಸ್ಟ್ ಅವರನ್ನು ಕೇಳಿ.",
     visionDown: 'ಈಗ ಫೋಟೋ ಓದಲು ಆಗುತ್ತಿಲ್ಲ. ದಯವಿಟ್ಟು ಹೆಸರನ್ನು ಟೈಪ್ ಮಾಡಿ, ಅಥವಾ ನಿಮ್ಮ ಕೀಬೋರ್ಡ್‌ನ “Scan text” ಬಳಸಿ.',
     camTitle: "ಸ್ಟ್ರಿಪ್‌ನ ಹಿಂಭಾಗದ “Each tablet contains…” ಭಾಗದ ಕಡೆ ಕ್ಯಾಮೆರಾ ಹಿಡಿಯಿರಿ",
     camShoot: 'ಫೋಟೋ ತೆಗೆಯಿರಿ',
@@ -948,6 +960,12 @@ export const STRINGS = {
     confirmYes: 'हाँ, दाम दिखाएँ',
     confirmNo: 'नहीं, फिर से फ़ोटो लूँगा',
     confirmType: 'इसकी जगह नाम लिखें',
+    incompleteTitle: "इस दवा के सभी सॉल्ट हमारी सूची में नहीं हैं",
+    incompleteBody: "हमारी ब्रांड सूची में इसके कुछ सॉल्ट नहीं हैं, इसलिए सुरक्षित तुलना नहीं हो सकती। पट्टी के पीछे की फ़ोटो लें, जहाँ सभी सॉल्ट छपे होते हैं, या अपने फ़ार्मासिस्ट से पूछें।",
+    confirmTwoTitle: "क्या आपकी पट्टी पर ठीक यही दो सॉल्ट लिखे हैं?",
+    confirmTwoHint: "हमारी ब्रांड सूची में तीसरा सॉल्ट छूटा हो सकता है। पट्टी के पीछे छपे सॉल्ट देखें। आपके पुष्टि करने के बाद ही दाम दिखाए जाते हैं।",
+    confirmTwoNo: "नहीं, और भी सॉल्ट हैं",
+    brandsHidden: "दो सॉल्ट वाली दवा के लिए दूसरे ब्रांड नहीं दिखाए जाते, क्योंकि हमारी ब्रांड सूची में तीसरा सॉल्ट छूटा हो सकता है। कृपया अपने फ़ार्मासिस्ट से पूछें।",
     visionDown: 'अभी फ़ोटो पढ़ी नहीं जा सकती। कृपया नाम लिखें, या अपने कीबोर्ड का “Scan text” इस्तेमाल करें।',
     camTitle: "कैमरा पट्टी के पीछे “Each tablet contains…” वाले हिस्से पर रखें",
     camShoot: 'फ़ोटो लें',
@@ -1088,6 +1106,7 @@ export function unitKind(form) {
 /** Why the answer has no cheaper option, or null when it has one: the person should never be left guessing. */
 export function noOption(f) {
   if (f.nti || f.cheapBrand || f.jaUnit != null) return null;
+  if (f.brandsHidden) return null; // two salts: other brands are not listed (the card says why)
   if (f.brandsLoaded === false) return 'notLoaded';
   if (f.count > 1) return 'cheapest';
   return 'none';

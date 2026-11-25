@@ -685,6 +685,8 @@ async function ask({ text, image, ocr, via, relog = true }) {
   // Photo reading is down (quota used up or model error). The on-phone OCR fallback was removed:
   // on real strips it read junk and matched wrong medicines. Ask for typing / keyboard scan.
   if (r.status === 'vision_unavailable') r = { status: 'vision_down' };
+  // A language change on a medicine whose two salts were confirmed: not asked again.
+  if (!relog && r.confirm === 'two_salts' && last?.confirmed && last.medicine?.ckey === r.medicine?.ckey) r.confirmed = true;
   if (!relog && last?.lookup_id) r.lookup_id = last.lookup_id; // keep feedback tied to the original lookup
   // A re-ask for a language change is the same lookup: it must not add to the pharmacist list again.
   r.fresh = relog;
@@ -987,19 +989,20 @@ const warnIcon = '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" st
 // so nothing about prices or other brands is shown until the person says yes.
 function renderConfirm(r) {
   const m = r.medicine;
-  const readText = [r.read?.brand, r.read?.composition].filter(Boolean).join(' · ');
+  const two = r.confirm === 'two_salts';
+  const readText = two ? '' : [r.read?.brand, r.read?.composition].filter(Boolean).join(' · ');
   $('#result').innerHTML = `
     <div class="card">
-      <p class="eyebrow">${esc(t(lang, 'confirmTitle'))}</p>
+      <p class="eyebrow">${esc(t(lang, two ? 'confirmTwoTitle' : 'confirmTitle'))}</p>
       <p class="med-name">${esc(m.name)}</p>
       <p class="med-comp">${esc(m.composition)}</p>
       ${readText ? `<p class="med-meta">${esc(t(lang, 'readOnStrip', { text: readText }))}</p>` : ''}
-      <p class="muted" style="margin:12px 0 0;font-size:15px">${esc(t(lang, 'confirmHint'))}</p>
+      <p class="muted" style="margin:12px 0 0;font-size:15px">${esc(t(lang, two ? 'confirmTwoHint' : 'confirmHint'))}</p>
       ${devMode && r.read_score != null ? `<p class="source">developer: read score=${r.read_score}/100 (pass 70)</p>` : ''}
     </div>
     <div class="crop-actions">
       <button class="primary" id="confYes" type="button">${esc(t(lang, 'confirmYes'))}</button>
-      <button class="secondary" id="confRetake" type="button">${esc(t(lang, 'confirmNo'))}</button>
+      <button class="secondary" id="confRetake" type="button">${esc(t(lang, two ? 'confirmTwoNo' : 'confirmNo'))}</button>
       <p class="crop-links"><button class="link" id="confType" type="button">${esc(t(lang, 'confirmType'))}</button></p>
     </div>`;
   const wrong = () => {
@@ -1007,7 +1010,7 @@ function renderConfirm(r) {
     if (r.lookup_id) fetch('/api/feedback', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ id: r.lookup_id, switched: 'wrong' }) }).catch(() => {});
   };
   $('#confYes').onclick = () => { r.confirmed = true; render(r); };
-  $('#confRetake').onclick = () => { wrong(); $('#scanBtn').click(); };
+  $('#confRetake').onclick = () => { wrong(); if (two) { last = { status: 'incomplete', brand: m.name }; render(last); } else $('#scanBtn').click(); };
   $('#confType').onclick = () => { wrong(); show('home'); $('#nameInput').focus(); };
   show('result');
 }
@@ -1070,7 +1073,7 @@ function render(r) {
   countUnread(r);
   if (r.status !== 'ok') {
     // Say what actually went wrong: not in the database, photo unreadable, or the check failed.
-    const why = r.status === 'not_found' ? (r.choices?.length ? 'chooseOne' : 'notFound') : r.status === 'unreadable' ? 'photoUnreadable' : r.status === 'vision_down' ? 'visionDown' : r.status === 'offline' ? 'offlineWait' : r.status === 'slow' ? 'slowNet' : r.status === 'busy' ? 'tooMany' : 'checkFailed';
+    const why = r.status === 'not_found' ? (r.choices?.length ? 'chooseOne' : 'notFound') : r.status === 'incomplete' ? 'incompleteTitle' : r.status === 'unreadable' ? 'photoUnreadable' : r.status === 'vision_down' ? 'visionDown' : r.status === 'offline' ? 'offlineWait' : r.status === 'slow' ? 'slowNet' : r.status === 'busy' ? 'tooMany' : 'checkFailed';
     // Read check failed: say why, show what was read, and offer a retake or typing.
     const whyRead = { no_composition: 'readNoComposition', brand_mismatch: 'readMismatch', low_confidence: 'readBlurry' }[r.reason];
     const readText = [r.read?.brand, r.read?.composition].filter(Boolean).join(' · ');
@@ -1081,6 +1084,7 @@ function render(r) {
       <p class="med-meta">${esc(t(lang, 'chooseCheck'))}</p>` : ''}
       ${r.status === 'unreadable' && whyRead && !r.choices?.length ? `<p class="read-why">${esc(t(lang, whyRead))}</p>` : ''}
       ${readText ? `<p class="med-meta">${esc(t(lang, 'readOnStrip', { text: readText }))}</p>` : ''}
+      ${r.status === 'incomplete' ? `${r.brand ? `<p class="med-meta">${esc(r.brand)}</p>` : ''}<p class="read-why">${esc(t(lang, 'incompleteBody'))}</p><div class="crop-actions" style="margin-top:14px"><button class="primary" id="nfScan" type="button">${esc(t(lang, 'nfScanBack'))}</button></div>` : ''}
       ${r.status === 'not_found' ? notFoundHelp(r) : ''}
       ${(r.status === 'offline' || r.status === 'slow' || r.status === 'busy') && pending ? `<div class="crop-actions" style="margin-top:14px"><button class="primary" id="retryBtn" type="button">${esc(t(lang, 'tryAgain'))}</button></div>${r.status === 'offline' ? `<p class="med-meta">${esc(t(lang, 'offlineAuto'))}</p>` : ''}` : ''}
       ${r.status === 'unreadable' ? (unreadTwice()
@@ -1171,7 +1175,7 @@ function render(r) {
     ${!m.nti ? `<div class="card">
       <p class="eyebrow">${esc(t(lang, 'sameSaltTitle'))}</p>
       ${r.same_salt.count ? `<p class="count">${esc(t(lang, 'brandsCount', { n: r.same_salt.count.toLocaleString('en-IN') }))}</p>
-      <ul class="list">${listHtml}${yoursRow}</ul>` : `<p class="muted" style="margin:0">${esc(t(lang, r.data?.brands_loaded === false ? 'brandsPending' : 'sameSaltNone'))}</p>`}
+      <ul class="list">${listHtml}${yoursRow}</ul>` : `<p class="muted" style="margin:0">${esc(t(lang, r.same_salt.hidden ? 'brandsHidden' : r.data?.brands_loaded === false ? 'brandsPending' : 'sameSaltNone'))}</p>`}
     </div>` : ''}
 
     <div class="card">

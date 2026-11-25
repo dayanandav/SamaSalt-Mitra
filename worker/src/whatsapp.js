@@ -130,6 +130,12 @@ export async function handleMessage(env, msg, deps = {}, now = Date.now()) {
     return r;
   };
   const answerOrWhy = (r) => {
+    // Two salts in our list: asked before anything is priced (the list can leave out a third salt).
+    if (r.status === 'ok' && r.confirm === 'two_salts') {
+      s.pending = r.medicine.name;
+      return { kind: 'buttons', body: `${r.medicine.name}: ${String(r.medicine.composition).split(' · ')[0]}\n\n${t(lang, 'confirmTwoTitle')} ${t(lang, 'confirmTwoHint')}`, buttons: [{ id: 'confirm:yes', title: t(lang, 'waYes') }, { id: 'confirm:no', title: t(lang, 'waNo') }] };
+    }
+    if (r.status === 'incomplete') return text(`${t(lang, 'incompleteTitle')} ${t(lang, 'incompleteBody')}`);
     if (r.status === 'ok') return text(answerText(lang, r, s.pin, deps.origin));
     if (r.status === 'not_found' && r.choices?.length) return text(t(lang, 'waChoose', { names: r.choices.slice(0, 4).map((c) => `${c.name} (${String(c.composition).split(' · ')[0]})`).join('; ') }));
     if (r.status === 'not_found') return text([t(lang, 'notFound'), r.suggestions?.length ? t(lang, 'waDidYouMean', { names: r.suggestions.slice(0, 3).join(', ') }) : ''].filter(Boolean).join(' '));
@@ -150,7 +156,7 @@ export async function handleMessage(env, msg, deps = {}, now = Date.now()) {
           const name = s.pending;
           s.pending = null;
           // Confirmed by the patient: check it by name (the typed-name path: no second confirmation).
-          out.push(answerOrWhy(await check({ text: name })));
+          out.push(answerOrWhy(await check({ text: name, saltsConfirmed: true })));
         }
       } else if (b === 'confirm:no') {
         s.pending = null;

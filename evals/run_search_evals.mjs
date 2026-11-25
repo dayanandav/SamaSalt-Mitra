@@ -6,23 +6,30 @@
 //   WRONG   = answered with another composition, or answered where nothing may be: must stay 0
 // Writes evals/search_results.json + evals/SEARCH_RESULTS.md. Exit code 1 if any WRONG.
 //
-//   node evals/run_search_evals.mjs                       # test site (default)
-//   SAMASALT_MITRA_URL=https://samasalt-mitra.samasalt-mitra-worker.workers.dev node evals/run_search_evals.mjs
+//   node --import ./test/register-md.mjs evals/run_search_evals.mjs   # on this computer (default): the code here,
+//                                              # public/meds and the newest backup; no D1 reads, nothing logged
+//   SMOKE=20 SAMASALT_MITRA_URL=https://samasalt-mitra.samasalt-mitra-worker.workers.dev node evals/run_search_evals.mjs
+//                                              # a site: every Nth case, 20 in all, not logged (D1 free plan!)
 import { readFileSync, writeFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { describeKey } from '../worker/src/normalize.js';
 
 const HERE = dirname(fileURLToPath(import.meta.url));
-const BASE = process.env.SAMASALT_MITRA_URL || 'https://samasalt-mitra-staging.samasalt-mitra-worker.workers.dev';
-const PACE_MS = Number(process.env.PACE_MS || 2500); // stays under the per-address limit
-const { cases } = JSON.parse(readFileSync(join(HERE, 'search_cases.json'), 'utf8'));
+const BASE = process.env.SAMASALT_MITRA_URL || 'local';
+const LOCAL = BASE === 'local';
+const PACE_MS = LOCAL ? 0 : Number(process.env.PACE_MS || 2500); // stays under the per-address limit
+const all = JSON.parse(readFileSync(join(HERE, 'search_cases.json'), 'utf8')).cases;
+const SMOKE = Number(process.env.SMOKE || 0);
+const cases = SMOKE && SMOKE < all.length ? all.filter((_, i) => i % Math.ceil(all.length / SMOKE) === 0) : all;
+const local = LOCAL ? await (await import('./local_agent.mjs')).localAgent() : null;
 const wait = (ms) => new Promise((r) => setTimeout(r, ms));
 
 async function ask(c) {
+  if (local) return local({ text: c.text, lang: c.lang || 'en' });
   for (let attempt = 0; attempt < 4; attempt++) {
     try {
-      const r = await fetch(`${BASE}/api/ask`, { method: 'POST', headers: { 'content-type': 'application/json', 'x-samasalt-mitra-test': '1' }, body: JSON.stringify({ text: c.text, lang: c.lang || 'en', test: true }) });
+      const r = await fetch(`${BASE}/api/ask`, { method: 'POST', headers: { 'content-type': 'application/json', 'x-samasalt-mitra-test': '1' }, body: JSON.stringify({ text: c.text, lang: c.lang || 'en', test: true, nolog: true }) });
       const res = await r.json();
       if (res.status !== 'busy' && !res.error) return res;
     } catch {}

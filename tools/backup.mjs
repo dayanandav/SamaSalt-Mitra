@@ -26,6 +26,9 @@ if (process.platform === 'win32') execFileSync(process.env.ComSpec || 'cmd.exe',
 else execFileSync('npx', args, { cwd: join(root, 'worker'), stdio: 'inherit' });
 console.log(`Done: ${(statSync(out).size / 1e6).toFixed(1)} MB`);
 
+// The copy of the Jan Aushadhi list deployed with the app (used only while D1 refuses).
+if (!staging) await import('./ja-copy.mjs');
+
 // Keep the newest 12 backups of this database.
 const mine = readdirSync(dir).filter((f) => f.startsWith(`${db}-2`) && f.endsWith('.sql')).sort();
 for (const f of mine.slice(0, Math.max(0, mine.length - 12))) { rmSync(join(dir, f)); console.log(`Removed old backup ${f}`); }

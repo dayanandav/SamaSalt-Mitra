@@ -1,6 +1,6 @@
 # Search test set results
 
-Run 2026-11-24T13:01:24.111Z against https://samasalt-mitra-staging.samasalt-mitra-worker.workers.dev. **396/408 pass.** Answered right 277, offered among the choices 124, missed 7, **wrong matches 0** (must be 0), errors 0. Median 980 ms.
+Run 2026-11-25T05:08:07.051Z against local. **394/408 pass.** Answered right 275, offered among the choices 124, missed 9, **wrong matches 0** (must be 0), errors 0. Median 7 ms.
 
 Cases: evals/search_cases.src.json (expected compositions taken from the data by evals/build_search_cases.mjs).
 
@@ -60,7 +60,7 @@ Cases: evals/search_cases.src.json (expected compositions taken from the data by
 | hi-telma40 | टेल्मा 40 | choice | offered | choices: Telma 40 Tablet; Telma H Tablet; Telma-AM Tablet; Telma-NB Tablet; Telma-LNC Tablet |
 | hi-atorva10 | एटोर्वा 10 | choice | offered | choices: Atorva Tablet; Atoriv 10mg Tablet; Etorvas 10mg Tablet; Atorva E 40 Tablet; Atorva E 10mg/10mg Tablet |
 | kn-thyronorm50 | ಥೈರೋನಾರ್ಮ್ 50 | choice | offered | choices: Thyronorm 50mcg Tablet |
-| hi-pan40 | पैन 40 टैबलेट | choice | right | PAN 40 Tablet [Pantoprazole 40 mg · tablet] |
+| hi-pan40 | पैन 40 टैबलेट | choice | **missed** | not_found |
 | hi-metformin500 | मेटफॉर्मिन 500 | choice | offered | choices: Metformin Hydrochloride Tablets IP 500mg; Metformin Hydrochloride Prolonged release Tablets IP 500 mg; Metformi |
 | hi-amox500 | अमोक्सीसिलिन 500 | choice | offered | choices: Amoxycillin Capsules IP 500mg; Amoxycillin 500mg and Potassium Clavulanate 125mg Tablets IP; Amoxycillin 500mg  |
 | hi-para650 | पैरासिटामोल 650 | choice | offered | choices: Paracetamol Tablets IP 650 mg; Paracetamol 650mg and Caffeine 50mg Tablets IP |
@@ -357,7 +357,7 @@ Cases: evals/search_cases.src.json (expected compositions taken from the data by
 | kn-telma40 | ಟೆಲ್ಮಾ 40 | choice | offered | choices: Telma 40 Tablet; Telma H Tablet; Telma-AM Tablet; Telma-NB Tablet; Telma-LNC Tablet |
 | kn-pan40 | ಪ್ಯಾನ್ 40 | choice | offered | choices: PAN 40 Tablet; Pan Up 40mg Tablet; PAN IV Injection; Pan Tart 40mg Injection; Pan-D Capsule PR |
 | kn-atorva10 | ಅಟೊರ್ವಾ 10 | choice | offered | choices: Atorva Tablet; Atorva E 40 Tablet; Atorva E 10mg/10mg Tablet; Atorva Asp 75 Capsule; Atorva Asp 150 Capsule |
-| kn-glycomet500sr | ಗ್ಲೈಕೋಮೆಟ್ 500 ಎಸ್ಆರ್ | choice | right | Glycomet 500 SR Tablet [Metformin 500 mg · tablet · SR] |
+| kn-glycomet500sr | ಗ್ಲೈಕೋಮೆಟ್ 500 ಎಸ್ಆರ್ | choice | **missed** | not_found |
 | kn-amlokind5 | ಆಮ್ಲೋಕೈಂಡ್ 5 | choice | **missed** | not_found |
 | kn-ecosprin75 | ಇಕೋಸ್ಪ್ರಿನ್ 75 | choice | offered | choices: Ecosprin 75 Tablet; Ecosprin-AV 75 Capsule; Ecosprin AV 75/20 Capsule; Ecosprin AV 75/40 Capsule; Ecosprin Gold |
 | kn-allegra120 | ಅಲೆಗ್ರಾ 120 | choice | offered | choices: Eligra 120mg Tablet |

@@ -7,7 +7,7 @@
 // Every step is recorded in `trace` (tool, input, short output, ms) and returned to the UI,
 // and the eval runner writes the same trace as AgentFoundry run JSONL (.codenow/runs/).
 import { readStrip, understandText, readPrescription } from './vision.js';
-import { identifyMedicine, janAushadhiByName, suggestNames, soundsLikeChoices, saltChoices, formGuessChoices, otherSaltChoices, findSameSalt, janAushadhiMatch, ceilingPrice, nearestKendra, computeSaving, compositionFromText, brandCandidatesFromText } from './tools.js';
+import { identifyMedicine, janAushadhiByName, suggestNames, soundsLikeChoices, saltChoices, setJaCopy, jaCopy, formGuessChoices, otherSaltChoices, describeRow, saltCount, findSameSalt, janAushadhiMatch, ceilingPrice, nearestKendra, computeSaving, compositionFromText, brandCandidatesFromText } from './tools.js';
 import { describeKey, extractDosageForm, ntiFromKey, parseSaltComposition } from './normalize.js';
 import { assetMeds, d1Meds } from './medstore.js';
 import { composeAnswer } from '../../public/strings.js';
@@ -24,6 +24,7 @@ const RX_FORMS = ['tablet', 'capsule', 'syrup', 'injection', 'cream', 'drops']; 
 export async function readPrescriptionAgent(env, { image }) {
   const files = env.ASSETS ? await assetMeds(env.ASSETS) : null;
   const ctx = { db: env.DB, meds: files || d1Meds(env.DB) };
+  setJaCopy(env.DB, env.ASSETS);
   const read = await readPrescription(env, image);
   if (!read.ok) return { status: read.unreadable ? 'unreadable' : 'vision_unavailable' };
   const items = [];
@@ -40,7 +41,7 @@ export async function readPrescriptionAgent(env, { image }) {
       if (!id.found && !id.choices?.length && (await saltChoices(ctx, asked)).length) id = { found: false, choices: [id] };
     } catch { id = { found: false }; }
     items.push(id.found
-      ? { read: asked, found: true, name: id.medicine.name, composition: describeKey(id.medicine.ckey), nti: !!id.medicine.nti || ntiFromKey(id.medicine.ckey) }
+      ? { read: asked, found: true, name: id.medicine.name, composition: describeRow(id.medicine), nti: !!id.medicine.nti || ntiFromKey(id.medicine.ckey) }
       : { read: asked, found: false, ...(id.choices?.length ? { choose: true } : {}) });
   }
   return { status: items.length ? 'ok' : 'unreadable', items, model: read.model };
@@ -50,6 +51,7 @@ const NON_LATIN = /[^\u0000-ɏ\s\d.,()+\-/]/;
 
 export async function runAgent(env, input) {
   const db = env.DB;
+  setJaCopy(db, env.ASSETS);
   // Brand medicines come from the static files when they are deployed, else from D1 (tests).
   const files = env.ASSETS ? await assetMeds(env.ASSETS) : null;
   const ctx = { db, meds: files || d1Meds(db) };
@@ -129,7 +131,7 @@ export async function runAgent(env, input) {
       if (readCheck.reason === 'no_composition' && brandRead) {
         choices = await step('brand_choices', { brand: brandRead }, async () => {
           const x = await identifyMedicine(ctx, { brand: brandRead });
-          return x.found ? [{ name: x.medicine.name, composition: describeKey(x.medicine.ckey) }] : (x.choices || []);
+          return x.found ? [{ name: x.medicine.name, composition: describeRow(x.medicine) }] : (x.choices || []);
         }, (c) => ({ choices: c.length }));
       }
       return { status: 'unreadable', reason: readCheck.reason, read_score: readCheck.score, lang, read, trace, source, ...(choices.length ? { choices } : {}) };
@@ -224,11 +226,22 @@ export async function runAgent(env, input) {
   }
 
   const med = id.medicine;
+  // The brand list keeps at most two salts. A brand marked incomplete has more: nothing is compared or
+  // priced (owner's decision 24 Nov 2026); the strip's back or the pharmacist has all its salts.
+  if (med.incomplete) {
+    trace.push({ tool: 'check_salts', input: { ckey: med.ckey }, output: { incomplete: true }, ms: 0 });
+    return { status: 'incomplete', lang, read, trace, source, brand: med.name };
+  }
+  // A two-salt brand may have a third salt the list lost without a mark ("Zerodol-SP"): a typed name is
+  // asked about first, and other brands are never listed as the same. The official Jan Aushadhi list
+  // has every salt, so a Jan Aushadhi name is not asked.
+  const twoSalts = saltCount(med.ckey) === 2;
+  const askSalts = twoSalts && source === 'text' && id.via === 'brand' && !input.saltsConfirmed;
   const meta = await loadMeta(db);
-  const same = await step('find_same_salt', { ckey: med.ckey }, () => findSameSalt(ctx, med.ckey), (r) => ({
-    count: r.count,
-    cheapest: r.items[0] ? `${r.items[0].name} @ ₹${r.items[0].unit_price}/unit` : null,
-  }));
+  const listed = await step('find_same_salt', { ckey: med.ckey }, () => findSameSalt(ctx, med.ckey), (r) => (twoSalts
+    ? { count: r.count, hidden: 'two salts' }
+    : { count: r.count, cheapest: r.items[0] ? `${r.items[0].name} @ ₹${r.items[0].unit_price}/unit` : null }));
+  const same = twoSalts ? { count: 0, cheapest_unit: null, median_unit: null, max_unit: null, items: [], hidden: true } : listed;
   // Narrow-therapeutic-index medicines: no cheaper option of any kind is suggested, so the
   // Jan Aushadhi generic is not looked up either (the Kendra list is still shown).
   // The database's flag comes from the original pipeline; the key check covers salts added since.
@@ -253,7 +266,7 @@ export async function runAgent(env, input) {
   let kendras = { by: null, items: [], pending: !meta.kendras_loaded_at };
   if (wantsKendra && meta.kendras_loaded_at) {
     kendras = await step('nearest_kendra', { pin: pin || undefined, location: input.lat != null ? 'approximate (not stored)' : undefined }, () =>
-      nearestKendra(ctx, { pin, lat: input.lat, lng: input.lng }), (r) => ({ by: r.by, found: r.items.length, nearest: r.items[0]?.code }));
+      nearestKendra(ctx, { pin, lat: input.lat, lng: input.lng }).catch(() => ({ by: null, items: [], pending: true })), (r) => ({ by: r.by, found: r.items.length, nearest: r.items[0]?.code }));
   } else if (wantsKendra) {
     trace.push({ tool: 'nearest_kendra', input: { pin }, output: { skipped: 'Kendra list not loaded' }, ms: 0 });
   }
@@ -263,7 +276,7 @@ export async function runAgent(env, input) {
   const cheapest = same.items[0];
   // No same-salt brand at all: is that because this salt has none, or because the brand price
   // list is not loaded? The answer and the screen say which (one cheap query, only in this case).
-  const brandsLoaded = same.count > 0 || (await ctx.meds.loaded());
+  const brandsLoaded = listed.count > 0 || (await ctx.meds.loaded());
   const facts = {
     brand: med.name,
     composition: describeKey(med.ckey).split(' · ')[0],
@@ -279,6 +292,7 @@ export async function runAgent(env, input) {
     form: med.form,
     nti,
     brandsLoaded,
+    brandsHidden: twoSalts,
   };
   const answer = await step('compose_answer', { lang }, async () => composeAnswer(lang, facts), (a) => ({ chars: a.length }));
 
@@ -289,7 +303,8 @@ export async function runAgent(env, input) {
     read,
     // Anything read from a photo or a scan is shown for the person to confirm before any
     // alternative or price is shown: a misread must never become a switch suggestion.
-    needs_confirmation: source !== 'text',
+    needs_confirmation: source !== 'text' || askSalts,
+    ...(askSalts ? { confirm: 'two_salts' } : {}),
     read_score: readCheck?.score ?? null,
     medicine: { name: med.name, manufacturer: med.manufacturer, composition: describeKey(med.ckey), ckey: med.ckey, price: med.price, pack: med.pack, unit_price: med.unit_price, form: med.form, nti, via: id.via, alternatives: id.alternatives },
     same_salt: nti ? { count: same.count, items: [], cheapest_unit: null } : same,
@@ -362,6 +377,7 @@ async function readOcrText(ctx, ocr, trace) {
   return query;
 }
 
+const META_TTL_MS = 10 * 60_000; // the lists' dates: they change only on an import (D1 rows read)
 let metaCache = null;
 let metaAt = 0;
 /** Called after a data import so the next lookup sees the new list date at once. */
@@ -370,9 +386,17 @@ export function resetMetaCache() {
   metaAt = 0;
 }
 export async function loadMeta(db) {
-  if (metaCache && Date.now() - metaAt < 60_000) return metaCache;
-  const res = await db.prepare('SELECT key, value FROM meta').all();
-  metaCache = Object.fromEntries((res.results || []).map((r) => [r.key, r.value]));
-  metaAt = Date.now();
+  if (metaCache && Date.now() - metaAt < META_TTL_MS) return metaCache;
+  try {
+    const res = await db.prepare('SELECT key, value FROM meta').all();
+    metaCache = Object.fromEntries((res.results || []).map((r) => [r.key, r.value]));
+    metaAt = Date.now();
+  } catch (e) {
+    // D1 refuses: what is in memory, else the dates saved with the app's copy of the list; tried again in a minute.
+    const meta = metaCache || (await jaCopy(db))?.meta;
+    if (!meta) throw e;
+    metaCache = meta;
+    metaAt = Date.now() - META_TTL_MS + 60_000;
+  }
   return metaCache;
 }

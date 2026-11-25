@@ -6,7 +6,7 @@
 // Approved brands are found by name like any brand (identifyMedicine in tools.js); no price is kept.
 // Every action is logged in added_medicine_reviews.
 import { parseSaltComposition, buildCanonicalKey, describeKey, isNti } from './normalize.js';
-import { cleanComposition, janAushadhiMatch, ctxOf } from './tools.js';
+import { cleanComposition, janAushadhiMatch, ctxOf, resetAddedList } from './tools.js';
 
 const FORMS = ['tablet', 'capsule', 'liquid', 'drops', 'injection', 'topical', 'inhaler', 'respule', 'powder', 'spray', 'suppository', 'patch', 'mouthwash', 'lozenge', 'chewable', 'effervescent', 'dry_syrup'];
 const RELEASES = ['SR', 'XR', 'CR', 'MR', 'DR', 'LA', 'XL'];
@@ -108,6 +108,7 @@ export async function decideMedicine(db, body, who, now = new Date()) {
   ];
   if (cur.source_name) stmts.push(db.prepare('UPDATE missing_names SET status = ?1 WHERE name_key = ?2').bind(to === 'approved' ? 'added' : 'open', cur.source_name));
   await db.batch(stmts);
+  resetAddedList(db);
   return { status: 200, body: { ok: true, id, status: to } };
 }
 

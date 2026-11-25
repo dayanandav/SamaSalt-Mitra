@@ -84,7 +84,7 @@ export async function resolveCompositionKey(ctx, composition, hints) {
   for (const k of variants) {
     // A key is real if a brand uses it, or the official Jan Aushadhi list does.
     if (await meds.hasKey(k)) return k;
-    if (await db.prepare('SELECT 1 AS ok FROM ja_products WHERE ckey = ?1 LIMIT 1').bind(k).first()) return k;
+    if ((await jaList(db)).some((r) => r.ckey === k)) return k;
   }
   return variants[0] || '';
 }
@@ -99,7 +99,7 @@ async function clearComposition(ctx, key) {
   if (!parts.every(([name, st]) => name && /^\d/.test(st || ''))) return false;
   if (!parts.some(([name]) => /(^|\s)\d[\d.]*(mg|mcg|g|gm|ml|iu)?(\s|$)/i.test(name))) return true;
   const { db, meds } = ctxOf(ctx);
-  return !!(await meds.hasKey(key)) || !!(await db.prepare('SELECT 1 AS ok FROM ja_products WHERE ckey = ?1 LIMIT 1').bind(key).first());
+  return !!(await meds.hasKey(key)) || (await jaList(db)).some((r) => r.ckey === key);
 }
 
 // The official Jan Aushadhi list (about 1,900 rows with a key), kept in memory: D1's free plan counts every
@@ -109,16 +109,67 @@ const jaCache = new WeakMap(); // database -> { at, rows }
 export async function jaList(db) {
   const hit = jaCache.get(db);
   if (hit && Date.now() - hit.at < JA_TTL_MS) return hit.rows;
-  const res = await db.prepare("SELECT drug_code, generic_name, unit_size, mrp, group_name, units, unit_price, ckey FROM ja_products WHERE ckey IS NOT NULL AND ckey != ''").all();
-  const rows = res.results || [];
+  let rows;
+  try {
+    rows = await loadJaList(db);
+  } catch (e) {
+    // D1 refuses (free daily limit used up, or a fault): the list in memory, else the copy deployed with
+    // the app, is used for a minute before D1 is tried again. Checks go on; only logging stops.
+    rows = hit?.rows || (await jaCopy(db))?.rows;
+    if (!rows) throw e;
+    jaCache.set(db, { at: Date.now() - JA_TTL_MS + 60_000, rows });
+    return rows;
+  }
   jaCache.set(db, { at: Date.now(), rows });
   return rows;
 }
 /** Called after a Jan Aushadhi import so the next check sees the new list. */
 export const resetJaList = (db) => jaCache.delete(db);
 
+const JA_VERSION = "(SELECT group_concat(v, ';') FROM (SELECT key || '=' || value AS v FROM meta WHERE key IN ('ja_imported_at', 'ja_list_date', 'ja_loaded_at') ORDER BY key))";
+async function loadJaList(db) {
+  // One row (ja_snapshot) when it was made from this very list; the list's dates in meta say so.
+  let version = null;
+  let canSave = false;
+  try {
+    const r = await db.prepare(`SELECT ${JA_VERSION} AS version, (SELECT version FROM ja_snapshot WHERE id = 1) AS saved, (SELECT data FROM ja_snapshot WHERE id = 1) AS data`).first();
+    version = r?.version || null;
+    canSave = true;
+    if (version && r.saved === version && r.data) return JSON.parse(r.data);
+  } catch {} // the table is not there yet (migration 0014): the list itself, below
+  const res = await db.prepare("SELECT drug_code, generic_name, unit_size, mrp, group_name, units, unit_price, ckey FROM ja_products WHERE ckey IS NOT NULL AND ckey != ''").all();
+  const rows = res.results || [];
+  if (canSave && version && rows.length) await db.prepare('INSERT OR REPLACE INTO ja_snapshot (id, version, data) VALUES (1, ?1, ?2)').bind(version, JSON.stringify(rows)).run().catch(() => {});
+  return rows;
+}
+
+// The copy deployed with the app (public/meds/ja.json, tools/ja-copy.mjs): { meta, rows }.
+const jaCopies = new WeakMap(); // database -> () => Promise of the copy
+export function setJaCopy(db, assets) {
+  if (!db || !assets || jaCopies.has(db)) return;
+  jaCopies.set(db, async () => {
+    const res = await assets.fetch(new Request('https://assets.invalid/meds/ja.json'));
+    return res.ok && (res.headers.get('content-type') || '').includes('json') ? res.json() : null;
+  });
+}
+export async function jaCopy(db) {
+  const get = jaCopies.get(db);
+  const c = get ? await get().catch(() => null) : null;
+  return c && Array.isArray(c.rows) && c.rows.length ? c : null;
+}
+
 /** A name as compared with a full name: lower case, single spaces. */
 const fullName = (s) => String(s || '').toLowerCase().replace(/\s+/g, ' ').trim();
+
+/**
+ * A brand row's salts as shown in choices. The brand list keeps at most two salts (3+ were cut to 2): a
+ * row marked incomplete says that more are missing ("Aspirin 75 mg + Atorvastatin 20 mg + …").
+ */
+export const describeRow = (row) => {
+  const [salts, ...rest] = describeKey(row.ckey).split(' · ');
+  return [row.incomplete ? `${salts} + …` : salts, ...rest].join(' · ');
+};
+export const saltCount = (ckey) => String(ckey || '').split('|')[0].split('+').length;
 
 const startsWithOf = (s) => /^\s*of\b/i.test(String(s || ''));
 
@@ -229,10 +280,22 @@ export async function suggestNames(ctx, text, { limit = 5 } = {}) {
 }
 
 /** Approved staff-added brands (added_medicines) whose name starts with `token`, as brand rows (no price). */
+// Brands added by staff and approved: in memory, read again after 10 minutes or a staff decision.
+const addedCache = new WeakMap(); // database -> { at, rows }
+async function addedList(db) {
+  const hit = addedCache.get(db);
+  if (hit && Date.now() - hit.at < JA_TTL_MS) return hit.rows;
+  const res = await db.prepare("SELECT id, name, manufacturer, ckey, form, rel, nti FROM added_medicines WHERE status = 'approved' LIMIT 2000").all();
+  const rows = res.results || [];
+  addedCache.set(db, { at: Date.now(), rows });
+  return rows;
+}
+export const resetAddedList = (db) => addedCache.delete(db);
+
 export async function addedByNamePrefix(db, token) {
   try {
-    const res = await db.prepare("SELECT id, name, manufacturer, ckey, form, rel, nti FROM added_medicines WHERE status = 'approved' AND lower(name) LIKE ?1 LIMIT 50").bind(`${String(token).toLowerCase()}%`).all();
-    return (res.results || []).map((r) => ({ id: `A${r.id}`, name: r.name, manufacturer: r.manufacturer, salt: null, ckey: r.ckey, price: null, pack: null, unit_price: null, form: r.form, rel: r.rel, nti: r.nti, incomplete: 0, added: true }));
+    const t = String(token).toLowerCase();
+    return (await addedList(db)).filter((r) => r.name.toLowerCase().startsWith(t)).slice(0, 50).map((r) => ({ id: `A${r.id}`, name: r.name, manufacturer: r.manufacturer, salt: null, ckey: r.ckey, price: null, pack: null, unit_price: null, form: r.form, rel: r.rel, nti: r.nti, incomplete: 0, added: true }));
   } catch {
     return []; // table not there yet (migration 0012 not applied): brands from the list only
   }
@@ -318,7 +381,7 @@ export async function soundsLikeChoices(ctx, latin, limit = 5) {
     if (!nums.every((x) => nameNums.includes(x) || strengths.includes(x))) continue;
     const k = r.name.toLowerCase();
     if (out.has(k)) continue;
-    out.set(k, { name: r.name, composition: describeKey(r.ckey), rank: (soundKey(n[0]) === soundKey(word) ? 0 : 1) + (n.length - 1 - extra.length) * 0.1 + (r.form === 'tablet' ? 0 : 0.05) });
+    out.set(k, { name: r.name, composition: describeRow(r), rank: (soundKey(n[0]) === soundKey(word) ? 0 : 1) + (n.length - 1 - extra.length) * 0.1 + (r.form === 'tablet' ? 0 : 0.05) });
   }
   // Salt names typed in Kannada/Hindi ("मेटफॉर्मिन 500"): official Jan Aushadhi products whose name
   // starts with a word that sounds alike and has the typed strength, offered first under their full
@@ -468,6 +531,22 @@ export async function otherSaltChoices(ctx, text, id, limit = 5) {
   return [...choices.filter((c) => c.name !== id.medicine.name).slice(0, limit - 1), { name: id.medicine.name, composition: describeKey(id.medicine.ckey) }];
 }
 
+/**
+ * The brands whose name starts with the typed words. A one-letter first word ("C Tax", "O2") is in
+ * hundreds of the name files, more than one request may read: what follows it is used too, as typed
+ * and however the name is written ("C Tax", "C-Tax", "CTax", "C.Tax").
+ */
+async function rowsByFirstWord(meds, q, typed) {
+  if (q[0].length > 1) return meds.byNamePrefix(q[0]);
+  if (!q[1]) return meds.byNamePrefix(`${q[0]} `); // a lone "C": names that go on with another word
+  const as = fullName(typed).slice(0, 4).trimEnd();
+  const tight = ['', /^\d/.test(q[1]) ? q[1][0] : ''].map((x) => `${q[0]}${x}`);
+  const prefixes = [...new Set([as, as.slice(0, 3), ...[' ', '-', '', '.'].map((sep) => `${q[0]}${sep}${q[1]}`.slice(0, 4)), ...tight])].filter((p) => p.startsWith(q[0]) && (p.length > 2 || /^[a-z]\d$/.test(p)));
+  const lists = await Promise.all(prefixes.map((p) => meds.byNamePrefix(p)));
+  const seen = new Set();
+  return lists.flat().filter((r) => !seen.has(r.id) && seen.add(r.id));
+}
+
 /** Tool: identify_medicine. Resolve a brand name (and optional composition read off the strip) to one DB row. */
 export async function identifyMedicine(ctx, { brand = '', composition = '', form = '' } = {}) {
   const { meds } = ctxOf(ctx);
@@ -476,7 +555,7 @@ export async function identifyMedicine(ctx, { brand = '', composition = '', form
   let candidates = [];
   if (q.length) {
     // v2.0.7 (roadmap S1.2): brands added by staff from the strip and approved by a Reviewer count as brands too.
-    rows = [...(await meds.byNamePrefix(q[0])), ...(await addedByNamePrefix(ctxOf(ctx).db, q[0])), ...(startsWithOf(brand) ? await meds.byNamePrefix('of ') : [])];
+    rows = [...(await rowsByFirstWord(meds, q, brand)), ...(await addedByNamePrefix(ctxOf(ctx).db, q[0])), ...(startsWithOf(brand) ? await meds.byNamePrefix('of ') : [])];
     candidates = rows.map((r) => ({ ...r, score: nameScore(brand, r.name) })).filter((r) => r.score > 0.45);
   }
 
@@ -512,7 +591,7 @@ export async function identifyMedicine(ctx, { brand = '', composition = '', form
       for (const c of [...pool].sort((a, b) => b.score - a.score || (a.form === 'tablet' ? 0 : 1) - (b.form === 'tablet' ? 0 : 1) || a.name.length - b.name.length)) {
         if (seen.has(c.name.toLowerCase())) continue;
         seen.add(c.name.toLowerCase());
-        choices.push({ name: c.name, composition: describeKey(c.ckey) });
+        choices.push({ name: c.name, composition: describeRow(c) });
         if (choices.length >= 5) break;
       }
       return { found: false, choices };
@@ -532,6 +611,11 @@ export async function identifyMedicine(ctx, { brand = '', composition = '', form
       return a.name.length - b.name.length;
     });
     const best = candidates[0];
+    // A strip with three or more salts, read in full, whose salts include this brand's (kept as two in
+    // our list): the strip is right, the row is cut. The salts decide, never the cut row.
+    const strip = compKey ? compKey.split('|')[0].split('+') : [];
+    const cut = strip.length > 2 && best.ckey.split('|')[0].split('+').every((s) => strip.includes(s)) && (await clearComposition(ctx, compKey));
+    if (cut) return compositionResult(brand, composition, form, compKey, best.name);
     return {
       found: true,
       via: compKey && best.ckey === compKey ? 'brand+composition' : 'brand',
@@ -552,24 +636,27 @@ export async function identifyMedicine(ctx, { brand = '', composition = '', form
     if (ja) return jaNameResult(ja);
   }
 
-  if (compKey && (await clearComposition(ctx, compKey))) {
-    // Brand unknown to the database, but the strip's composition is enough to compare.
-    const salts = parseSaltComposition(composition);
-    // A typed generic name ("amoxicillin clavulanic acid 500 125") is not a brand: name it by its composition.
-    const first = tokens(brand)[0];
-    const generic = !first || compKey.split('|')[0].includes(first);
-    const label = describeKey(compKey).split(' · ')[0];
-    return {
-      found: true,
-      via: 'composition',
-      medicine: { id: null, name: generic ? label : brand, manufacturer: null, salt: composition, ckey: compKey, price: null, pack: null, unit_price: null, form: extractDosageForm(form) || extractDosageForm(brand), rel: extractReleaseType(brand), nti: isNti(salts) ? 1 : 0, incomplete: 0 },
-      label: describeKey(compKey),
-      alternatives: [],
-      composition_key_from_strip: compKey,
-      composition_agrees: null,
-    };
-  }
+  // Brand unknown to the database, but the strip's composition is enough to compare.
+  if (compKey && (await clearComposition(ctx, compKey))) return compositionResult(brand, composition, form, compKey);
   return { found: false };
+}
+
+/** The medicine by the salts read or typed (no brand row decides). */
+function compositionResult(brand, composition, form, compKey, name = null) {
+  const salts = parseSaltComposition(composition);
+  // A typed generic name ("amoxicillin clavulanic acid 500 125") is not a brand: name it by its composition.
+  const first = tokens(brand)[0];
+  const generic = !first || compKey.split('|')[0].includes(first);
+  const label = describeKey(compKey).split(' · ')[0];
+  return {
+    found: true,
+    via: 'composition',
+    medicine: { id: null, name: name || (generic ? label : brand), manufacturer: null, salt: composition, ckey: compKey, price: null, pack: null, unit_price: null, form: extractDosageForm(form) || extractDosageForm(brand), rel: extractReleaseType(brand), nti: isNti(salts) ? 1 : 0, incomplete: 0 },
+    label: describeKey(compKey),
+    alternatives: [],
+    composition_key_from_strip: compKey,
+    composition_agrees: null,
+  };
 }
 
 /** Tool: find_same_salt. Every brand with an identical canonical key, cheapest first (per unit). */
@@ -583,11 +670,11 @@ export async function findSameSalt(ctx, ckey, { limit = 8 } = {}) {
 export async function janAushadhiMatch(ctx, ckey) {
   const { db } = ctxOf(ctx);
   if (!ckey) return { available: false };
-  const res = await db
-    .prepare('SELECT drug_code, generic_name, unit_size, mrp, group_name, units, unit_price FROM ja_products WHERE ckey = ?1 ORDER BY unit_price ASC LIMIT 3')
-    .bind(ckey)
-    .all();
-  const rows = res.results || [];
+  const rows = (await jaList(db))
+    .filter((r) => r.ckey === ckey)
+    .sort((a, b) => (a.unit_price ?? -1) - (b.unit_price ?? -1))
+    .slice(0, 3)
+    .map(({ ckey: _, ...r }) => r);
   if (!rows.length) return { available: false };
   return { available: true, product: rows[0], others: rows.slice(1) };
 }
