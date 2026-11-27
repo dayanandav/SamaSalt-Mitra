@@ -345,6 +345,31 @@ export function savableAnswer(r) {
   return { ...rest, fresh: false, savedAt: Date.now() };
 }
 
+// v2.0.19 (roadmap C6): this visit's answers are kept on the phone, so the same medicine (or the same photo)
+// checked again is shown at once, with no request: no database row, no AI. Same language and PIN only.
+// Only finished answers; never one waiting for "yes", an error, or a limit message.
+const CACHE_STATUSES = new Set(['ok', 'not_found', 'incomplete', 'unreadable']);
+export const ANSWER_CACHE_MAX = 15;
+/** The key of a check: the typed name (case and spaces aside) or the photo's fingerprint, with language and PIN. */
+export function answerKey({ text, image, imageHash, lang, pin }) {
+  const where = `${lang || 'en'}|${/^\d{6}$/.test(String(pin || '')) ? pin : ''}`;
+  if (image) return imageHash ? `p|${imageHash}|${where}` : null;
+  const t = String(text || '').toLowerCase().replace(/\s+/g, ' ').trim();
+  return t ? `t|${t}|${where}` : null;
+}
+/** What is kept of an answer: the server's answer as it came, nothing the screen added. */
+export function cacheableAnswer(r) {
+  if (!r || !CACHE_STATUSES.has(r.status)) return null;
+  const { image, confirmed, addedToList, fresh, unreadCounted, typed, savedAt, ...rest } = r; // eslint-disable-line no-unused-vars
+  return rest;
+}
+/** The kept answers with this one added (newest last, at most ANSWER_CACHE_MAX). */
+export function rememberAnswer(list, key, r) {
+  const keep = cacheableAnswer(r);
+  if (!key || !keep) return list || [];
+  return [...(list || []).filter(([k]) => k !== key), [key, keep]].slice(-ANSWER_CACHE_MAX);
+}
+
 // ── v1.3 Registered volunteers ──────────────────────────────────────────────
 // A volunteer's code (SV- and 5 letters/digits, no 0/O/1/I), as in the personal link /v/SV-XXXXX.
 export function volunteerCode(s) {

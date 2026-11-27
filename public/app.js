@@ -1,7 +1,7 @@
 import { LANGS, STRINGS, t, rupees, unitKind } from '/strings.js';
 import { createChat, newChatId } from '/chat.js';
 import { suggestWhileTyping, suggestable } from '/suggest.js';
-import { pharmacistEntry, unlistedEntry, mergeMedList, asksToSwitch, shouldAddToList, listenAllowed, pickVoice, isPhoneBrowser, freshMedList, keptMedList, monthlySaving, kendraCode, showMobile, orderItems, orderQty, orderMessage, waLink, smsLink, ORDER_MAX_PACKS, photoSendSize, askTimeoutMs, savableAnswer, volunteerCode, shareText, doctorNote } from '/rules.js';
+import { pharmacistEntry, unlistedEntry, mergeMedList, asksToSwitch, shouldAddToList, listenAllowed, pickVoice, isPhoneBrowser, freshMedList, keptMedList, monthlySaving, kendraCode, showMobile, orderItems, orderQty, orderMessage, waLink, smsLink, ORDER_MAX_PACKS, photoSendSize, askTimeoutMs, savableAnswer, answerKey, rememberAnswer, volunteerCode, shareText, doctorNote } from '/rules.js';
 
 const $ = (s) => document.querySelector(s);
 const store = {
@@ -647,6 +647,13 @@ function show(section) {
   window.scrollTo({ top: 0, behavior: 'instant' in window ? 'instant' : 'auto' });
 }
 
+function keptAnswers() {
+  try { return JSON.parse(session.get('ss_answers') || '[]'); } catch { return []; }
+}
+async function photoHash(image) {
+  try { return [...new Uint8Array(await crypto.subtle.digest('SHA-256', new TextEncoder().encode(image)))].map((b) => b.toString(16).padStart(2, '0')).join(''); } catch { return null; }
+}
+
 async function ask({ text, image, ocr, via, relog = true }) {
   $('#busyText').textContent = image ? t(lang, 'reading') : t(lang, 'checking');
   const thumb = $('#thumb');
@@ -665,7 +672,12 @@ async function ask({ text, image, ocr, via, relog = true }) {
   };
   let r;
   pending = null;
-  for (let attempt = 0; attempt < 2; attempt++) {
+  // The same medicine or photo again in this visit: the answer kept on the phone, no request.
+  const imageHash = image ? await photoHash(image) : null;
+  const cacheKey = answerKey({ text, image, imageHash, lang, pin: body.pin });
+  const kept = cacheKey ? keptAnswers().find(([k]) => k === cacheKey) : null;
+  if (kept) r = JSON.parse(JSON.stringify(kept[1]));
+  for (let attempt = 0; attempt < 2 && !kept; attempt++) {
     // v1.3: no internet: wait for it instead of failing (checked again by itself when it is back).
     if (!navigator.onLine) { r = { status: 'offline' }; break; }
     const stop = new AbortController();
@@ -682,6 +694,7 @@ async function ask({ text, image, ocr, via, relog = true }) {
     if (r.status !== 'error' && !r.error) break;
     await new Promise((ok) => setTimeout(ok, 2000)); // one quiet retry on a network/server hiccup
   }
+  if (!kept) { try { session.set('ss_answers', JSON.stringify(rememberAnswer(keptAnswers(), cacheKey, r))); } catch {} }
   if (r.status === 'not_found' && text && !image && !ocr) r.typed = String(text).trim(); // for "Add to the pharmacist list"
   if (r.status === 'offline' || r.status === 'slow' || r.status === 'busy') {
     // A language change on a saved answer: keep showing it; it changes when the internet is back.
@@ -732,7 +745,7 @@ store.set('ss_medlist', null); // the old long-lived list (before Nov 2026) is r
 // Opening the page again starts a new, empty list, except when Android closed the page while the
 // camera was open (the person did not choose to leave; keep what they had).
 // v1.3: opened again without internet: keep the list and the last answer of this visit.
-if (!returnedFromCamera && navigator.onLine) { session.set('ss_medlist', null); session.set('ss_last', null); }
+if (!returnedFromCamera && navigator.onLine) { session.set('ss_medlist', null); session.set('ss_last', null); session.set('ss_answers', null); }
 // P1 My monthly medicines: "Keep this list for next month" (off by default) keeps the list in this
 // phone's storage instead of for the visit only. Never sent to our server; off deletes it.
 const KEEP = 'ss_keep_list';

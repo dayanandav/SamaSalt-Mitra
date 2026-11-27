@@ -1,8 +1,9 @@
 {
   "note": "Fingerprints of the owner-approved tests. Written only by `node tools/test-lock.mjs approve --yes`, run by the owner.",
-  "approved_at": "2026-11-25T10:37:30.489Z",
+  "approved_at": "2026-11-27T17:35:57.163Z",
   "files": {
     "test/admin.test.mjs": "e05dd44ef3382da2c7d122e94aea823f3930b03b6297a4ce424db789f271a8d3",
+    "test/answercache.test.mjs": "0249023b52ac6c617b00c51b91ea036dfadf68bfe7a357f3a8f730cc9246570e",
     "test/askdontguess.test.mjs": "ed74a9374f1afdfa3e9fc041165503272826a0bdc9492553923d9d393f4c9a04",
     "test/askform.test.mjs": "3d3bcc77a38f1f90fd428578b99230795bb738d72c3fba7ec27cd8a8be82dea5",
     "test/ceiling.test.mjs": "4073d42eefa07afd08a1dbade54250c6c069c302fc86d27d29408537310f98fd",
