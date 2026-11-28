@@ -538,3 +538,6 @@ dialog.doctor .crop-actions { margin-top: 8px; }
   body.print-doctor .doc-note { border: 0; font-size: 14pt; color: #000; }
   body.print-doctor .doc-foot { color: #333; }
 }
+
+/* C2: the photo button is the second way, after typing. */
+.photo-btn { display: flex; align-items: center; justify-content: center; gap: 8px; width: 100%; }

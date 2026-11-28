@@ -36,6 +36,7 @@ Full design: *SamaSalt-Mitra Design Document* (`docs/SamaSalt-Mitra Design Docum
 | 2.0.17 | 25 Nov 2026 | Found more: the 14 searches that were missed or only asked (search set 408 of 408, 0 wrong): Kannada/Hindi names through a small sounds-like index (253 files read per search at worst, now 38), V/G in names are not units, flavours and DT, several salts typed, salt + form; 3 false PINs removed |
 | 2.0.18 | 25 Nov 2026 | Photo limit (C5): 10 photos per device per day, strips, prescriptions and chat together, then "type the name" (typing is never limited); 12 photos a minute per address; a line on the privacy page |
 | 2.0.19 | 27 Nov 2026 | Phone caching (C6 done): the same medicine or photo checked again in a visit is answered on the phone, with nothing sent (no database row, no AI); another language or PIN is asked again, and so is the two-salt question |
+| 2.0.20 | 28 Nov 2026 | Typing first (C2, owner 28 Nov 2026): the name box is the first thing on the home screen; photos come after "or use a photo"; the intro and the keyboard tip say so |
 
 ## Overview
 
@@ -221,7 +222,7 @@ Status of 9 (23 Nov 2026): first set of 67 searches built (`evals/search_cases.s
 
 *Next phase (owner's decision 24 Nov 2026): lower photo cost, so photos can grow with use. Photos are nearly all of the running cost; typed checks cost almost nothing.*
 - **C1 Measure** real photos first: tokens and Neurons per photo and prescription, success rate by photo size. Then set `DAILY_PHOTO_LIMIT` to what the daily AI allowance really covers (the estimate is about 140 photos a day free, while the cap is 1,500).
-- **C2 Typing first**: the name box is the first action on the home screen, the photo button second; suggestions while typing stay. Photos stay one tap away (people who cannot type or read English need them).
+- **C2 Typing first** (**built 28 Nov 2026 as 2.0.20**, at the owner's request ahead of the order): the name box is the first action on the home screen, the photo button second; suggestions while typing stay. Photos stay one tap away (people who cannot type or read English need them).
 - **C3 Smaller photos**: the smallest size at which the salts are still read correctly, from C1; the crop is sent, not the whole picture. Never below the size where read accuracy drops.
 - **C4 A cheaper model**: compare vision models on the same set of real strips (Kannada/Hindi packs too). Switch only if it reads the salts at least as well and gives 0 wrong matches; the read check (`READ_PASS_MARK`) and the confirm screen stay.
 - **C5 Photo limit per person** (**built 25 Nov 2026 as 2.0.18**: 10 per device per day): photos and prescriptions together per device per day (5-10; the number and "per day or one-time trial" wait for the owner), then "type the name" (typing is never limited by this). Counted on the server by the random device code the app already has (no new personal data; counts deleted after 2 days). Per address only a short limit (a few photos a minute, Cloudflare's counter, never stored): Indian mobile networks put many people behind one address, so a daily limit per address would block strangers. Approved volunteers and staff get a higher limit. The daily cap for everyone stays.
