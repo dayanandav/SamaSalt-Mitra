@@ -37,6 +37,7 @@ Full design: *SamaSalt-Mitra Design Document* (`docs/SamaSalt-Mitra Design Docum
 | 2.0.18 | 25 Nov 2026 | Photo limit (C5): 10 photos per device per day, strips, prescriptions and chat together, then "type the name" (typing is never limited); 12 photos a minute per address; a line on the privacy page |
 | 2.0.19 | 27 Nov 2026 | Phone caching (C6 done): the same medicine or photo checked again in a visit is answered on the phone, with nothing sent (no database row, no AI); another language or PIN is asked again, and so is the two-salt question |
 | 2.0.20 | 28 Nov 2026 | Typing first (C2, owner 28 Nov 2026): the name box is the first thing on the home screen; photos come after "or use a photo"; the intro and the keyboard tip say so |
+| 2.0.21 | 28 Nov 2026 | Phones: the home screen fits about one screen (the intro and the keyboard and PIN tips are left out on phones; the photo buttons are a 2x2 grid); typing stays first |
 
 ## Overview
 

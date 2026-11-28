@@ -541,3 +541,19 @@ dialog.doctor .crop-actions { margin-top: 8px; }
 
 /* C2: the photo button is the second way, after typing. */
 .photo-btn { display: flex; align-items: center; justify-content: center; gap: 8px; width: 100%; }
+
+/* Phones (owner, 28 Nov 2026): the home screen fits about one screen. The intro and the tips about the
+   keyboard and the PIN are left out (the headings and the box say it); the photo buttons are a 2x2 grid:
+   Take a photo | Scan a prescription, the photo tip, then Gallery | In-app camera. Typing stays first. */
+@media (max-width: 480px) {
+  .home .lede, .home .scan-text-tip, .home [data-t="pinHint"], .home .photo-area .scan-title { display: none; }
+  .home h1 { font-size: clamp(26px, 7.4vw, 32px); margin-bottom: 10px; }
+  .home .divider { margin: 14px 0 10px; }
+  .photo-area { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+  .photo-area #scanBtn, .photo-area #rxBtn { margin: 0; min-height: 48px; padding: 8px 10px; font-size: clamp(14px, 3.9vw, 16px); line-height: 1.2; }
+  .photo-area #scanBtn { grid-column: 1; grid-row: 1; }
+  .photo-area #rxBtn { grid-column: 2; grid-row: 1; }
+  .photo-area .scan-tip { grid-column: 1 / -1; grid-row: 2; margin: 0; font-size: 13px; line-height: 1.4; }
+  .photo-area .scan-row { grid-column: 1 / -1; grid-row: 3; margin: 0; }
+  .photo-area > input, .photo-area > .cam-note, .photo-area > .scan-alt { grid-column: 1 / -1; }
+}
